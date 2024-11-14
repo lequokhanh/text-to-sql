@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: demo
+  servlet:
+    multipart:
+      max-file-size: 40MB
+      max-request-size: 40MB
+
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+
+  datasource:
+    hikari:
+      maximum-pool-size: 10
