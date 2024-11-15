@@ -1,6 +1,6 @@
 # How to run spring boot application
 1. Prerequisites
-    - Java 12
+    - Java 17
     - Maven
     - Docker
 
