@@ -2,7 +2,6 @@
 1. Prerequisites
     - Java 17
     - Maven
-    - Docker
 
 2. Clone the repository
     ```bash
