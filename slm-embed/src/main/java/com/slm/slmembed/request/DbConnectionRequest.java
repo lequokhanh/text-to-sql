@@ -1,4 +1,4 @@
-package com.example.demo.request;
+package com.slm.slmembed.request;
 
 import lombok.Getter;
 import lombok.Setter;

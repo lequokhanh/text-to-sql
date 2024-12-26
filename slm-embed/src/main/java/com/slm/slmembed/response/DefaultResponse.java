@@ -1,4 +1,4 @@
-package com.example.demo.response;
+package com.slm.slmembed.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;

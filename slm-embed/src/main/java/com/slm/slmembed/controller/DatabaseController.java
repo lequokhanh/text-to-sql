@@ -1,8 +1,8 @@
-package com.example.demo.controller;
+package com.slm.slmembed.controller;
 
-import com.example.demo.request.DbConnectionRequest;
-import com.example.demo.response.DefaultResponse;
-import com.example.demo.service.SchemaService;
+import com.slm.slmembed.request.DbConnectionRequest;
+import com.slm.slmembed.response.DefaultResponse;
+import com.slm.slmembed.service.SchemaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

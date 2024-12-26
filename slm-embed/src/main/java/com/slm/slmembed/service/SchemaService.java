@@ -1,7 +1,7 @@
-package com.example.demo.service;
+package com.slm.slmembed.service;
 
-import com.example.demo.request.DbConnectionRequest;
-import com.example.demo.response.DefaultResponse;
+import com.slm.slmembed.request.DbConnectionRequest;
+import com.slm.slmembed.response.DefaultResponse;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.stereotype.Service;
