@@ -10,6 +10,4 @@ public class DbConnectionRequest {
     private String username;
     private String password;
     private String dbType;
-
-    // Getters and setters
 }
