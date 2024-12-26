@@ -1,0 +1,4 @@
+FROM semitechnologies/transformers-inference:custom
+ARG MODEL_NAME
+ENV MODEL_NAME=${MODEL_NAME}
+RUN USE_SENTENCE_TRANSFORMERS_VECTORIZER=TRUE ./download.py

@@ -1,0 +1,4 @@
+FROM semitechnologies/reranker-transformers:custom
+ARG MODEL_NAME
+ENV MODEL_NAME=${MODEL_NAME}
+RUN ./download.py

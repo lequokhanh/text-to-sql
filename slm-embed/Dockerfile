@@ -5,12 +5,12 @@ ENV APPLICATION=slm-embed
 COPY ./pom.xml ./
 
 RUN --mount=type=cache,target=/.m2,id=${APPLICATION},uid=500,gid=500 \
-    mvn -Dmaven.repo.local=/.m2/repository dependency:go-offline -pl
+    mvn -Dmaven.repo.local=/.m2/repository dependency:go-offline
 
 COPY . .
 
 RUN --mount=type=cache,target=/.m2,id=${APPLICATION},uid=500,gid=500 \
-    mvn -Dmaven.repo.local=/.m2/repository -DskipTests package -pl
+    mvn -Dmaven.repo.local=/.m2/repository -DskipTests package
 
 FROM eclipse-temurin:17-jre AS final
 
