@@ -5,7 +5,7 @@
 
 2. Clone the repository
     ```bash
-    git clone https://github.com/lequokhanh/text-to-sql-sml.git
+    git clone https://github.com/lequokhanh/text-to-sql-slm.git
    ```
 3. Build the project
     ```bash
