@@ -107,6 +107,7 @@ public class SchemaService {
                 }
                 schema.put("tables", tablesList);
             }
+            ((HikariDataSource) dataSource).close();
         } catch (Exception e) {
             e.printStackTrace();
             schema.put("error", "Failed to retrieve schema: " + e.getMessage());
@@ -184,6 +185,7 @@ public class SchemaService {
                 }
                 schema.put("tables", tablesList);
             }
+            ((HikariDataSource) dataSource).close();
         } catch (Exception e) {
             e.printStackTrace();
             schema.put("error", "Failed to retrieve schema: " + e.getMessage());
