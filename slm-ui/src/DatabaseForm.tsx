@@ -3,19 +3,60 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import TableSchema from './TableSchema';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronDown, ChevronUp, Save } from "lucide-react" // Import icons
 
-const DatabaseForm = () => {
-  const [formData, setFormData] = useState({
+interface Column {
+  name: string;
+  dtype: string;
+  description: string;
+  constraints: string[];
+}
+
+interface ForeignKey {
+  references: string;
+  column: string;
+}
+
+interface Table {
+  primary_keys: string[];
+  columns: Column[];
+  name: string;
+  foreign_keys: ForeignKey[];
+}
+
+interface Schema {
+  database: string;
+  tables: Table[];
+}
+
+interface ApiResponse {
+  statusCode: number;
+  message: string;
+  data: Schema;
+}
+
+interface FormData {
+  dbType: string;
+  url: string;
+  username: string;
+  password: string;
+}
+
+const DatabaseForm: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
     dbType: '',
     url: '',
     username: '',
     password: ''
   });
-  const [schema, setSchema] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [schema, setSchema] = useState<Schema | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [openTables, setOpenTables] = useState<string[]>([]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -27,7 +68,7 @@ const DatabaseForm = () => {
         body: JSON.stringify(formData)
       });
       
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
       if (response.ok) {
         setSchema(data.data);
         localStorage.setItem('dbSchema', JSON.stringify(data.data));
@@ -41,10 +82,16 @@ const DatabaseForm = () => {
     }
   };
 
-  const handleDescriptionChange = (tableName, columnName, description) => {
-    const updatedSchema = JSON.parse(JSON.stringify(schema));
+  const handleDescriptionChange = (tableName: string, columnName: string, description: string) => {
+    if (!schema) return;
+    
+    const updatedSchema = JSON.parse(JSON.stringify(schema)) as Schema;
     const table = updatedSchema.tables.find(t => t.name === tableName);
+    if (!table) return;
+    
     const column = table.columns.find(c => c.name === columnName);
+    if (!column) return;
+    
     column.description = description;
     setSchema(updatedSchema);
     localStorage.setItem('dbSchema', JSON.stringify(updatedSchema));
@@ -60,7 +107,7 @@ const DatabaseForm = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <Select 
               value={formData.dbType}
-              onValueChange={(value) => setFormData({...formData, dbType: value})}
+              onValueChange={(value: string) => setFormData({...formData, dbType: value})}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select database type" />
@@ -68,27 +115,29 @@ const DatabaseForm = () => {
               <SelectContent>
                 <SelectItem value="postgresql">PostgreSQL</SelectItem>
                 <SelectItem value="mysql">MySQL</SelectItem>
-                <SelectItem value="sqlserver">SQL Server</SelectItem>
               </SelectContent>
             </Select>
 
             <Input
               placeholder="Connection URL"
               value={formData.url}
-              onChange={(e) => setFormData({...formData, url: e.target.value})}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                setFormData({...formData, url: e.target.value})}
             />
 
             <Input
               placeholder="Username"
               value={formData.username}
-              onChange={(e) => setFormData({...formData, username: e.target.value})}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                setFormData({...formData, username: e.target.value})}
             />
 
             <Input
               type="password"
               placeholder="Password"
               value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                setFormData({...formData, password: e.target.value})}
             />
 
             <Button type="submit" disabled={loading}>
@@ -102,36 +151,7 @@ const DatabaseForm = () => {
 
       {schema && (
         <div className="space-y-6">
-          {schema.tables.map(table => (
-            <Card key={table.name}>
-              <CardHeader>
-                <CardTitle>{table.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {table.columns.map(column => (
-                    <div key={column.name} className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="font-medium">{column.name}</p>
-                        <p className="text-sm text-gray-500">
-                          Type: {column.dtype}
-                          {column.constraints.length > 0 && ` (${column.constraints.join(', ')})`}
-                          {table.primary_keys.includes(column.name) && ' (Primary Key)'}
-                          {table.foreign_keys.some(fk => fk.column === column.name) && 
-                            ` (FK → ${table.foreign_keys.find(fk => fk.column === column.name).references})`}
-                        </p>
-                      </div>
-                      <Input
-                        placeholder="Description"
-                        value={column.description || ''}
-                        onChange={(e) => handleDescriptionChange(table.name, column.name, e.target.value)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <TableSchema schema={schema} />
         </div>
       )}
     </div>
