@@ -2,6 +2,8 @@ version: "3.8"
 
 services:
     embed:
+        ports:
+            - 8181:8080
         build:
             context: ./slm-embed
         networks:
@@ -13,14 +15,8 @@ services:
         networks:
             - slm
 
-    ui:
-        build:
-            context: ./slm-ui
-        networks:
-            - slm
-
-    ollama:
-        container_name: ollama
+    ollama-1:
+        container_name: ollama-1
         pull_policy: always
         tty: true
         restart: unless-stopped

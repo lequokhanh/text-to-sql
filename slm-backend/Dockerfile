@@ -12,7 +12,7 @@ COPY . .
 RUN --mount=type=cache,target=/.m2,id=${APPLICATION},uid=500,gid=500 \
     mvn -Dmaven.repo.local=/.m2/repository -DskipTests package
 
-FROM eclipse-temurin:17-jre AS final
+FROM eclipse-temurin:21-jre AS final
 
 COPY --from=builder /target/*.jar /app/application.jar
 
