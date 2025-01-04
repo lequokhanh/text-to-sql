@@ -1,0 +1,102 @@
+version: "3.8"
+
+services:
+    embed:
+        ports:
+            - 8181:8080
+        build:
+            context: ./slm-embed
+        networks:
+            - slm
+
+    backend:
+        build:
+            context: ./slm-backend
+        networks:
+            - slm
+
+    ollama-1:
+        container_name: ollama-1
+        pull_policy: always
+        tty: true
+        restart: unless-stopped
+        image: ollama/ollama:latest
+        environment:
+            - OLLAMA_KEEP_ALIVE=24h
+        networks:
+            - slm
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - driver: nvidia
+                          count: 1
+                          capabilities: [gpu]
+
+    weaviate:
+        image: cr.weaviate.io/semitechnologies/weaviate:1.26.4
+        command:
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8080"
+            - --scheme
+            - http
+        restart: always
+        ports:
+            - 8080:8080
+            - 50051:50051
+        environment:
+            QUERY_DEFAULTS_LIMIT: 25
+            AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+            ENABLE_API_BASED_MODULES: "true"
+            PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+            DEFAULT_VECTORIZER_MODULE: "text2vec-transformers"
+            ENABLE_MODULES: "text2vec-transformers,reranker-transformers"
+            TRANSFORMERS_INFERENCE_API: http://t2v-transformers:8080
+            RERANKER_INFERENCE_API: http://reranker-transformers:8080
+            CLUSTER_HOSTNAME: "node1"
+        depends_on:
+            - t2v-transformers
+            - reranker-transformers
+        networks:
+            - slm
+
+    t2v-transformers:
+        build:
+            context: .
+            dockerfile: devops/dockerfile.weaviate.transformer
+            args:
+                - MODEL_NAME=dangvantuan/vietnamese-embedding
+        environment:
+            ENABLE_CUDA: 1
+            NVIDIA_VISIBLE_DEVICES: "all"
+        ports:
+            - 9090:8080
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - capabilities:
+                              - "gpu"
+
+    reranker-transformers:
+        build:
+            context: .
+            dockerfile: devops/dockerfile.weaviate.reranker
+            args:
+                - MODEL_NAME=itdainb/PhoRanker
+        environment:
+            ENABLE_CUDA: 1
+            NVIDIA_VISIBLE_DEVICES: "all"
+        ports:
+            - 9091:8080
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - capabilities:
+                              - "gpu"
+networks:
+    slm:
+        driver: bridge
