@@ -6,6 +6,19 @@ services:
             - 8181:8080
         build:
             context: ./slm-embed
+        environment:
+            - CONSUL_HOST=consul
+        networks:
+            - slm
+
+    consul:
+        image: consul:1.15.4
+        ports:
+            - "8500:8500"
+            - "8600:8600/udp"
+        environment:
+            CONSUL_BIND_INTERFACE: eth0
+        command: agent -server -bootstrap -ui -client=0.0.0.0 -datacenter=dc1 -node=consul-server
         networks:
             - slm
 

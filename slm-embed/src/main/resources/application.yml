@@ -1,6 +1,14 @@
 spring:
   application:
-    name: demo
+    name: slm-embed
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        prefer-ip-address: true
   servlet:
     multipart:
       max-file-size: 40MB
@@ -9,7 +17,12 @@ spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
 
   datasource:
     hikari:
-      maximum-pool-size: 900
+      maximum-pool-size: 1
