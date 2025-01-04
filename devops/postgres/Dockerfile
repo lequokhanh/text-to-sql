@@ -1,7 +1,7 @@
 FROM postgres:15.4
 
 USER root
-RUN apt-get update && apt-get install -y curl jq && \
+RUN apt-get update && apt-get install -y curl jq bash && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV POSTGRES_USER=slm \
@@ -20,4 +20,5 @@ USER postgres
 # Initialize the database directory
 RUN initdb -D /var/lib/postgresql/data
 
-ENTRYPOINT ["bash", "-c", "/usr/local/bin/register-to-consul.sh & exec postgres"]
+# Ensure the script runs with bash
+ENTRYPOINT ["/usr/bin/bash", "-c", "/usr/local/bin/register-to-consul.sh && exec postgres"]
