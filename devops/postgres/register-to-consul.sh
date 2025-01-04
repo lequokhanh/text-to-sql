@@ -10,13 +10,11 @@ echo "Registering PostgreSQL with Consul at $CONSUL_URL..."
 curl -X PUT "${CONSUL_URL}/v1/agent/service/register" \
     -H "Content-Type: application/json" \
     -d "{
-  \"ID\": \"postgres\",
   \"Name\": \"${POSTGRES_SERVICE_NAME}\",
   \"Tags\": [\"database\", \"sql\"],
   \"Address\": \"$(hostname -i)\",
   \"Port\": ${POSTGRES_PORT},
   \"Check\": {
-    \"ID\": \"postgresql-check\",
     \"Name\": \"PostgreSQL TCP Check\",
     \"TCP\": \"$(hostname -i):${POSTGRES_PORT}\",
     \"Interval\": \"10s\",
