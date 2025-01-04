@@ -22,4 +22,8 @@ curl -X PUT "${CONSUL_URL}/v1/agent/service/register" \
   }
 }"
 
-echo "PostgreSQL registered with Consul."
+if [ $? -eq 0 ]; then
+  echo "PostgreSQL successfully registered with Consul."
+else
+  echo "Failed to register PostgreSQL with Consul." >&2
+fi
