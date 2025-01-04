@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 CONSUL_URL=${CONSUL_HTTP_ADDR}
 POSTGRES_SERVICE_NAME="postgres"
