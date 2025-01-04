@@ -21,4 +21,4 @@ USER postgres
 RUN initdb -D /var/lib/postgresql/data
 
 # Ensure the script runs with bash
-ENTRYPOINT ["bash", "-c", "/usr/local/bin/register-to-consul.sh && exec postgres"]
+CMD ["./usr/local/bin/register-to-consul.sh"]

@@ -15,8 +15,9 @@ if [ -z "$HOST_IP" ]; then
   exit 1
 fi
 
+# Register PostgreSQL service with retry logic
 for i in $(seq 1 $RETRY_COUNT); do
-  curl -X PUT "${CONSUL_URL}/v1/agent/service/register" \
+  RESPONSE=$(curl -s -w "%{http_code}" -X PUT "${CONSUL_URL}/v1/agent/service/register" \
       -H "Content-Type: application/json" \
       -d "{
     \"Name\": \"${POSTGRES_SERVICE_NAME}\",
@@ -29,13 +30,16 @@ for i in $(seq 1 $RETRY_COUNT); do
       \"Interval\": \"10s\",
       \"Timeout\": \"5s\"
     }
-  }"
-  
-  if [ $? -eq 0 ]; then
+  }")
+
+  HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+
+  if [ "$HTTP_CODE" -eq 200 ]; then
     echo "PostgreSQL successfully registered with Consul."
+    exec postgres
     exit 0
   else
-    echo "Failed to register PostgreSQL with Consul. Retrying in $RETRY_DELAY seconds..."
+    echo "Failed to register PostgreSQL with Consul (HTTP Code: $HTTP_CODE). Retrying in $RETRY_DELAY seconds..."
     sleep $RETRY_DELAY
   fi
 done
