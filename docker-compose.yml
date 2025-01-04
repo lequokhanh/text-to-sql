@@ -23,12 +23,8 @@ services:
             - slm
 
     postgres:
-        image: postgres:15.4
-        restart: always
-        environment:
-            POSTGRES_USER: slm
-            POSTGRES_PASSWORD: slm123
-            POSTGRES_DB: slm
+        build:
+            context: ./devops/postgres
         ports:
             - 5433:5432
         networks:
