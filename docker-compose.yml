@@ -17,7 +17,7 @@ services:
             POSTGRES_PASSWORD: slm123
             POSTGRES_DB: slm
         ports:
-            - 5432:5432
+            - 5433:5432
         networks:
             - slm
 networks:
