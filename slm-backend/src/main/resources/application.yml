@@ -1,3 +1,19 @@
 spring:
   application:
-    name: demo
+    name: slm-backend
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        prefer-ip-address: true
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

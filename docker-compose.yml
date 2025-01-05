@@ -1,15 +1,6 @@
+version: '3.8'
 
 services:
-    embed:
-        ports:
-            - 8181:8080
-        build:
-            context: ./slm-embed
-        environment:
-            - CONSUL_HOST=consul
-        networks:
-            - slm
-
     consul:
         image: consul:1.15.4
         ports:
@@ -20,19 +11,74 @@ services:
         command: agent -server -bootstrap -ui -client=0.0.0.0 -datacenter=dc1 -node=consul-server
         networks:
             - slm
+        healthcheck:
+            test: ["CMD", "consul", "info"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
 
-    postgres:
+    mysql:
         build:
-            context: ./devops/postgres
-        ports:
-            - "5433:5432"
+            context: ./devops/mysql
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root123
+            MYSQL_DATABASE: slm
+            CONSUL_HTTP_ADDR: http://consul:8500
+            MYSQL_ROOT_HOST: '%'
         volumes:
-            - postgres-data:/var/lib/postgresql/data
+            - ./devops/data:/var/lib/mysql
+        ports:
+            - "3306:3306"
         networks:
             - slm
+        healthcheck:
+            test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD" ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        depends_on:
+            consul:
+                condition: service_healthy
+
+    embed:
+        ports:
+            - 8181:8080
+        build:
+            context: ./slm-embed
+        environment:
+            - CONSUL_HOST=consul
+        networks:
+            - slm
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        depends_on:
+            consul:
+                condition: service_healthy
+
+    backend:
+        ports:
+            - 8282:8080
+        build:
+            context: ./slm-backend
+        environment:
+            - CONSUL_HOST=consul
+        networks:
+            - slm
+        healthcheck:
+            test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        depends_on:
+            consul:
+                condition: service_healthy
+            mysql:
+                condition: service_healthy
+
 networks:
     slm:
         driver: bridge
-
-volumes:
-    postgres-data:
