@@ -284,7 +284,7 @@ public class SchemaService {
     private boolean isValidSQLQuery(String query) {
 //        String safeQueryRegex = "(?i)^\\s*SELECT\\s+.+\\s+FROM\\s+.+";
 //        return query == null || !query.matches(safeQueryRegex);
-        return true;
+        return false;
     }
 
     public DefaultResponse queryDatabase(DbConnectionWithQueryRequest request) {
