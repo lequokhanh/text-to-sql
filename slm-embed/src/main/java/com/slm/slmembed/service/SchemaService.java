@@ -204,7 +204,7 @@ public class SchemaService {
     }
 
     public DefaultResponse querySQLMySQL(DbConnectionRequest req, String query) {
-        if (!isValidSQLQuery(query)) {
+        if (isValidSQLQuery(query)) {
             return new DefaultResponse()
                     .setStatusCode(400)
                     .setMessage("Invalid or unsafe SQL query");
@@ -244,7 +244,7 @@ public class SchemaService {
                 .setData(result);
     }
     public DefaultResponse querySQLPostgres(DbConnectionRequest req, String query) {
-        if (!isValidSQLQuery(query)) {
+        if (isValidSQLQuery(query)) {
             return new DefaultResponse()
                     .setStatusCode(400)
                     .setMessage("Invalid or unsafe SQL query");
@@ -282,8 +282,9 @@ public class SchemaService {
     }
 
     private boolean isValidSQLQuery(String query) {
-        String safeQueryRegex = "(?i)^\\s*SELECT\\s+.+\\s+FROM\\s+.+";
-        return query != null && query.matches(safeQueryRegex);
+//        String safeQueryRegex = "(?i)^\\s*SELECT\\s+.+\\s+FROM\\s+.+";
+//        return query == null || !query.matches(safeQueryRegex);
+        return true;
     }
 
     public DefaultResponse queryDatabase(DbConnectionWithQueryRequest request) {
