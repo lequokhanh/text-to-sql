@@ -5,9 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DbConnectionRequest {
-    private String url;
-    private String username;
-    private String password;
-    private String dbType;
+public class DbConnectionWithQueryRequest extends DbConnectionRequest{
+    private String query;
 }

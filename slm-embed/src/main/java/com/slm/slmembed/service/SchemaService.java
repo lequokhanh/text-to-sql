@@ -1,9 +1,11 @@
 package com.slm.slmembed.service;
 
 import com.slm.slmembed.request.DbConnectionRequest;
+import com.slm.slmembed.request.DbConnectionWithQueryRequest;
 import com.slm.slmembed.response.DefaultResponse;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class SchemaService {
 
     private DataSource createDataSource(String url, String username, String password, String driverClassName) {
@@ -109,8 +112,10 @@ public class SchemaService {
             }
             ((HikariDataSource) dataSource).close();
         } catch (Exception e) {
-            e.printStackTrace();
-            schema.put("error", "Failed to retrieve schema: " + e.getMessage());
+            log.error("Failed to retrieve schema: " + e.getMessage());
+            return new DefaultResponse()
+                    .setStatusCode(400)
+                    .setMessage("Failed to retrieve schema: " + e.getMessage());
         }
         return new DefaultResponse()
                 .setStatusCode(200)
@@ -187,12 +192,110 @@ public class SchemaService {
             }
             ((HikariDataSource) dataSource).close();
         } catch (Exception e) {
-            e.printStackTrace();
-            schema.put("error", "Failed to retrieve schema: " + e.getMessage());
+            log.error("Failed to retrieve schema: " + e.getMessage());
+            return new DefaultResponse()
+                    .setStatusCode(400)
+                    .setMessage("Failed to retrieve schema: " + e.getMessage());
         }
         return new DefaultResponse()
                 .setStatusCode(200)
                 .setMessage("Schema retrieved successfully")
                 .setData(schema);
+    }
+
+    public DefaultResponse querySQLMySQL(DbConnectionRequest req, String query) {
+        if (!isValidSQLQuery(query)) {
+            return new DefaultResponse()
+                    .setStatusCode(400)
+                    .setMessage("Invalid or unsafe SQL query");
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        try {
+            DataSource dataSource = createDataSource(req.getUrl(),
+                    req.getUsername(),
+                    req.getPassword(),
+                    "com.mysql.cj.jdbc.Driver");
+            try (var connection = dataSource.getConnection()) {
+                try (var statement = connection.createStatement()) {
+                    try (var resultSet = statement.executeQuery(query)) {
+                        while (resultSet.next()) {
+                            Map<String, Object> row = new HashMap<>();
+                            for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                                row.put(resultSet.getMetaData().getColumnName(i), resultSet.getObject(i));
+                            }
+                            result.add(row);
+                        }
+                    }
+                }
+            }
+            ((HikariDataSource) dataSource).close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new DefaultResponse()
+                    .setStatusCode(400)
+                    .setMessage("Failed to execute query: " + e.getMessage())
+                    .setData(null);
+        }
+
+        return new DefaultResponse()
+                .setStatusCode(200)
+                .setMessage("Query executed successfully")
+                .setData(result);
+    }
+    public DefaultResponse querySQLPostgres(DbConnectionRequest req, String query) {
+        if (!isValidSQLQuery(query)) {
+            return new DefaultResponse()
+                    .setStatusCode(400)
+                    .setMessage("Invalid or unsafe SQL query");
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        try {
+            DataSource dataSource = createDataSource(req.getUrl(), req.getUsername(), req.getPassword(), "org.postgresql.Driver");
+            try (var connection = dataSource.getConnection()) {
+                try (var statement = connection.createStatement()) {
+                    try (var resultSet = statement.executeQuery(query)) {
+                        while (resultSet.next()) {
+                            Map<String, Object> row = new HashMap<>();
+                            for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                                row.put(resultSet.getMetaData().getColumnName(i), resultSet.getObject(i));
+                            }
+                            result.add(row);
+                        }
+                    }
+                }
+            }
+            ((HikariDataSource) dataSource).close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new DefaultResponse()
+                    .setStatusCode(400)
+                    .setMessage("Failed to execute query: " + e.getMessage())
+                    .setData(null);
+        }
+
+        return new DefaultResponse()
+                .setStatusCode(200)
+                .setMessage("Query executed successfully")
+                .setData(result);
+    }
+
+    private boolean isValidSQLQuery(String query) {
+        String safeQueryRegex = "(?i)^\\s*SELECT\\s+.+\\s+FROM\\s+.+";
+        return query != null && query.matches(safeQueryRegex);
+    }
+
+    public DefaultResponse queryDatabase(DbConnectionWithQueryRequest request) {
+        if (request.getDbType().equalsIgnoreCase("mysql")) {
+            return querySQLMySQL(request, request.getQuery());
+        } else if (request.getDbType().equalsIgnoreCase("postgresql")) {
+            return querySQLPostgres(request, request.getQuery());
+        } else {
+            return new DefaultResponse()
+                    .setStatusCode(400)
+                    .setMessage("Invalid database type")
+                    .setData(null);
+        }
     }
 }

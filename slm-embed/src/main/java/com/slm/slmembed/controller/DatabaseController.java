@@ -1,6 +1,7 @@
 package com.slm.slmembed.controller;
 
 import com.slm.slmembed.request.DbConnectionRequest;
+import com.slm.slmembed.request.DbConnectionWithQueryRequest;
 import com.slm.slmembed.response.DefaultResponse;
 import com.slm.slmembed.service.SchemaService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,13 @@ public class DatabaseController {
     public ResponseEntity<DefaultResponse> connectToDatabase(@RequestBody DbConnectionRequest request) {
         return schemaService
                 .getDatabaseSchema(request)
+                .response();
+    }
+
+    @PostMapping("/query")
+    public ResponseEntity<DefaultResponse> queryDatabase(@RequestBody DbConnectionWithQueryRequest request) {
+        return schemaService
+                .queryDatabase(request)
                 .response();
     }
 }
