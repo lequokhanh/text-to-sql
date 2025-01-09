@@ -1,4 +1,3 @@
-#!/bin/sh
 
 CONSUL_URL=${CONSUL_HTTP_ADDR}
 MYSQL_SERVICE_NAME="mysql"

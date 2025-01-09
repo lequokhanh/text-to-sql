@@ -5,7 +5,8 @@ RUN microdnf update && microdnf install -y curl hostname iproute && microdnf cle
 
 # Copy registration script
 COPY register-to-consul.sh /usr/local/bin/register-to-consul.sh
-RUN chmod +x /usr/local/bin/register-to-consul.sh
+RUN sed -i 's/\r$//' /usr/local/bin/register-to-consul.sh && \
+    chmod +x /usr/local/bin/register-to-consul.sh
 
 # Expose ports
 EXPOSE 3306

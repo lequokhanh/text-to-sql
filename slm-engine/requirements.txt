@@ -1,2 +1,13 @@
 streamlit
 requests
+flask
+llama-index
+llama-index-core
+llama-index-embeddings-huggingface
+llama-index-llms-ollama
+sqlalchemy-utils
+python-dotenv
+pyvi
+weaviate-client
+Unidecode
+sqlparse

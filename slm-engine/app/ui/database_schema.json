@@ -1,0 +1,265 @@
+{
+    "database": "world-db",
+    "tables": [
+        {
+            "primary_keys": [
+                "id"
+            ],
+            "columns": [
+                {
+                    "name": "id",
+                    "dtype": "int4(10)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "name",
+                    "dtype": "text(2147483647)",
+                    "description": "Name of country",
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "country_code",
+                    "dtype": "bpchar(3)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "district",
+                    "dtype": "text(2147483647)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "population",
+                    "dtype": "int4(10)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "local_name",
+                    "dtype": "text(2147483647)",
+                    "description": "City local name - 2",
+                    "constraints": []
+                }
+            ],
+            "name": "city",
+            "foreign_keys": [
+                {
+                    "references": "country.code",
+                    "column": "country_code"
+                }
+            ]
+        },
+        {
+            "primary_keys": [
+                "code"
+            ],
+            "columns": [
+                {
+                    "name": "code",
+                    "dtype": "bpchar(3)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "name",
+                    "dtype": "text(2147483647)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "continent",
+                    "dtype": "text(2147483647)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "region",
+                    "dtype": "text(2147483647)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "surface_area",
+                    "dtype": "float4(8)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "indep_year",
+                    "dtype": "int2(5)",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "population",
+                    "dtype": "int4(10)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "life_expectancy",
+                    "dtype": "float4(8)",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gnp",
+                    "dtype": "numeric(10)",
+                    "description": "GNP is Gross national product",
+                    "constraints": []
+                },
+                {
+                    "name": "gnp_old",
+                    "dtype": "numeric(10)",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "local_name",
+                    "dtype": "text(2147483647)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "government_form",
+                    "dtype": "text(2147483647)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "head_of_state",
+                    "dtype": "text(2147483647)",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "capital",
+                    "dtype": "int4(10)",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "code2",
+                    "dtype": "bpchar(2)",
+                    "description": "Following ISO 3166-1 alpha-2 code",
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                }
+            ],
+            "name": "country",
+            "foreign_keys": [
+                {
+                    "references": "city.id",
+                    "column": "capital"
+                }
+            ]
+        },
+        {
+            "primary_keys": [
+                "code2"
+            ],
+            "columns": [
+                {
+                    "name": "code2",
+                    "dtype": "bpchar(2)",
+                    "description": "Following ISO 3166-1 alpha-2 code",
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "emoji",
+                    "dtype": "text(2147483647)",
+                    "description": "Source: Emoji flag symbols (https://apps.timwhitlock.info/emoji/tables/iso3166)",
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "unicode",
+                    "dtype": "text(2147483647)",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "country_flag",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [
+                "country_code",
+                "language"
+            ],
+            "columns": [
+                {
+                    "name": "country_code",
+                    "dtype": "bpchar(3)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "language",
+                    "dtype": "text(2147483647)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "is_official",
+                    "dtype": "bool(1)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                },
+                {
+                    "name": "percentage",
+                    "dtype": "float4(8)",
+                    "description": null,
+                    "constraints": [
+                        "NOT NULL"
+                    ]
+                }
+            ],
+            "name": "country_language",
+            "foreign_keys": [
+                {
+                    "references": "country.code",
+                    "column": "country_code"
+                }
+            ]
+        }
+    ]
+}
