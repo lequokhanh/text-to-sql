@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.sql.DataSource;
 import java.io.File;
+import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -337,12 +338,19 @@ public class SchemaService {
         }
     }
 
-    private DefaultResponse executeQuerySQLite(DbConnectionRequest request, String query) {
+    public DefaultResponse executeQuerySQLite(MultipartFile file, String query) {
         List<Map<String, Object>> result = new ArrayList<>();
         DataSource dataSource = null;
+        File tempFile = null;
 
         try {
-            dataSource = createDataSource(request.getUrl(), null, null, SQLITE_DRIVER);
+            // Save the uploaded file to a temporary directory.
+            tempFile = File.createTempFile("sqlite_db", ".db");
+            file.transferTo(tempFile);
+
+            // Create the SQLite connection URL using the temporary file's absolute path.
+            String url = "jdbc:sqlite:" + tempFile.getAbsolutePath();
+            dataSource = createDataSource(url, null, null, SQLITE_DRIVER);
 
             try (var connection = dataSource.getConnection();
                  var statement = connection.createStatement();
@@ -369,10 +377,21 @@ public class SchemaService {
                     .setStatusCode(400)
                     .setMessage("Failed to execute SQLite query: " + e.getMessage())
                     .setData(null);
+        } catch (IOException e) {
+            log.error("Failed to process uploaded file: ", e);
+            return new DefaultResponse()
+                    .setStatusCode(400)
+                    .setMessage("Failed to process uploaded file: " + e.getMessage())
+                    .setData(null);
         } finally {
             closeDataSource(dataSource);
+            // Optionally delete the temporary file after processing
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
         }
     }
+
 
     /**
      * Validate SQL query for security

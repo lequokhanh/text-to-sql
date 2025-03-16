@@ -21,15 +21,22 @@ public class DatabaseController {
         return schemaService.getDatabaseSchemaSQLite(file).response();
     }
 
+    @PostMapping(value = "/query/sqlite", consumes = "multipart/form-data")
+    public ResponseEntity<DefaultResponse> queryDatabase(@RequestPart(value = "file") MultipartFile file,
+                                                         @RequestPart(value = "query") String query) {
+        return schemaService.executeQuerySQLite(file, query).response();
+    }
+
     @PostMapping("/connect")
     public ResponseEntity<DefaultResponse> connectToDatabase(@Valid @RequestBody DbConnectionRequest request) {
         return schemaService.getDatabaseSchema(request).response();
     }
 
-
     @PostMapping("/query")
     public ResponseEntity<DefaultResponse> queryDatabase(@Valid @RequestBody DbConnectionWithQueryRequest request) {
         return schemaService.queryDatabase(request).response();
     }
+
+
 }
 
