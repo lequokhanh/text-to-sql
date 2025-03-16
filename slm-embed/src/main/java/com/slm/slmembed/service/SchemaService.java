@@ -259,10 +259,6 @@ public class SchemaService {
         }
     }
 
-
-    /**
-     * Entry point for executing queries on databases
-     */
     public DefaultResponse queryDatabase(DbConnectionWithQueryRequest request) {
         String dbType = request.getDbType().toLowerCase();
         String query = request.getQuery();
@@ -337,9 +333,6 @@ public class SchemaService {
         }
     }
 
-    /**
-     * SQLite-specific query execution
-     */
     private DefaultResponse executeQuerySQLite(DbConnectionRequest request, String query) {
         List<Map<String, Object>> result = new ArrayList<>();
         DataSource dataSource = null;
