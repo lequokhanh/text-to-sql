@@ -258,8 +258,6 @@ public class SchemaService {
             }
         }
     }
-
-
     /**
      * Entry point for executing queries on databases
      */
