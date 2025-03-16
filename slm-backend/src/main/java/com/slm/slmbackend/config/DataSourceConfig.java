@@ -2,6 +2,7 @@ package com.slm.slmbackend.config;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.Service;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -11,9 +12,9 @@ import org.springframework.core.env.Environment;
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Configuration
+@Slf4j
 public class DataSourceConfig {
 
     @Autowired
@@ -24,10 +25,12 @@ public class DataSourceConfig {
 
     @Bean
     public DataSource dataSource() {
+        log.info("Creating datasource bean");
         Map<String, Service> servicesMap = consulClient.getAgentServices().getValue();
         List<Service> services = servicesMap.values().stream().toList();
 
         String jdbcUrl = getDBUrl(services);
+        log.info("JDBC URL: {}", jdbcUrl);
         return DataSourceBuilder.create()
                 .driverClassName("com.mysql.cj.jdbc.Driver")
                 .url(jdbcUrl)
@@ -51,6 +54,7 @@ public class DataSourceConfig {
         if (mysqlHost == null) {
             throw new RuntimeException("MySQL service not found in Consul");
         }
+        log.info("MySQL service found at {}:{}", mysqlHost, mysqlPort);
         return String.format("jdbc:mysql://%s:%d/slm", mysqlHost, mysqlPort);
     }
 }

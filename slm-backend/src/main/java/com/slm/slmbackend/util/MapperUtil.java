@@ -2,10 +2,12 @@ package com.slm.slmbackend.util;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Service
 public class MapperUtil {
 
     private static final ModelMapper modelMapper;

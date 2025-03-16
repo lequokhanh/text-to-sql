@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
     consul:
         image: consul:1.15.4
@@ -18,6 +16,8 @@ services:
             retries: 3
 
     mysql:
+        ports:
+            -   "3306:3306"
         build:
             context: ./devops/mysql
         restart: always

@@ -9,8 +9,15 @@ spring:
         enabled: true
         register: true
         prefer-ip-address: true
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+security:
+  jwt:
+    secret-key: qwertyuiopasdfghjklzxcvbnmqwertyuiopaASDFGHJKLZXCVBNM123456
+    expiration-time: 432000000  # Example: 5 days in milliseconds
 
 management:
   endpoints:
