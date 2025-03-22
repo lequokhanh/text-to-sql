@@ -1,0 +1,2399 @@
+{
+    "database": "/tmp/sqlite_db6913499967397340747.db",
+    "tables": [
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "game_num",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "game_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "starting_pos",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "all_star",
+            "foreign_keys": [
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_all",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_batting",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_defense",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_p",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_c",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_1b",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_2b",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_3b",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_ss",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_lf",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_cf",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_rf",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_of",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_dh",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_ph",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_pr",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "appearances",
+            "foreign_keys": [
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                },
+                {
+                    "references": "team.team_id",
+                    "column": "team_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "award_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "tie",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "notes",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "manager_award",
+            "foreign_keys": [
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "award_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "tie",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "notes",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "player_award",
+            "foreign_keys": [
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "award_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "points_won",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "points_max",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "votes_first",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "manager_award_vote",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "award_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "points_won",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "points_max",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "votes_first",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "player_award_vote",
+            "foreign_keys": [
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "stint",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ab",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "r",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "h",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "double",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "triple",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hr",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "rbi",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "cs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "so",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ibb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hbp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sh",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sf",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_idp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "batting",
+            "foreign_keys": [
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "round",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ab",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "r",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "h",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "double",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "triple",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hr",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "rbi",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sb",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "cs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bb",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "so",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ibb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hbp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sh",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sf",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_idp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "batting_postseason",
+            "foreign_keys": [
+                {
+                    "references": "team.team_id",
+                    "column": "team_id"
+                },
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "college_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "player_college",
+            "foreign_keys": [
+                {
+                    "references": "college.college_id",
+                    "column": "college_id"
+                },
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "stint",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "pos",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "inn_outs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "po",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "a",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "e",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "dp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "pb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "wp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "cs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "zr",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "fielding",
+            "foreign_keys": [
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "stint",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "glf",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gcf",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "grf",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "fielding_outfield",
+            "foreign_keys": [
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "round",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "pos",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "inn_outs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "po",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "a",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "e",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "dp",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "tp",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "pb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "cs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "fielding_postseason",
+            "foreign_keys": [
+                {
+                    "references": "player.team_id",
+                    "column": "team_id"
+                },
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "yearid",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "votedby",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ballots",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "needed",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "votes",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "inducted",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "category",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "needed_note",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "hall_of_fame",
+            "foreign_keys": [
+                {
+                    "references": "player.player_id",
+                    "column": "player_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "park_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "span_first",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "span_last",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "games",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "openings",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "attendance",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "home_game",
+            "foreign_keys": [
+                {
+                    "references": "park.park_id",
+                    "column": "park_id"
+                },
+                {
+                    "references": "team.team_id",
+                    "column": "team_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "inseason",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "w",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "l",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "rank",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "plyr_mgr",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "manager",
+            "foreign_keys": [
+                {
+                    "references": "team.team_id",
+                    "column": "team_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "inseason",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "half",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "w",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "l",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "rank",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "manager_half",
+            "foreign_keys": [
+                {
+                    "references": "team.team_id",
+                    "column": "team_id"
+                }
+            ]
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "birth_year",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "birth_month",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "birth_day",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "birth_country",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "birth_state",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "birth_city",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "death_year",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "death_month",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "death_day",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "death_country",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "death_state",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "death_city",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "name_first",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "name_last",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "name_given",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "weight",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "height",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bats",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "throws",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "debut",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "final_game",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "retro_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bbref_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "player",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "park_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "park_name",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "park_alias",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "city",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "state",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "country",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "park",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "stint",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "w",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "l",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gs",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "cg",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sho",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sv",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ipouts",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "h",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "er",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hr",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bb",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "so",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "baopp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "era",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ibb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "wp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hbp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bk",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bfp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gf",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "r",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sh",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sf",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_idp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "pitching",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "round",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "w",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "l",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gs",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "cg",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sho",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sv",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ipouts",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "h",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "er",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hr",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bb",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "so",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "baopp",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "era",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ibb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "wp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hbp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bk",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bfp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "gf",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "r",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sh",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sf",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g_idp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "pitching_postseason",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "player_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "salary",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "salary",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "college_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "name_full",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "city",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "state",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "country",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "college",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "round",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id_winner",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id_winner",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id_loser",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id_loser",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "wins",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "losses",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ties",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "postseason",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "franchise_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "div_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "rank",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ghome",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "w",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "l",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "div_win",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "wc_win",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "lg_win",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ws_win",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "r",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ab",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "h",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "double",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "triple",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hr",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bb",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "so",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sb",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "cs",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hbp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sf",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ra",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "er",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "era",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "cg",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sho",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "sv",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ipouts",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ha",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "hra",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bba",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "soa",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "e",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "dp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "fp",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "name",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "park",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "attendance",
+                    "dtype": "NUMERIC",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "bpf",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "ppf",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id_br",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id_lahman45",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id_retro",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "team",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "franchise_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "franchise_name",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "active",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "na_assoc",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "team_franchise",
+            "foreign_keys": []
+        },
+        {
+            "primary_keys": [],
+            "columns": [
+                {
+                    "name": "year",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "league_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "team_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "half",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "div_id",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "div_win",
+                    "dtype": "TEXT",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "rank",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "g",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "w",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                },
+                {
+                    "name": "l",
+                    "dtype": "INTEGER",
+                    "description": null,
+                    "constraints": []
+                }
+            ],
+            "name": "team_half",
+            "foreign_keys": []
+        }
+    ],
+    "meta": {
+        "db_name": "baseball_1.sqlite",
+        "db_type": "sqlite",
+        "connection_time": "2025-03-22 14:09:34"
+    }
+}

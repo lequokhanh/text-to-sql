@@ -260,10 +260,6 @@ public class SchemaService {
         }
     }
 
-
-    /**
-     * Entry point for executing queries on databases
-     */
     public DefaultResponse queryDatabase(DbConnectionWithQueryRequest request) {
         String dbType = request.getDbType().toLowerCase();
         String query = request.getQuery();

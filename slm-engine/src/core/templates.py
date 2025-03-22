@@ -1,8 +1,6 @@
-SEMANTIC_ROWS_TMPL = """
-INSERT INTO {table_name} ({columns})\nVALUES \n{values};
-"""
+from llama_index.core import PromptTemplate
 
-TEXT_TO_SQL_TMPL = """
+TEXT_TO_SQL_TMPL_BK = """
 <|start_header_id|>user<|end_header_id|>
 Generate a SQL query to answer this question: `{question}`
 Instructions:
@@ -16,21 +14,60 @@ The following SQL query best answers the question `{question}`:
 """
 
 
+TEXT_TO_SQL_PROMPT = (
+    "You are a SQL expert. Generate a SQL query based on the user's question. Only return the SQL query, no explanations.\n"
+    "User question: {user_question}\n"
+    "Available tables and their schema:\n"
+    "{table_schemas}\n"
+    "Requirements:\n"
+    "1. Write a precise SQL query that answers the user's question exactly\n"
+    "2. Use only the tables and columns provided above\n"
+    "3. Follow standard SQL syntax compatible with {database_type} (MySQL/PostgreSQL/SQLite)\n"
+    "4. Include proper JOINs when data needs to be combined from multiple tables\n"
+    "5. Use appropriate aggregation functions (COUNT, SUM, AVG, etc.) when needed\n"
+    "6. Ensure your query is efficient and follows best practices\n"
+    "7. Return ONLY the SQL query without any additional text, comments, or explanations\n"
+    "8. If you can't answer the question with the given tables, return \"Cannot generate SQL with available schema\"\n"
+    "SQL query:\n"
+)
+TEXT_TO_SQL_TMPL = PromptTemplate(TEXT_TO_SQL_PROMPT)
+
+
+TABLE_RETRIEVAL_PROMPT = (
+    "Return ONLY the names of SQL tables that MIGHT be relevant to the user question.\n"
+    "The question is: {query_str}\n"
+    "The tables are:\n"
+    "{table_names}\n"
+    "Instructions:\n"
+    "1. Include ALL POTENTIALLY RELEVANT tables, even if you're not sure that they're needed.\n"
+    "2. Return ONLY a Python list of table names in the format: ['table1', 'table2', 'table3']\n"
+    "3. Do not include any explanations, additional text, or markdown formatting.\n"
+    "4. If no tables are relevant, return an empty list: []\n"
+    "5. Make sure your response can be directly parsed as a Python list.\n"
+)
+TABLE_RETRIEVAL_TMPL = PromptTemplate(TABLE_RETRIEVAL_PROMPT)
+
+
+SEMANTIC_ROWS_TMPL = """
+INSERT INTO {table_name}({columns})\nVALUES \n{values};
+"""
+
+
 SEMANTIC_HELPER_TMPL = """
-<|start_header_id|>user<|end_header_id|>
+< | start_header_id | >user < |end_header_id | >
 Follow instructions to the letter, and answer questions without making any additional assumptions. Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 
-### Instruction: This represents the {dialect} SQL query that has been generated in response to the given question, along with the resulting outcome after executing the query.
+# Instruction: This represents the {dialect} SQL query that has been generated in response to the given question, along with the resulting outcome after executing the query.
 1. Please judge its correctness based on the execution result and the explanation for the question.
 2. If the results contain multi NULL/empty or repeat values, the SQL query may be incorrect.
-3. Pay attention to the meaning relationship between execution result and the question. 
+3. Pay attention to the meaning relationship between execution result and the question.
 4. Make sure the execution result is consistent and provide a meaningful explanation for the question.
 
 If it's incorrect, output the correct {dialect} SQL query; otherwise, output the original {dialect} SQL query.
 
-### DDL statements:
+# DDL statements:
 {semantic_schema}
-<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+< | eot_id | > < |start_header_id | >assistant < |end_header_id | >
 With the previous context and provided information:
 - SQL query: {sql}
 - Run results dataframe:
@@ -40,13 +77,13 @@ The following SQL query has been generated in response to the given question `{q
 """
 
 SQL_REFLECTION_TMPL = """
-<|start_header_id|>user<|end_header_id|>
+< | start_header_id | >user < |end_header_id | >
 Here is a {dialect} SQL query that resulted from a question, but it produced an error when
 executed. What do you think is the possible reason for this SQL error?
 
 DDL statements:
 {semantic_schema}
-<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+< | eot_id | > < |start_header_id | >assistant < |end_header_id | >
 With the previous sql execution logs for the given question `{question}`:
 {previous_logs}
 
@@ -59,13 +96,13 @@ Error Reason:
 """
 
 SQL_FIXER_TMPL = """
-<|start_header_id|>user<|end_header_id|>
+< | start_header_id | >user < |end_header_id | >
 Here is a {dialect} SQL query that resulted from a question, but it produced an error when
 executed. Please correct it with no explanation.
 
 DDL statements:
 {semantic_schema}
-<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+< | eot_id | > < |start_header_id | >assistant < |end_header_id | >
 With the previous sql execution logs for the given question `{question}`:
 {previous_logs}
 
@@ -81,29 +118,29 @@ The following corected sql query has been generated in response to the given que
 
 SQL_EXECUTION_LOG_TMPL = """
 ### {no_attempt} attempt ###
-### SQL: {sql}
-### Error: {error}
-### Error Reason: {reason}
-### New SQL: {new_sql}
+# SQL: {sql}
+# Error: {error}
+# Error Reason: {reason}
+# New SQL: {new_sql}
 """
 
 TEXT_TO_VIZ_CODE_TMPL = """
-<|start_header_id|>user<|end_header_id|>
+< | start_header_id | >user < |end_header_id | >
 You are a helpful code assistant. Complete the Python code snippet below following the instructions. Follow instructions to the letter, and answer questions without making any additional assumptions. Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request in python snippet.s
 
-### Instructions:
+# Instructions:
 1. Pay attention to Vietnamese input and output.
-2. Complete below Python code snippet to generate a ***{type}*** visualization chart based on the given DataFrame which provided in the code snippet.
+2. Complete below Python code snippet to generate a ** *{type}*** visualization chart based on the given DataFrame which provided in the code snippet.
 
 
-<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+< | eot_id | > < |start_header_id | >assistant < |end_header_id | >
 The following python code snippet best answers for `{question}` follows the instructions:
 ```python
 {code_snippet}
 """
 
 VISUAL_SUGGESTION_PROMPT_TMPL = """
-<|start_header_id|>user<|end_header_id|>
+< | start_header_id | >user < |end_header_id | >
 You are an AI assistant that recommends appropriate data visualizations. Based on the user's question, SQL query, and query results, suggest the most suitable type of graph or chart to visualize the data. If no visualization is appropriate, indicate that.
 
 Available chart types and their use cases:
@@ -114,20 +151,20 @@ Available chart types and their use cases:
 - Line Graphs: Best for showing trends and distributionsover time. Best used when both x axis and y axis are continuous. Used for questions like "How have website visits changed over the year?" or "What is the trend in temperature over the past decade?". Do not use it for questions that do not have a continuous x axis or a time based x axis.
 
 Consider these types of questions when recommending a visualization:
-1. Aggregations and Summarizations (e.g., "What is the average revenue by month?" - Line Graph)
-2. Comparisons (e.g., "Compare the sales figures of Product A and Product B over the last year." - Line or Column Graph)
-3. Plotting Distributions (e.g., "Plot a distribution of the age of users" - Scatter Plot)
-4. Trends Over Time (e.g., "What is the trend in the number of active users over the past year?" - Line Graph)
-5. Proportions (e.g., "What is the market share of the products?" - Pie Chart)
-6. Correlations (e.g., "Is there a correlation between marketing spend and revenue?" - Scatter Plot)
+1. Aggregations and Summarizations(e.g., "What is the average revenue by month?" - Line Graph)
+2. Comparisons(e.g., "Compare the sales figures of Product A and Product B over the last year." - Line or Column Graph)
+3. Plotting Distributions(e.g., "Plot a distribution of the age of users" - Scatter Plot)
+4. Trends Over Time(e.g., "What is the trend in the number of active users over the past year?" - Line Graph)
+5. Proportions(e.g., "What is the market share of the products?" - Pie Chart)
+6. Correlations(e.g., "Is there a correlation between marketing spend and revenue?" - Scatter Plot)
 
-Provide your response in the following format (each taking the form of a single line):
+Provide your response in the following format(each taking the form of a single line):
 Recommended Visualization: [Chart type or "None"]. ONLY use the following names: bar, horizontal_bar, line, pie, scatter, none
 Reason: [Brief explanation for your recommendation]
-<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+< | eot_id | > < |start_header_id | >assistant < |end_header_id | >
 With the provided information:
 - SQL query: {sql}
-- SQL Execution result dataframe (first 20 rows):
+- SQL Execution result dataframe(first 20 rows):
 {results}
 ... (additional rows are available in the data)
 
@@ -136,11 +173,11 @@ Recommend a visualization:
 """
 
 DATAFRAME_LABEL_TMPL = """
-<|start_header_id|>user<|end_header_id|>
-You are a data labeling expert. Given a question and some data, provide a concise and relevant label for the data series. 
+< | start_header_id | >user < |end_header_id | >
+You are a data labeling expert. Given a question and some data, provide a concise and relevant label for the data series.
 Based on the user's question and dataframe, label the data series to help users understand the data better.
 
-### Instructions:
+# Instructions:
 1. Remember to consider the context of the question and the data provided when labeling the data series.
 2. Consider the following when labeling the data series:
 For example, if the data is the sales figures over time, the label could be 'Sales'. If the data is the population growth, the label could be 'Population'. If the data is the revenue trend, the label could be 'Revenue'.
@@ -157,7 +194,7 @@ New labels mapping:
     ...
 }}
 **Note: The new labels should be in the same order as the data series and include all data series.**
-<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+< | eot_id | > < |start_header_id | >assistant < |end_header_id | >
 with the provided information:
 - Question: {question}
 - Original labels: {original_labels}

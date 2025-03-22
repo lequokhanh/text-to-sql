@@ -1,0 +1,6 @@
+Generate a POSTGRES SQL query to answer this question from the provided schema.
+
+Question: {user_question}
+
+Schema:
+{create_table_statements}
