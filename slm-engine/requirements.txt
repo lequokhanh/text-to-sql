@@ -1,6 +1,7 @@
 streamlit
 requests
 flask
+flask[async]
 llama-index
 llama-index-core
 llama-index-embeddings-huggingface
@@ -11,3 +12,5 @@ pyvi
 weaviate-client
 Unidecode
 sqlparse
+python-consul2
+python-dotenv

@@ -31,9 +31,9 @@ export default defineConfig({
     ],
   },
   server: {
-    port: 8080,
+    port: 4000,
   },
   preview: {
-    port: 8080,
+    port: 4000,
   },
 });

@@ -72,7 +72,7 @@ export default function UserProfileView() {
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'User', href: paths.dashboard.user.root },
-          { name: user?.displayName },
+          { name: user?.displayName || user?.username },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
@@ -87,7 +87,7 @@ export default function UserProfileView() {
       >
         <ProfileCover
           role={_userAbout.role}
-          name={user?.displayName}
+          name={user?.displayName || user?.username}
           avatarUrl={user?.photoURL}
           coverUrl={_userAbout.coverUrl}
         />

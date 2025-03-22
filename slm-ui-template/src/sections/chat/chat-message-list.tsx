@@ -1,9 +1,10 @@
 import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 import Scrollbar from 'src/components/scrollbar';
-import Lightbox, { useLightBox } from 'src/components/lightbox';
 
-import { IChatMessage, IChatParticipant } from 'src/types/chat';
+import { IChatMessage } from 'src/types/chat';
 
 import { useMessagesScroll } from './hooks';
 import ChatMessageItem from './chat-message-item';
@@ -12,39 +13,33 @@ import ChatMessageItem from './chat-message-item';
 
 type Props = {
   messages: IChatMessage[];
-  participants: IChatParticipant[];
 };
 
-export default function ChatMessageList({ messages = [], participants }: Props) {
+export default function ChatMessageList({ messages = [] }: Props) {
   const { messagesEndRef } = useMessagesScroll(messages);
 
-  const slides = messages
-    .filter((message) => message.contentType === 'image')
-    .map((message) => ({ src: message.body }));
-
-  const lightbox = useLightBox(slides);
+  const renderWelcomeMessage = (
+    <Stack alignItems="center" spacing={2} sx={{ py: 5 }}>
+      <Typography variant="h6">Welcome to the Chatbot</Typography>
+      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        How can I assist you today?
+      </Typography>
+    </Stack>
+  );
 
   return (
-    <>
-      <Scrollbar ref={messagesEndRef} sx={{ px: 3, py: 5, height: 1 }}>
-        <Box>
-          {messages.map((message) => (
-            <ChatMessageItem
-              key={message.id}
-              message={message}
-              participants={participants}
-              onOpenLightbox={() => lightbox.onOpen(message.body)}
-            />
-          ))}
-        </Box>
-      </Scrollbar>
-
-      <Lightbox
-        index={lightbox.selected}
-        slides={slides}
-        open={lightbox.open}
-        close={lightbox.onClose}
-      />
-    </>
+    <Scrollbar ref={messagesEndRef} sx={{ px: 3, py: 3, height: 1 }}>
+      <Box>
+        {messages.length === 0
+          ? renderWelcomeMessage
+          : messages.map((message) => (
+              <ChatMessageItem
+                key={message.id}
+                message={message}
+                isBot={message.senderId === 'bot'}
+              />
+            ))}
+      </Box>
+    </Scrollbar>
   );
 }

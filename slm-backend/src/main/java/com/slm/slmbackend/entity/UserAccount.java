@@ -22,7 +22,7 @@ public class UserAccount implements UserDetails {
     private String username;
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "data_source_owners",
             joinColumns = @JoinColumn(name = "account_id"),

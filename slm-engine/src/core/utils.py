@@ -21,19 +21,19 @@ def extract_table_list(response: ChatResponse) -> list:
 
 def schema_parser(tables: list, type: str):
     if type not in ["DDL", "Synthesis"]:
-        raise ValueError("Invalid type. Must be 'DDL' or 'Synthesis'.")
+        raise Exception("Invalid schema parser type. Must be 'DDL' or 'Synthesis'.")
 
     if type == "DDL":
         ddl_statements = []
         for table in tables:
-            table_name = table["name"]
+            table_name = table["tableIdentifier"]
             columns = table["columns"]
 
             # Create table definition
             column_definitions = []
             for column in columns:
-                column_def = f"{column['name']} {column['dtype']}"
-                description = column.get("description", None)
+                column_def = f"{column['columnIdentifier']} {column['columnType']}"
+                description = column.get("columnDescription", None)
                 if description:
                     # Add description as a comment before the comma
                     column_def += f", -- {description}"
@@ -51,16 +51,16 @@ def schema_parser(tables: list, type: str):
     elif type == "Synthesis":
         synthesis_statements = []
         for table in tables:
-            table_name = table["name"]
+            table_name = table["tableIdentifier"]
             columns = table["columns"]
 
             # Generate synthesis description
             column_descriptions = []
             for column in columns:
                 description = column.get(
-                    "description", "No description available")
+                    "columnDescription", "No description available")
                 column_descriptions.append(
-                    f"{column['name']} ({column['dtype']}): {description}")
+                    f"{column['columnIdentifier']} ({column['columnType']}): {description}")
 
             synthesis = f"Table: {table_name}\nColumns:\n    " + \
                 "\n    ".join(column_descriptions)

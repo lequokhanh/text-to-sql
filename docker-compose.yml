@@ -79,7 +79,7 @@ services:
 
     engine:
         ports:
-            - 8501:8501
+            - 8383:5000
         build:
             context: ./slm-engine
         environment:
@@ -94,6 +94,8 @@ services:
         depends_on:
             consul:
                 condition: service_healthy
+        volumes:
+            - ./slm-engine/src:/app
 
 networks:
     slm:

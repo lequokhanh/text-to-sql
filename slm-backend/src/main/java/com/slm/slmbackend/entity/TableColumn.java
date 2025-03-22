@@ -19,7 +19,7 @@ public class TableColumn {
     private String columnDescription;
     private Boolean isPrimaryKey;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "from_column")
     private List<ColumnRelation> outgoingRelations;
 }

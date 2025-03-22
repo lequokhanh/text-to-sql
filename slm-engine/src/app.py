@@ -1,18 +1,34 @@
+import os
+import atexit
+import consul
+import socket
 from flask import Flask, request, jsonify
 from core.workflow import SQLAgentWorkflow
 from core.templates import TEXT_TO_SQL_TMPL, TABLE_RETRIEVAL_TMPL
 from core.services import get_schema
 from llama_index.llms.ollama import Ollama
 from core.services import validate_connection_payload
+from exceptions.global_exception_handler import register_error_handlers
+from exceptions.app_exception import AppException
+from response.app_response import ResponseWrapper
+from dotenv import load_dotenv
+from config.consul import ConsulClient
+
+load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
 
+# Register error handlers
+register_error_handlers(app)
+
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://ftisu.ddns.net:9293/ollama/")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b-instruct-q8_0")
+
 # Initialize LLM and Workflow
 llm = Ollama(
-    model="llama3.1:8b-instruct-q8_0",
-    base_url="http://ftisu.ddns.net:9293/ollama/",
-    # base_url="https://prepared-anemone-routinely.ngrok-free.app",
+    model=OLLAMA_MODEL,
+    base_url=OLLAMA_HOST,
     request_timeout=120.0
 )
 
@@ -23,11 +39,35 @@ workflow = SQLAgentWorkflow(
     verbose=True
 )
 
+# Consul client
+SERVICE_NAME = os.getenv("SERVICE_NAME", "slm-engine")
+SERVICE_ID = f"{SERVICE_NAME}-{socket.gethostname()}"
+SERVICE_PORT = 5000
+
+consul_client = ConsulClient().get_client()
+
+def register_service():
+    consul_client.agent.service.register(
+        name=SERVICE_NAME,
+        service_id=SERVICE_ID,
+        address=socket.gethostbyname(socket.gethostname()),
+        port=SERVICE_PORT,
+        check=consul.Check.http(f"http://{socket.gethostbyname(socket.gethostname())}:{SERVICE_PORT}/health-check", interval="10s")
+    )
+    print(f"Registered {SERVICE_NAME} on Consul")
+
+    def deregister_service():
+        consul_client.agent.service.deregister(SERVICE_ID)
+        print(f"Deregistered {SERVICE_NAME} from Consul")
+
+    atexit.register(deregister_service)
+
+register_service()
+
 
 @app.route('/query', methods=['POST'])
 async def query():
     try:
-        # Parse request data
         data = request.json
         query = data.get("query")
         connection_payload = data.get("connection_payload")
@@ -35,30 +75,25 @@ async def query():
         if not query or not connection_payload:
             return jsonify({"error": "Missing 'query' or 'connection_payload'"}), 400
         
-        # Validate connection payload
         is_valid, error_message = validate_connection_payload(connection_payload)
         if not is_valid:
             return jsonify({"error": error_message}), 400
 
-        # Get schema
         table_details = get_schema(connection_payload)
 
-        # Run workflow
         response = await workflow.run(
             query=query,
             table_details=table_details
         )
-        # Return response
-        return jsonify({"sql": response})
+        return ResponseWrapper.success(response)
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        raise AppException(str(e), 500)
 
 
 @app.route('/query_with_schema', methods=['POST'])
 async def query_with_schema():
     try:
-        # Parse request data
         data = request.json
         query = data.get("query")
         schema = data.get("schema")
@@ -72,23 +107,21 @@ async def query_with_schema():
         if not isinstance(schema, list):
             return jsonify({"error": "'schema' must be a list of table definitions"}), 400
 
-        # Run workflow with provided schema
         response = await workflow.run(
             query=query,
             table_details=schema
         )
         
-        # Return response
-        return jsonify({"sql": response})
+        return ResponseWrapper.success(response)
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        raise AppException(str(e), 500)
     
 
 @app.route('/health-check', methods=['GET'])
 def health_check():
     return jsonify({"status": "ok"})
 
-# Run the Flask app
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=SERVICE_PORT, debug=True)

@@ -15,11 +15,18 @@ public class UserGroup {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "data_source_id", nullable = false)
+    private DataSourceConfiguration dataSourceConfiguration;
+
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private List<GroupTableMapping> tableMappings;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "group_members",
             joinColumns = @JoinColumn(name = "group_id"),

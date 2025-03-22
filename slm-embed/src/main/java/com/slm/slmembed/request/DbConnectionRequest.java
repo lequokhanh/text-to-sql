@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Setter
 public class DbConnectionRequest {
     @NotBlank(message = "Database name is required")
+    @Pattern(regexp = "^[\\w.-]+:\\d+/[\\w-]+$", message = "URL must be in format hostname:port/database")
     private String url;
 
     @NotBlank(message = "Username is required")

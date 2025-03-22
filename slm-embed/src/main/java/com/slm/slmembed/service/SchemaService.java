@@ -9,16 +9,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -28,21 +27,71 @@ public class SchemaService {
     private static final String POSTGRESQL_DRIVER = "org.postgresql.Driver";
     private static final String SQLITE_DRIVER = "org.sqlite.JDBC";
 
-    /**
-     * Creates a DataSource based on connection parameters
-     */
-    private DataSource createDataSource(String url, String username, String password, String driverClassName) {
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(url);
+    // Connection pool storage using a thread-safe map
+    // Key is a combination of connection details, value is the DataSource
+    private final Map<String, DataSource> connectionPool = new ConcurrentHashMap<>();
 
-        // SQLite doesn't require username/password
+    /**
+     * Creates a unique key for identifying connections
+     */
+    private String createConnectionKey(String url, String username, String driverClassName) {
+        return driverClassName + ":" + url + ":" + username;
+    }
+
+    /**
+     * Gets or creates a DataSource based on connection parameters
+     */
+    private DataSource getOrCreateDataSource(String url, String username, String password, String driverClassName) {
+        String connectionKey = createConnectionKey(url, username, driverClassName);
+
+        // Return existing connection if it exists
+        if (connectionPool.containsKey(connectionKey)) {
+            log.info("Using existing connection for {}", connectionKey);
+            return connectionPool.get(connectionKey);
+        }
+
+        // Create a new connection if none exists
+        log.info("Creating new connection for {}", connectionKey);
+        HikariConfig hikariConfig = new HikariConfig();
+
+        String jdbcUrl;
+        switch (driverClassName) {
+            case MYSQL_DRIVER -> jdbcUrl = "jdbc:mysql://" + url;
+            case POSTGRESQL_DRIVER -> jdbcUrl = "jdbc:postgresql://" + url;
+            case SQLITE_DRIVER -> jdbcUrl = "jdbc:sqlite:" + url;
+            default -> jdbcUrl = url;
+        }
+
+        hikariConfig.setJdbcUrl(jdbcUrl);
+
         if (!SQLITE_DRIVER.equals(driverClassName)) {
             hikariConfig.setUsername(username);
             hikariConfig.setPassword(password);
         }
 
         hikariConfig.setDriverClassName(driverClassName);
-        return new HikariDataSource(hikariConfig);
+
+        // Configure connection pool settings
+        hikariConfig.setMaximumPoolSize(5);
+        hikariConfig.setMinimumIdle(1);
+        hikariConfig.setIdleTimeout(300000); // 5 minutes
+        hikariConfig.setConnectionTimeout(30000); // 30 seconds
+
+        DataSource dataSource = new HikariDataSource(hikariConfig);
+        connectionPool.put(connectionKey, dataSource);
+        return dataSource;
+    }
+
+    /**
+     * Clean up all connections when the service is destroyed
+     */
+    @PreDestroy
+    public void cleanupConnections() {
+        log.info("Closing all database connections");
+        for (DataSource dataSource : connectionPool.values()) {
+            closeDataSource(dataSource);
+        }
+        connectionPool.clear();
     }
 
     /**
@@ -77,71 +126,63 @@ public class SchemaService {
      */
     private DefaultResponse getDatabaseSchemaInternal(DbConnectionRequest request, String driver) {
         Map<String, Object> schema = new HashMap<>();
-        DataSource dataSource = null;
 
         try {
-            dataSource = createDataSource(request.getUrl(), request.getUsername(), request.getPassword(), driver);
+            DataSource dataSource = getOrCreateDataSource(
+                    request.getUrl(), request.getUsername(), request.getPassword(), driver);
 
             try (var connection = dataSource.getConnection()) {
                 DatabaseMetaData metaData = connection.getMetaData();
                 log.info("Connected to {} {}", metaData.getDatabaseProductName(), metaData.getDatabaseProductVersion());
 
-                // Set the database name
                 schema.put("database", connection.getCatalog());
 
-                // Get all tables
-                ResultSet tables = metaData.getTables(connection.getCatalog(), null, "%", new String[]{"TABLE"});
                 List<Map<String, Object>> tablesList = new ArrayList<>();
 
-                while (tables.next()) {
-                    String tableName = tables.getString("TABLE_NAME");
-                    log.debug("Processing table: {}", tableName);
+                try (ResultSet tables = metaData.getTables(connection.getCatalog(), null, "%", new String[]{"TABLE"})) {
+                    while (tables.next()) {
+                        String tableName = tables.getString("TABLE_NAME");
+                        log.debug("Processing table: {}", tableName);
 
-                    Map<String, Object> tableMap = new HashMap<>();
-                    tableMap.put("name", tableName);
+                        Map<String, Object> tableMap = new HashMap<>();
+                        tableMap.put("tableIdentifier", tableName);
 
-                    // Get primary keys
-                    List<String> primaryKeyList = new ArrayList<>();
-                    try (ResultSet primaryKeys = metaData.getPrimaryKeys(connection.getCatalog(), null, tableName)) {
-                        while (primaryKeys.next()) {
-                            primaryKeyList.add(primaryKeys.getString("COLUMN_NAME"));
-                        }
-                        tableMap.put("primary_keys", primaryKeyList);
-                    }
+                        Map<String, List<Map<String, String>>> foreignKeys = new HashMap<>();
 
-                    // Get foreign keys
-                    List<Map<String, String>> foreignKeyList = new ArrayList<>();
-                    try (ResultSet foreignKeys = metaData.getImportedKeys(connection.getCatalog(), null, tableName)) {
-                        while (foreignKeys.next()) {
-                            Map<String, String> foreignKeyMap = new HashMap<>();
-                            foreignKeyMap.put("column", foreignKeys.getString("FKCOLUMN_NAME"));
-                            foreignKeyMap.put("references", foreignKeys.getString("PKTABLE_NAME") + "." + foreignKeys.getString("PKCOLUMN_NAME"));
-                            foreignKeyList.add(foreignKeyMap);
-                        }
-                        tableMap.put("foreign_keys", foreignKeyList);
-                    }
+                        try (ResultSet fkResult = metaData.getImportedKeys(connection.getCatalog(), null, tableName)) {
+                            while (fkResult.next()) {
+                                String columnName = fkResult.getString("FKCOLUMN_NAME");
+                                Map<String, String> relation = new HashMap<>();
+                                relation.put("toColumn", fkResult.getString("PKCOLUMN_NAME"));
+                                relation.put("tableIdentifier", fkResult.getString("PKTABLE_NAME"));
+                                relation.put("type", "OTM");
 
-                    // Get columns
-                    List<Map<String, Object>> columnsList = new ArrayList<>();
-                    try (ResultSet columns = metaData.getColumns(connection.getCatalog(), null, tableName, "%")) {
-                        while (columns.next()) {
-                            Map<String, Object> columnMap = new HashMap<>();
-                            columnMap.put("name", columns.getString("COLUMN_NAME"));
-                            columnMap.put("dtype", columns.getString("TYPE_NAME") + "(" + columns.getInt("COLUMN_SIZE") + ")");
-
-                            List<String> constraints = new ArrayList<>();
-                            if (columns.getInt("NULLABLE") == DatabaseMetaData.columnNoNulls) {
-                                constraints.add("NOT NULL");
+                                foreignKeys.computeIfAbsent(columnName, k -> new ArrayList<>()).add(relation);
                             }
-                            columnMap.put("constraints", constraints);
-                            columnMap.put("description", columns.getString("REMARKS"));
-                            columnsList.add(columnMap);
                         }
-                        tableMap.put("columns", columnsList);
-                    }
 
-                    tablesList.add(tableMap);
+                        List<Map<String, Object>> columnsList = new ArrayList<>();
+
+                        try (ResultSet columns = metaData.getColumns(connection.getCatalog(), null, tableName, "%")) {
+                            while (columns.next()) {
+                                Map<String, Object> columnMap = new HashMap<>();
+                                String columnName = columns.getString("COLUMN_NAME");
+
+                                columnMap.put("columnIdentifier", columnName);
+                                columnMap.put("columnType", columns.getString("TYPE_NAME") + "(" + columns.getInt("COLUMN_SIZE") + ")");
+                                columnMap.put("isPrimaryKey", isPrimaryKey(metaData, connection.getCatalog(), tableName, columnName));
+                                columnMap.put("columnDescription", Optional.ofNullable(columns.getString("REMARKS")).orElse(""));
+                                columnMap.put("relations", foreignKeys.getOrDefault(columnName, new ArrayList<>()));
+
+                                columnsList.add(columnMap);
+                            }
+                        }
+
+                        tableMap.put("columns", columnsList);
+                        tablesList.add(tableMap);
+                    }
                 }
+
                 schema.put("tables", tablesList);
             }
 
@@ -155,9 +196,18 @@ public class SchemaService {
                     .setStatusCode(400)
                     .setMessage("Failed to retrieve schema: " + e.getMessage())
                     .setData(null);
-        } finally {
-            closeDataSource(dataSource);
         }
+    }
+
+    private boolean isPrimaryKey(DatabaseMetaData metaData, String catalog, String tableName, String columnName) throws SQLException {
+        try (ResultSet primaryKeys = metaData.getPrimaryKeys(catalog, null, tableName)) {
+            while (primaryKeys.next()) {
+                if (columnName.equals(primaryKeys.getString("COLUMN_NAME"))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -169,12 +219,12 @@ public class SchemaService {
         File tempFile = null;
 
         try {
-            // Save the MultipartFile to a temporary file
             tempFile = File.createTempFile("sqlite_db", ".db");
             file.transferTo(tempFile);
-            String url = "jdbc:sqlite:" + tempFile.getAbsolutePath();
+            String url = tempFile.getAbsolutePath();
 
-            dataSource = createDataSource(url, null, null, SQLITE_DRIVER);
+            // For SQLite files, use the file path as the key
+            dataSource = getOrCreateDataSource(url, null, null, SQLITE_DRIVER);
 
             try (var connection = dataSource.getConnection()) {
                 DatabaseMetaData metaData = connection.getMetaData();
@@ -182,7 +232,6 @@ public class SchemaService {
 
                 schema.put("database", tempFile.getAbsolutePath());
 
-                // Get all tables
                 List<Map<String, Object>> tablesList = new ArrayList<>();
                 try (var statement = connection.createStatement();
                      var resultSet = statement.executeQuery(
@@ -192,50 +241,43 @@ public class SchemaService {
                         log.debug("Processing SQLite table: {}", tableName);
 
                         Map<String, Object> tableMap = new HashMap<>();
-                        tableMap.put("name", tableName);
+                        tableMap.put("tableIdentifier", tableName);
 
-                        // Get table info
                         List<Map<String, Object>> columnsList = new ArrayList<>();
-                        try (var pragmaStatement = connection.createStatement();
-                             var pragmaResult = pragmaStatement.executeQuery("PRAGMA table_info(" + tableName + ")")) {
-                            List<String> primaryKeyList = new ArrayList<>();
+                        Map<String, List<Map<String, String>>> foreignKeys = new HashMap<>();
 
-                            while (pragmaResult.next()) {
-                                Map<String, Object> columnMap = new HashMap<>();
-                                String columnName = pragmaResult.getString("name");
-                                columnMap.put("name", columnName);
-                                columnMap.put("dtype", pragmaResult.getString("type"));
-
-                                List<String> constraints = new ArrayList<>();
-                                if (pragmaResult.getInt("notnull") == 1) {
-                                    constraints.add("NOT NULL");
-                                }
-
-                                if (pragmaResult.getInt("pk") == 1) {
-                                    primaryKeyList.add(columnName);
-                                    constraints.add("PRIMARY KEY");
-                                }
-
-                                columnMap.put("constraints", constraints);
-                                columnMap.put("description", pragmaResult.getString("dflt_value"));
-                                columnsList.add(columnMap);
-                            }
-                            tableMap.put("primary_keys", primaryKeyList);
-                        }
-                        tableMap.put("columns", columnsList);
-
-                        // Get foreign keys
-                        List<Map<String, String>> foreignKeyList = new ArrayList<>();
                         try (var fkStatement = connection.createStatement();
                              var fkResult = fkStatement.executeQuery("PRAGMA foreign_key_list(" + tableName + ")")) {
                             while (fkResult.next()) {
+                                String fromColumn = fkResult.getString("from");
                                 Map<String, String> foreignKeyMap = new HashMap<>();
-                                foreignKeyMap.put("column", fkResult.getString("from"));
-                                foreignKeyMap.put("references", fkResult.getString("table") + "." + fkResult.getString("to"));
-                                foreignKeyList.add(foreignKeyMap);
+                                foreignKeyMap.put("toColumn", fkResult.getString("to"));
+                                foreignKeyMap.put("tableIdentifier", fkResult.getString("table"));
+                                foreignKeyMap.put("type", "OTM");
+
+                                foreignKeys.computeIfAbsent(fromColumn, k -> new ArrayList<>()).add(foreignKeyMap);
                             }
                         }
-                        tableMap.put("foreign_keys", foreignKeyList);
+
+                        try (var pragmaStatement = connection.createStatement();
+                             var pragmaResult = pragmaStatement.executeQuery("PRAGMA table_info(" + tableName + ")")) {
+                            while (pragmaResult.next()) {
+                                Map<String, Object> columnMap = new HashMap<>();
+                                String columnName = pragmaResult.getString("name");
+                                columnMap.put("columnIdentifier", columnName);
+                                columnMap.put("columnType", pragmaResult.getString("type"));
+                                columnMap.put("isPrimaryKey", pragmaResult.getInt("pk") == 1);
+                                columnMap.put("columnDescription",
+                                        Optional.ofNullable(pragmaResult.getString("dflt_value"))
+                                                .orElse(""));
+
+                                columnMap.put("relations", foreignKeys.getOrDefault(columnName, new ArrayList<>()));
+
+                                columnsList.add(columnMap);
+                            }
+                        }
+
+                        tableMap.put("columns", columnsList);
                         tablesList.add(tableMap);
                     }
                 }
@@ -253,13 +295,16 @@ public class SchemaService {
                     .setMessage("Failed to retrieve SQLite schema: " + e.getMessage())
                     .setData(null);
         } finally {
-            closeDataSource(dataSource);
+            // For SQLite, we need to handle temporary files but keep connections in pool
             if (tempFile != null && tempFile.exists()) {
                 tempFile.delete();
             }
         }
     }
 
+    /**
+     * Entry point for executing queries on databases
+     */
     public DefaultResponse queryDatabase(DbConnectionWithQueryRequest request) {
         String dbType = request.getDbType().toLowerCase();
         String query = request.getQuery();
@@ -299,10 +344,10 @@ public class SchemaService {
      */
     private DefaultResponse executeQuery(DbConnectionRequest request, String query, String driver) {
         List<Map<String, Object>> result = new ArrayList<>();
-        DataSource dataSource = null;
 
         try {
-            dataSource = createDataSource(request.getUrl(), request.getUsername(), request.getPassword(), driver);
+            DataSource dataSource = getOrCreateDataSource(
+                    request.getUrl(), request.getUsername(), request.getPassword(), driver);
 
             try (var connection = dataSource.getConnection();
                  var statement = connection.createStatement();
@@ -329,14 +374,11 @@ public class SchemaService {
                     .setStatusCode(400)
                     .setMessage("Failed to execute query: " + e.getMessage())
                     .setData(null);
-        } finally {
-            closeDataSource(dataSource);
         }
     }
 
     public DefaultResponse executeQuerySQLite(MultipartFile file, String query) {
         List<Map<String, Object>> result = new ArrayList<>();
-        DataSource dataSource = null;
         File tempFile = null;
 
         try {
@@ -345,8 +387,8 @@ public class SchemaService {
             file.transferTo(tempFile);
 
             // Create the SQLite connection URL using the temporary file's absolute path.
-            String url = "jdbc:sqlite:" + tempFile.getAbsolutePath();
-            dataSource = createDataSource(url, null, null, SQLITE_DRIVER);
+            String url = tempFile.getAbsolutePath();
+            DataSource dataSource = getOrCreateDataSource(url, null, null, SQLITE_DRIVER);
 
             try (var connection = dataSource.getConnection();
                  var statement = connection.createStatement();
@@ -380,14 +422,12 @@ public class SchemaService {
                     .setMessage("Failed to process uploaded file: " + e.getMessage())
                     .setData(null);
         } finally {
-            closeDataSource(dataSource);
-            // Optionally delete the temporary file after processing
+            // Delete the temporary file after processing but keep connection in pool
             if (tempFile != null && tempFile.exists()) {
                 tempFile.delete();
             }
         }
     }
-
 
     /**
      * Validate SQL query for security
@@ -412,7 +452,6 @@ public class SchemaService {
 
         // 3. Check for common SQL injection patterns
         String[] blacklistedPatterns = {
-                "union",
                 "into outfile",
                 "load_file",
                 "--",
@@ -442,10 +481,18 @@ public class SchemaService {
 
         for (char c : query.toCharArray()) {
             switch (c) {
-                case '\'': singleQuotes++; break;
-                case '"': doubleQuotes++; break;
-                case '(': parentheses++; break;
-                case ')': parentheses--; break;
+                case '\'':
+                    singleQuotes++;
+                    break;
+                case '"':
+                    doubleQuotes++;
+                    break;
+                case '(':
+                    parentheses++;
+                    break;
+                case ')':
+                    parentheses--;
+                    break;
             }
         }
 
@@ -461,5 +508,32 @@ public class SchemaService {
         if (dataSource instanceof HikariDataSource) {
             ((HikariDataSource) dataSource).close();
         }
+    }
+
+    /**
+     * Utility method to get connection pool statistics
+     */
+    public DefaultResponse getConnectionPoolStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("activeConnections", connectionPool.size());
+
+        Map<String, Object> connectionDetails = new HashMap<>();
+        for (String key : connectionPool.keySet()) {
+            DataSource ds = connectionPool.get(key);
+            if (ds instanceof HikariDataSource) {
+                HikariDataSource hds = (HikariDataSource) ds;
+                Map<String, Object> detail = new HashMap<>();
+                detail.put("activeConnections", hds.getHikariPoolMXBean().getActiveConnections());
+                detail.put("idleConnections", hds.getHikariPoolMXBean().getIdleConnections());
+                detail.put("totalConnections", hds.getHikariPoolMXBean().getTotalConnections());
+                connectionDetails.put(key, detail);
+            }
+        }
+        stats.put("details", connectionDetails);
+
+        return new DefaultResponse()
+                .setStatusCode(200)
+                .setMessage("Connection pool statistics")
+                .setData(stats);
     }
 }

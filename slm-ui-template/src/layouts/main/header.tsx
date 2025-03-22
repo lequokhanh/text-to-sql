@@ -2,7 +2,6 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import AppBar from '@mui/material/AppBar';
-import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import { useTheme } from '@mui/material/styles';
 import Container from '@mui/material/Container';
@@ -18,13 +17,9 @@ import { bgBlur } from 'src/theme/css';
 import Logo from 'src/components/logo';
 import Label from 'src/components/label';
 
-import NavMobile from './nav/mobile';
-import NavDesktop from './nav/desktop';
 import { HEADER } from '../config-layout';
-import { navConfig } from './config-navigation';
 import LoginButton from '../common/login-button';
 import HeaderShadow from '../common/header-shadow';
-import SettingsButton from '../common/settings-button';
 
 // ----------------------------------------------------------------------
 
@@ -85,23 +80,15 @@ export default function Header() {
 
           <Box sx={{ flexGrow: 1 }} />
 
-          {mdUp && <NavDesktop data={navConfig} />}
-
           <Stack alignItems="center" direction={{ xs: 'row', md: 'row-reverse' }}>
-            <Button variant="contained" target="_blank" rel="noopener" href={paths.minimalUI}>
-              Purchase Now
-            </Button>
-
             {mdUp && <LoginButton />}
 
-            <SettingsButton
+            {/* <SettingsButton
               sx={{
                 ml: { xs: 1, md: 0 },
                 mr: { md: 2 },
               }}
-            />
-
-            {!mdUp && <NavMobile data={navConfig} />}
+            /> */}
           </Stack>
         </Container>
       </Toolbar>

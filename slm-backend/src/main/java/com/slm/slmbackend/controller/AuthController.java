@@ -19,14 +19,14 @@ public class AuthController {
     public ResponseWrapper<TokenResponse> login(
             @Valid @RequestBody CredentialRequestDTO credentialRequestDTO) {
         TokenResponse tokenResponse = authService.login(credentialRequestDTO);
-        return ResponseWrapper.toResponse(tokenResponse);
+        return ResponseWrapper.success(tokenResponse);
     }
 
     @PostMapping("/register")
     public ResponseWrapper<Void> register(
             @Valid @RequestBody CredentialRequestDTO credentialRequestDTO) {
         authService.register(credentialRequestDTO);
-        return ResponseWrapper.toResponse(ResponseEnum.SUCCESS);
+        return ResponseWrapper.success();
     }
 
 }

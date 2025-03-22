@@ -9,14 +9,6 @@ import { useAuthContext } from '../hooks';
 
 // ----------------------------------------------------------------------
 
-const loginPaths: Record<string, string> = {
-  jwt: paths.auth.jwt.login,
-  auth0: paths.auth.auth0.login,
-  amplify: paths.auth.amplify.login,
-  firebase: paths.auth.firebase.login,
-  supabase: paths.auth.supabase.login,
-};
-
 // ----------------------------------------------------------------------
 
 type Props = {
@@ -34,7 +26,7 @@ export default function AuthGuard({ children }: Props) {
 function Container({ children }: Props) {
   const router = useRouter();
 
-  const { authenticated, method } = useAuthContext();
+  const { authenticated } = useAuthContext();
 
   const [checked, setChecked] = useState(false);
 
@@ -44,7 +36,7 @@ function Container({ children }: Props) {
         returnTo: window.location.pathname,
       }).toString();
 
-      const loginPath = loginPaths[method];
+      const loginPath = paths.auth.login;
 
       const href = `${loginPath}?${searchParams}`;
 
@@ -52,7 +44,7 @@ function Container({ children }: Props) {
     } else {
       setChecked(true);
     }
-  }, [authenticated, method, router]);
+  }, [authenticated, router]);
 
   useEffect(() => {
     check();

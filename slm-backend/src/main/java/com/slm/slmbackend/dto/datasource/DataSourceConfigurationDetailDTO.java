@@ -1,19 +1,15 @@
 package com.slm.slmbackend.dto.datasource;
 
-import com.slm.slmbackend.enums.DatabaseType;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
-/**
- * Data Transfer Object for Data Source Configuration information
- */
+import java.util.ArrayList;
+import java.util.List;
+
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class DataSourceConfigurationDetailDTO {
-    private Integer id;
-    private DatabaseType databaseType;
-    private String name;
-    private String host;
-    private Integer port;
-    private String databaseName;
-    private String username;
-    private String collectionName;
+@Accessors(chain = true)
+public class DataSourceConfigurationDetailDTO extends DataSourceConfigurationDTO{
+    private List<TableDTO> tableDefinitions = new ArrayList<>();
 }

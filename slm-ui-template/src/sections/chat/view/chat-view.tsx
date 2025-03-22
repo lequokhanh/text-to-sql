@@ -1,149 +1,60 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 
-import { paths } from 'src/routes/paths';
-import { useRouter, useSearchParams } from 'src/routes/hooks';
+import { IChatMessage } from 'src/types/chat';
 
-import { useMockedUser } from 'src/hooks/use-mocked-user';
-
-import { useGetContacts, useGetConversation, useGetConversations } from 'src/api/chat';
-
-import { useSettingsContext } from 'src/components/settings';
-
-import { IChatParticipant } from 'src/types/chat';
-
-import ChatNav from '../chat-nav';
-import ChatRoom from '../chat-room';
 import ChatMessageList from '../chat-message-list';
 import ChatMessageInput from '../chat-message-input';
-import ChatHeaderDetail from '../chat-header-detail';
-import ChatHeaderCompose from '../chat-header-compose';
 
 // ----------------------------------------------------------------------
 
 export default function ChatView() {
-  const router = useRouter();
+  const [messages, setMessages] = useState<IChatMessage[]>([]);
 
-  const { user } = useMockedUser();
+  const handleSendMessage = useCallback((message: string) => {
+    if (!message.trim()) return;
 
-  const settings = useSettingsContext();
+    // Add user message
+    const userMessage: IChatMessage = {
+      id: `user-${Date.now()}`,
+      body: message,
+      senderId: 'user',
+      contentType: 'text',
+      createdAt: new Date(),
+      attachments: [], // Add empty attachments array
+    };
 
-  const searchParams = useSearchParams();
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-  const selectedConversationId = searchParams.get('id') || '';
-
-  const [recipients, setRecipients] = useState<IChatParticipant[]>([]);
-
-  const { contacts } = useGetContacts();
-
-  const { conversations, conversationsLoading } = useGetConversations();
-
-  const { conversation, conversationError } = useGetConversation(`${selectedConversationId}`);
-
-  const participants: IChatParticipant[] = conversation
-    ? conversation.participants.filter(
-        (participant: IChatParticipant) => participant.id !== `${user?.id}`
-      )
-    : [];
-
-  useEffect(() => {
-    if (conversationError || !selectedConversationId) {
-      router.push(paths.dashboard.chat);
-    }
-  }, [conversationError, router, selectedConversationId]);
-
-  const handleAddRecipients = useCallback((selected: IChatParticipant[]) => {
-    setRecipients(selected);
+    // Simulate bot response
+    setTimeout(() => {
+      const botMessage: IChatMessage = {
+        id: `bot-${Date.now()}`,
+        body: 'This is a simulated bot response. You can replace this with actual bot responses.',
+        senderId: 'bot',
+        contentType: 'text',
+        createdAt: new Date(),
+        attachments: [], // Add empty attachments array
+      };
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
+    }, 1000);
   }, []);
 
-  const details = !!conversation;
-
-  const renderHead = (
-    <Stack
-      direction="row"
-      alignItems="center"
-      flexShrink={0}
-      sx={{ pr: 1, pl: 2.5, py: 1, minHeight: 72 }}
-    >
-      {selectedConversationId ? (
-        <>{details && <ChatHeaderDetail participants={participants} />}</>
-      ) : (
-        <ChatHeaderCompose contacts={contacts} onAddRecipients={handleAddRecipients} />
-      )}
-    </Stack>
-  );
-
-  const renderNav = (
-    <ChatNav
-      contacts={contacts}
-      conversations={conversations}
-      loading={conversationsLoading}
-      selectedConversationId={selectedConversationId}
-    />
-  );
-
-  const renderMessages = (
-    <Stack
-      sx={{
-        width: 1,
-        height: 1,
-        overflow: 'hidden',
-      }}
-    >
-      <ChatMessageList messages={conversation?.messages} participants={participants} />
-
-      <ChatMessageInput
-        recipients={recipients}
-        onAddRecipients={handleAddRecipients}
-        //
-        selectedConversationId={selectedConversationId}
-        disabled={!recipients.length && !selectedConversationId}
-      />
-    </Stack>
-  );
-
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-      <Typography
-        variant="h4"
-        sx={{
-          mb: { xs: 3, md: 5 },
-        }}
-      >
-        Chat
-      </Typography>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Card sx={{ height: '75vh', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+          <ChatMessageList messages={messages} />
+        </Box>
 
-      <Stack component={Card} direction="row" sx={{ height: '72vh' }}>
-        {renderNav}
-
-        <Stack
-          sx={{
-            width: 1,
-            height: 1,
-            overflow: 'hidden',
-          }}
-        >
-          {renderHead}
-
-          <Stack
-            direction="row"
-            sx={{
-              width: 1,
-              height: 1,
-              overflow: 'hidden',
-              borderTop: (theme) => `solid 1px ${theme.palette.divider}`,
-            }}
-          >
-            {renderMessages}
-
-            {details && <ChatRoom conversation={conversation} participants={participants} />}
-          </Stack>
+        <Stack sx={{ p: 3 }}>
+          <ChatMessageInput onSend={handleSendMessage} />
         </Stack>
-      </Stack>
+      </Card>
     </Container>
   );
 }

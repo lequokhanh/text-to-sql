@@ -11,8 +11,8 @@ spring:
         prefer-ip-address: true
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: 300MB
+      max-request-size: 400MB
 
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

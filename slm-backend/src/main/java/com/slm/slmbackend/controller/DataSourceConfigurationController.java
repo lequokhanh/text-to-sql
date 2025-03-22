@@ -1,9 +1,6 @@
 package com.slm.slmbackend.controller;
 
-import com.slm.slmbackend.dto.datasource.CreateDataSourceConfigurationDTO;
-import com.slm.slmbackend.dto.datasource.DataSourceConfigurationDTO;
-import com.slm.slmbackend.dto.datasource.DataSourceConfigurationViewDTO;
-import com.slm.slmbackend.dto.datasource.UpdateDataSourceConfigurationDTO;
+import com.slm.slmbackend.dto.datasource.*;
 import com.slm.slmbackend.entity.UserAccount;
 import com.slm.slmbackend.response.ResponseWrapper;
 import com.slm.slmbackend.service.DataSourceConfigurationService;
@@ -13,74 +10,193 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.List;
 
-/**
- * REST controller for managing data source configurations
- */
 @RestController
 @RequestMapping("/api/v1/data-sources")
 @RequiredArgsConstructor
+@Tag(name = "Data Source Configuration", description = "API for managing data source configurations")
 public class DataSourceConfigurationController {
 
     private final DataSourceConfigurationService dataSourceConfigurationService;
 
+    private UserAccount getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (UserAccount) authentication.getPrincipal();
+    }
+
+    @Operation(summary = "Create a new data source configuration", 
+               description = "Creates a new data source configuration for the authenticated user")
+    @ApiResponse(responseCode = "200", description = "Data source created successfully")
     @PostMapping
     public ResponseWrapper<Void> createDataSource(
             @Valid @RequestBody CreateDataSourceConfigurationDTO createDTO) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        UserAccount userAccount = (UserAccount) authentication.getPrincipal();
-
-        dataSourceConfigurationService.createDataSourceConfiguration(userAccount, createDTO);
+        dataSourceConfigurationService.createDataSourceConfiguration(getAuthenticatedUser(), createDTO);
         return ResponseWrapper.success();
     }
 
+    @Operation(summary = "Get all data sources owned by user", 
+               description = "Retrieves all data sources owned by the authenticated user")
+    @ApiResponse(responseCode = "200", description = "List of owned data sources retrieved successfully")
     @GetMapping("/owned")
     public ResponseWrapper<List<DataSourceConfigurationDTO>> getOwnedDataSources() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        UserAccount userAccount = (UserAccount) authentication.getPrincipal();
-
-        return ResponseWrapper.toResponse(dataSourceConfigurationService.getAllDataSourceOwnedByUser(userAccount));
+        return ResponseWrapper.success(dataSourceConfigurationService.getAllDataSourceOwnedByUser(getAuthenticatedUser()));
     }
 
+    @Operation(summary = "Get all available data sources", 
+               description = "Retrieves all data sources available for the authenticated user")
+    @ApiResponse(responseCode = "200", description = "List of available data sources retrieved successfully")
     @GetMapping("/available")
     public ResponseWrapper<List<DataSourceConfigurationViewDTO>> getAvailableDataSources() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        UserAccount userAccount = (UserAccount) authentication.getPrincipal();
-
-        return ResponseWrapper.toResponse(dataSourceConfigurationService.getAllDataSourceAvailableForUser(userAccount));
+        return ResponseWrapper.success(dataSourceConfigurationService.getAllDataSourceAvailableForUser(getAuthenticatedUser()));
     }
 
+    @Operation(summary = "Get data source by ID", 
+               description = "Retrieves a specific data source by its ID if available to the authenticated user")
+    @ApiResponse(responseCode = "200", description = "Data source details retrieved successfully")
     @GetMapping("/{id}")
-    public ResponseWrapper<DataSourceConfigurationDTO> getDataSourceById(@PathVariable Integer id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        UserAccount userAccount = (UserAccount) authentication.getPrincipal();
-
-        return ResponseWrapper.toResponse(dataSourceConfigurationService.getDataSourceConfigurationById(userAccount, id));
+    public ResponseWrapper<DataSourceConfigurationDetailDTO> getDataSourceById(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id) {
+        return ResponseWrapper.success(dataSourceConfigurationService.getDataSourceConfigurationById(getAuthenticatedUser(), id));
     }
 
+    @Operation(summary = "Update data source", 
+               description = "Updates an existing data source configuration")
+    @ApiResponse(responseCode = "200", description = "Data source updated successfully")
     @PutMapping("/{id}")
-    public ResponseWrapper<DataSourceConfigurationDTO> updateDataSource(
-            @PathVariable Integer id, @Valid @RequestBody UpdateDataSourceConfigurationDTO updateDTO) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        UserAccount userAccount = (UserAccount) authentication.getPrincipal();
-
-        return ResponseWrapper.toResponse(dataSourceConfigurationService.updateDataSourceConfiguration(userAccount, id, updateDTO));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseWrapper<Void> deleteDataSource(@PathVariable Integer id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        UserAccount userAccount = (UserAccount) authentication.getPrincipal();
-
-        dataSourceConfigurationService.deleteDataSourceConfiguration(userAccount, id);
+    public ResponseWrapper<Void> updateDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Valid @RequestBody UpdateDataSourceConfigurationDTO updateDTO) {
+        dataSourceConfigurationService.updateDataSourceConfiguration(getAuthenticatedUser(), id, updateDTO);
         return ResponseWrapper.success();
     }
 
+    @Operation(summary = "Delete data source", 
+               description = "Deletes an existing data source configuration")
+    @ApiResponse(responseCode = "200", description = "Data source deleted successfully")
+    @DeleteMapping("/{id}")
+    public ResponseWrapper<Void> deleteDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id) {
+        dataSourceConfigurationService.deleteDataSourceConfiguration(getAuthenticatedUser(), id);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Add table to data source", 
+               description = "Adds a new table to an existing data source configuration")
+    @ApiResponse(responseCode = "200", description = "Table added successfully")
+    @PostMapping("/{id}/tables")
+    public ResponseWrapper<Void> addTableToDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Valid @RequestBody CreateTableDTO tableDTO) {
+        dataSourceConfigurationService.addTableToDataSource(getAuthenticatedUser(), id, tableDTO);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Update table information", 
+               description = "Updates an existing table in a data source configuration")
+    @ApiResponse(responseCode = "200", description = "Table updated successfully")
+    @PutMapping("/{id}/tables/{tableId}")
+    public ResponseWrapper<Void> updateTable(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Parameter(description = "ID of the table") @PathVariable Integer tableId, 
+            @Valid @RequestBody UpdateTableDTO tableDTO) {
+        dataSourceConfigurationService.updateTable(getAuthenticatedUser(), id, tableId, tableDTO);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Remove table from data source", 
+               description = "Removes a table from a data source configuration")
+    @ApiResponse(responseCode = "200", description = "Table removed successfully")
+    @DeleteMapping("/{id}/tables/{tableId}")
+    public ResponseWrapper<Void> removeTableFromDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Parameter(description = "ID of the table") @PathVariable Integer tableId) {
+        dataSourceConfigurationService.removeTableFromDataSource(getAuthenticatedUser(), id, tableId);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Add column to table", 
+               description = "Adds a new column to an existing table")
+    @ApiResponse(responseCode = "200", description = "Column added successfully")
+    @PostMapping("/{id}/tables/{tableId}/columns")
+    public ResponseWrapper<Void> addColumnToTable(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Parameter(description = "ID of the table") @PathVariable Integer tableId, 
+            @Valid @RequestBody CreateColumnDTO columnDTO) {
+        dataSourceConfigurationService.addColumnToTable(getAuthenticatedUser(), id, tableId, columnDTO);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Update column information", 
+               description = "Updates an existing column in a table")
+    @ApiResponse(responseCode = "200", description = "Column updated successfully")
+    @PutMapping("/{id}/tables/{tableId}/columns/{columnId}")
+    public ResponseWrapper<Void> updateColumn(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Parameter(description = "ID of the table") @PathVariable Integer tableId, 
+            @Parameter(description = "ID of the column") @PathVariable Integer columnId, 
+            @Valid @RequestBody UpdateColumnDTO columnDTO) {
+        dataSourceConfigurationService.updateColumn(getAuthenticatedUser(), id, tableId, columnId, columnDTO);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Remove column from table", 
+               description = "Removes a column from a table")
+    @ApiResponse(responseCode = "200", description = "Column removed successfully")
+    @DeleteMapping("/{id}/tables/{tableId}/columns/{columnId}")
+    public ResponseWrapper<Void> removeColumnFromTable(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Parameter(description = "ID of the table") @PathVariable Integer tableId, 
+            @Parameter(description = "ID of the column") @PathVariable Integer columnId) {
+        dataSourceConfigurationService.removeColumnFromTable(getAuthenticatedUser(), id, tableId, columnId);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Add relation to column", 
+               description = "Adds a new relation to an existing column")
+    @ApiResponse(responseCode = "200", description = "Relation added successfully")
+    @PostMapping("/{id}/tables/{tableId}/columns/{columnId}/relations")
+    public ResponseWrapper<Void> addRelationToColumn(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Parameter(description = "ID of the table") @PathVariable Integer tableId, 
+            @Parameter(description = "ID of the column") @PathVariable Integer columnId, 
+            @Valid @RequestBody CreateRelationDTO relationDTO) {
+        dataSourceConfigurationService.addRelationToColumn(getAuthenticatedUser(), id, tableId, columnId, relationDTO);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Update relation information", 
+               description = "Updates an existing relation in a column")
+    @ApiResponse(responseCode = "200", description = "Relation updated successfully")
+    @PutMapping("/{id}/tables/{tableId}/columns/{columnId}/relations/{relationId}")
+    public ResponseWrapper<Void> updateRelation(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Parameter(description = "ID of the table") @PathVariable Integer tableId, 
+            @Parameter(description = "ID of the column") @PathVariable Integer columnId, 
+            @Parameter(description = "ID of the relation") @PathVariable Integer relationId, 
+            @Valid @RequestBody UpdateRelationDTO relationDTO) {
+        dataSourceConfigurationService.updateRelation(getAuthenticatedUser(), id, tableId, columnId, relationId, relationDTO);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Remove relation from column", 
+               description = "Removes a relation from a column")
+    @ApiResponse(responseCode = "200", description = "Relation removed successfully")
+    @DeleteMapping("/{id}/tables/{tableId}/columns/{columnId}/relations/{relationId}")
+    public ResponseWrapper<Void> removeRelationFromColumn(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id, 
+            @Parameter(description = "ID of the table") @PathVariable Integer tableId, 
+            @Parameter(description = "ID of the column") @PathVariable Integer columnId, 
+            @Parameter(description = "ID of the relation") @PathVariable Integer relationId) {
+        dataSourceConfigurationService.removeRelationFromColumn(getAuthenticatedUser(), id, tableId, columnId, relationId);
+        return ResponseWrapper.success();
+    }
 }

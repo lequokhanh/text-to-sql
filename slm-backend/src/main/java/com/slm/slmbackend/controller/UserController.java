@@ -1,6 +1,6 @@
 package com.slm.slmbackend.controller;
 
-import com.slm.slmbackend.dto.UserAccountDTO;
+import com.slm.slmbackend.dto.auth.UserAccountDTO;
 import com.slm.slmbackend.entity.UserAccount;
 import com.slm.slmbackend.response.ResponseWrapper;
 import com.slm.slmbackend.util.MapperUtil;
@@ -20,7 +20,7 @@ public class UserController {
 
         UserAccount userAccount = (UserAccount) authentication.getPrincipal();
 
-        return ResponseWrapper.toResponse(MapperUtil.mapObject(userAccount, UserAccountDTO.class));
+        return ResponseWrapper.success(MapperUtil.mapObject(userAccount, UserAccountDTO.class));
     }
 
 }

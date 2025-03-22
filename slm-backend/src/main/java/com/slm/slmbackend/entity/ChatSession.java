@@ -20,7 +20,7 @@ public class ChatSession {
     @JoinColumn(name = "data_source")
     private DataSourceConfiguration dataSource;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id")
     private List<ChatMessage> messages;
 }

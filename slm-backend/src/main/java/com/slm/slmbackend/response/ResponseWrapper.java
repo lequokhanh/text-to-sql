@@ -22,21 +22,17 @@ public class ResponseWrapper<T> {
     }
 
     public static ResponseWrapper<Void> toResponse(ResponseEnum responseEnum) {
-        return new ResponseWrapper<Void>()
-                .setCode(responseEnum.getCode())
-                .setMessage(responseEnum.getMessage());
+        return toResponse(responseEnum.getCode(), responseEnum.getMessage());
     }
 
-    public static ResponseWrapper<Void> success() {
-        return new ResponseWrapper<Void>()
-                .setCode(ResponseEnum.SUCCESS.getCode())
-                .setMessage(ResponseEnum.SUCCESS.getMessage());
-    }
-
-    public static <T> ResponseWrapper<T> toResponse(T data) {
+    public static <T> ResponseWrapper<T> success(T data) {
         return new ResponseWrapper<T>()
                 .setCode(ResponseEnum.SUCCESS.getCode())
                 .setMessage(ResponseEnum.SUCCESS.getMessage())
                 .setData(data);
+    }
+
+    public static ResponseWrapper<Void> success() {
+        return success(null);
     }
 }

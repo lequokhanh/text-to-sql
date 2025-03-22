@@ -51,7 +51,8 @@ class SQLAgentWorkflow(Workflow):
     async def start_workflow(self, context: Context, ev: StartEvent) -> TableRetrieveEvent | TextToSQLEvent:
         """Start the SQLAgent Workflow."""
         table_details = ev.table_details
-        table_names = [table["name"] for table in table_details]
+
+        table_names = [table["tableIdentifier"] for table in table_details]
         await context.set("table_details", table_details)
         if len(table_names) > self.num_tables_threshold:
             print(
@@ -84,7 +85,7 @@ class SQLAgentWorkflow(Workflow):
         selected_tables = []
         for table_name in ev.relevant_tables:
             for table in table_details:
-                if table_name.lower().strip() == table["name"].lower().strip():
+                if table_name.lower().strip() == table["tableIdentifier"].lower().strip():
                     selected_tables.append(table)
         table_schemas = schema_parser(selected_tables, "DDL")
         fmt_messages = self.text2sql_prompt.format_messages(

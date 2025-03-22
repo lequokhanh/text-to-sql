@@ -5,9 +5,6 @@ import lombok.Data;
 
 import java.util.List;
 
-/**
- * Data Transfer Object for Data Source Configuration information
- */
 @Data
 public class DataSourceConfigurationDTO {
     private Integer id;
@@ -18,5 +15,4 @@ public class DataSourceConfigurationDTO {
     private String databaseName;
     private String username;
     private String collectionName;
-    private List<TableDTO> tableDefinitions;
 }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,7 +33,7 @@ public class DataSourceConfiguration {
     @Column(unique = true)
     private String collectionName;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     @JoinTable(
             name = "data_source_owners",
             joinColumns = @JoinColumn(name = "data_source_id"),
@@ -40,13 +41,13 @@ public class DataSourceConfiguration {
     )
     private List<UserAccount> owners;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "data_source_id")
     private List<UserGroup> groups;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "data_source_id")
-    private List<TableDefinition> tableDefinitions;
+    private List<TableDefinition> tableDefinitions = new ArrayList<>();
 }
 
 
