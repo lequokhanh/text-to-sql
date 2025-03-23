@@ -99,7 +99,7 @@ const beautifySql = (sql: string) => {
     })
     .join('\n');
 
-  return formatted;
+  return formatted.trim();
 };
 
 export default function DatabaseView() {
