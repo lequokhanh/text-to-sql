@@ -10,6 +10,7 @@ import Table from '@mui/material/Table';
 import Tooltip from '@mui/material/Tooltip';
 import Divider from '@mui/material/Divider';
 import TableRow from '@mui/material/TableRow';
+import Skeleton from '@mui/material/Skeleton';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
@@ -80,6 +81,69 @@ const exportToCSV = (results: Record<string, any>[], fileName: string) => {
   document.body.removeChild(link);
 };
 
+// Loading Bot Message Component
+const BotLoadingMessage = () => {
+  const theme = useTheme();
+
+  return (
+    <Stack direction="row" sx={{ mb: 3 }}>
+      <Card
+        sx={{
+          width: '80%',
+          borderRadius: 2,
+          borderLeft: `4px solid ${theme.palette.primary.main}`,
+          boxShadow: theme.customShadows?.z8,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <CardHeader
+          title={
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <CircularProgress size={16} color="primary" />
+              <Typography variant="subtitle1">Thinking...</Typography>
+            </Stack>
+          }
+          avatar={<Iconify icon="mdi:robot" width={24} />}
+          sx={{ pb: 1 }}
+        />
+        <CardContent sx={{ pt: 0 }}>
+          <Box sx={{ pt: 1 }}>
+            <Skeleton animation="wave" height={20} width="90%" />
+            <Skeleton animation="wave" height={20} width="75%" />
+            <Skeleton animation="wave" height={20} width="80%" />
+          </Box>
+          <Box sx={{ pt: 2 }}>
+            <Skeleton
+              variant="rectangular"
+              animation="wave"
+              height={100}
+              width="100%"
+              sx={{ borderRadius: 1 }}
+            />
+          </Box>
+        </CardContent>
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            bgcolor: 'primary.main',
+            animation: 'loadingAnimation 2s infinite',
+            '@keyframes loadingAnimation': {
+              '0%': { transform: 'translateX(-100%)' },
+              '50%': { transform: 'translateX(0%)' },
+              '100%': { transform: 'translateX(100%)' },
+            },
+          }}
+        />
+      </Card>
+    </Stack>
+  );
+};
+
 // Custom Message component to handle bot messages with SQL and table results
 const ChatMessage = ({ message }: { message: IChatMessage }) => {
   const theme = useTheme();
@@ -119,6 +183,12 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
             boxShadow: theme.customShadows?.z8,
           }}
         >
+          <CardHeader
+            title="Error"
+            titleTypographyProps={{ variant: 'subtitle1' }}
+            avatar={<Iconify icon="mdi:alert-circle" width={24} color={theme.palette.error.main} />}
+            sx={{ pb: 1 }}
+          />
           <CardContent>
             <Markdown>{message.body}</Markdown>
           </CardContent>
@@ -134,17 +204,26 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
   if (!hasSqlSection || !hasResultsSection) {
     return (
       <Stack direction="row" sx={{ mb: 3 }}>
-        <Paper
+        <Card
           sx={{
             p: 2,
-            maxWidth: '80%',
+            width: '80%',
             bgcolor: theme.palette.background.paper,
             borderRadius: 2,
+            borderLeft: `4px solid ${theme.palette.info.light}`,
             boxShadow: theme.customShadows?.z8,
           }}
         >
-          <Markdown>{message.body}</Markdown>
-        </Paper>
+          <CardHeader
+            title="Response"
+            titleTypographyProps={{ variant: 'subtitle1' }}
+            avatar={<Iconify icon="mdi:robot" width={24} />}
+            sx={{ pb: 1 }}
+          />
+          <CardContent sx={{ pt: 0 }}>
+            <Markdown>{message.body}</Markdown>
+          </CardContent>
+        </Card>
       </Stack>
     );
   }
@@ -458,7 +537,12 @@ export default function ChatSection({
             </Typography>
           </Stack>
         ) : (
-          messages.map((message, index) => <ChatMessage key={index} message={message} />)
+          <>
+            {messages.map((message, index) => (
+              <ChatMessage key={index} message={message} />
+            ))}
+            {isLoading && <BotLoadingMessage />}
+          </>
         )}
       </Box>
 

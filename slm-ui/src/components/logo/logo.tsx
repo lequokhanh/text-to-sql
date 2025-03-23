@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import Link from '@mui/material/Link';
-import { useTheme } from '@mui/material/styles';
+// import { useTheme } from '@mui/material/styles';
 import Box, { BoxProps } from '@mui/material/Box';
 
 import { RouterLink } from 'src/routes/components';
@@ -14,13 +14,13 @@ export interface LogoProps extends BoxProps {
 
 const Logo = forwardRef<HTMLDivElement, LogoProps>(
   ({ disabledLink = false, sx, ...other }, ref) => {
-    const theme = useTheme();
+    // const theme = useTheme();
 
-    const PRIMARY_LIGHT = theme.palette.primary.light;
+    // const PRIMARY_LIGHT = theme.palette.primary.light;
 
-    const PRIMARY_MAIN = theme.palette.primary.main;
+    // const PRIMARY_MAIN = theme.palette.primary.main;
 
-    const PRIMARY_DARK = theme.palette.primary.dark;
+    // const PRIMARY_DARK = theme.palette.primary.dark;
 
     // OR using local (public folder)
     // -------------------------------------------------------
