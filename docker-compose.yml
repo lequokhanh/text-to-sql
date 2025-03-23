@@ -101,7 +101,7 @@ services:
         ports:
             - 4000:80
         build:
-            context: ./slm-ui-template
+            context: ./slm-ui
         environment:
             - BACKEND_HOST_API=backend
             - EMBED_HOST_API=embed
