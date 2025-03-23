@@ -42,6 +42,44 @@ type Props = {
   isLoading?: boolean;
 };
 
+// Function to export table data to CSV
+const exportToCSV = (results: Record<string, any>[], fileName: string) => {
+  if (!results || !results.length) return;
+
+  // Get headers from the first result object
+  const headers = Object.keys(results[0]);
+
+  // Create CSV content
+  const csvContent = [
+    // Header row
+    headers.join(','),
+    // Data rows
+    ...results.map((row) =>
+      headers
+        .map((header) => {
+          const value = row[header];
+          // Handle different value types for CSV format
+          if (value === null) return '';
+          if (typeof value === 'object') return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+          if (typeof value === 'string') return `"${value.replace(/"/g, '""')}"`;
+          return value;
+        })
+        .join(',')
+    ),
+  ].join('\n');
+
+  // Create download link
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `${fileName}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 // Custom Message component to handle bot messages with SQL and table results
 const ChatMessage = ({ message }: { message: IChatMessage }) => {
   const theme = useTheme();
@@ -121,6 +159,19 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
     Array.isArray(message.metadata.results) &&
     message.metadata.results.length > 0;
 
+  // Generate a filename for CSV export based on the query
+  const generateCsvFilename = () => {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    return `query-results-${timestamp}`;
+  };
+
+  // Handle CSV export
+  const handleExportCSV = () => {
+    if (hasTableData) {
+      exportToCSV(message.metadata?.results, generateCsvFilename());
+    }
+  };
+
   return (
     <Stack direction="row" sx={{ mb: 3 }}>
       <Box sx={{ width: '80%' }}>
@@ -169,15 +220,29 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
             }
             avatar={<Iconify icon="mdi:table" width={24} />}
             action={
-              hasTableData && (
-                <IconButton
-                  size="small"
-                  onClick={() => setShowFullResults(!showFullResults)}
-                  title={showFullResults ? 'Show less' : 'Show all results'}
-                >
-                  <Iconify icon={showFullResults ? 'mdi:chevron-up' : 'mdi:chevron-down'} />
-                </IconButton>
-              )
+              <Stack direction="row" spacing={1}>
+                {hasTableData && (
+                  <Tooltip title="Export to CSV">
+                    <IconButton
+                      size="small"
+                      onClick={handleExportCSV}
+                      sx={{
+                        color: theme.palette.success.main,
+                        '&:hover': { bgcolor: alpha(theme.palette.success.main, 0.1) },
+                      }}
+                    >
+                      <Iconify icon="mdi:file-export" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {hasTableData && (
+                  <Tooltip title={showFullResults ? 'Show less' : 'Show all results'}>
+                    <IconButton size="small" onClick={() => setShowFullResults(!showFullResults)}>
+                      <Iconify icon={showFullResults ? 'mdi:chevron-up' : 'mdi:chevron-down'} />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Stack>
             }
             sx={{ pb: 1 }}
           />
