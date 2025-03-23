@@ -9,6 +9,8 @@ spring:
         enabled: true
         register: true
         prefer-ip-address: true
+        health-check-path: /health-check
+        health-check-interval: 10s
   jpa:
     hibernate:
       ddl-auto: update

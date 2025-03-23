@@ -9,6 +9,9 @@ spring:
         enabled: true
         register: true
         prefer-ip-address: true
+        health-check-path: /health-check
+        health-check-interval: 10s
+
   servlet:
     multipart:
       max-file-size: 300MB
@@ -16,12 +19,6 @@ spring:
 
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
 
   datasource:
     hikari:

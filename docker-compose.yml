@@ -49,12 +49,32 @@ services:
         networks:
             - slm
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+            test: ["CMD", "curl", "-f", "http://localhost:8080/health-check"]
             interval: 30s
             timeout: 10s
             retries: 3
         depends_on:
             consul:
+                condition: service_healthy
+
+    engine:
+        ports:
+            - 8383:5000
+        build:
+            context: ./slm-engine
+        environment:
+            - CONSUL_HOST=consul
+        networks:
+            - slm
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:5000/health-check"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        depends_on:
+            consul:
+                condition: service_healthy
+            embed:
                 condition: service_healthy
 
     backend:
@@ -76,27 +96,10 @@ services:
                 condition: service_healthy
             mysql:
                 condition: service_healthy
-
-    engine:
-        ports:
-            - 8383:5000
-        build:
-            context: ./slm-engine
-        environment:
-            - CONSUL_HOST=consul
-        networks:
-            - slm
-        healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:8501/health-check"]
-            interval: 30s
-            timeout: 10s
-            retries: 3
-        depends_on:
-            consul:
+            engine:
                 condition: service_healthy
-#        volumes:
-#            - ./slm-engine/src:/app
-
+            embed:
+                condition: service_healthy
     ui:
         ports:
             - 4000:80
@@ -110,6 +113,8 @@ services:
             - slm
         depends_on:
             consul:
+                condition: service_healthy
+            backend:
                 condition: service_healthy
 networks:
     slm:
