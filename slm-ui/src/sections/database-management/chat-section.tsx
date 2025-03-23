@@ -1,14 +1,13 @@
-import { useState } from 'react';
+import { m } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import Badge from '@mui/material/Badge';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import Tooltip from '@mui/material/Tooltip';
-import Divider from '@mui/material/Divider';
 import TableRow from '@mui/material/TableRow';
 import Skeleton from '@mui/material/Skeleton';
 import TableBody from '@mui/material/TableBody';
@@ -18,9 +17,9 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
-import { alpha, useTheme } from '@mui/material/styles';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
+import { alpha, Theme, styled, useTheme } from '@mui/material/styles';
 
 import Iconify from 'src/components/iconify';
 import Markdown from 'src/components/markdown';
@@ -81,65 +80,137 @@ const exportToCSV = (results: Record<string, any>[], fileName: string) => {
   document.body.removeChild(link);
 };
 
+// ============================== Styled Components ==============================
+
+const FloatingButton = styled(IconButton)(({ theme }) => ({
+  position: 'fixed',
+  right: theme.spacing(4),
+  bottom: theme.spacing(12),
+  backgroundColor: alpha(theme.palette.background.paper, 0.9),
+  backdropFilter: 'blur(4px)',
+  boxShadow: theme.customShadows.z16,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.1)',
+    backgroundColor: theme.palette.background.paper,
+  },
+}));
+
+const MessageCard = styled(Card)(({ theme }) => ({
+  borderRadius: theme.shape.borderRadius * 2,
+  boxShadow: theme.customShadows.z8,
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: theme.customShadows.z16,
+  },
+}));
+
+const StickyTableHead = styled(TableHead)(({ theme }) => ({
+  '& th': {
+    fontWeight: 'bold',
+    backgroundColor: theme.palette.background.neutral,
+    position: 'sticky',
+    top: 0,
+    zIndex: 1,
+    backdropFilter: 'blur(8px)',
+  },
+}));
+
+// ============================== Animation Variants ==============================
+
+const messageVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, x: -20 },
+};
+
+const loadingBarVariants = {
+  initial: { scaleX: 0, originX: 0 },
+  animate: { scaleX: 1, originX: 0, transition: { duration: 2, repeat: Infinity } },
+};
+
+// ============================== Subcomponents ==============================
+
+const ConnectionBadge = ({ isConnected }: { isConnected: boolean }) => (
+  <Box
+    component="span"
+    sx={{
+      width: 8,
+      height: 8,
+      borderRadius: '50%',
+      bgcolor: isConnected ? 'success.main' : 'error.main',
+      ml: 1,
+      boxShadow: (theme) =>
+        `0 0 8px ${alpha(
+          isConnected ? theme.palette.success.main : theme.palette.error.main,
+          0.4
+        )}`,
+    }}
+  />
+);
+
+const DatabaseChip = styled(Chip)(({ theme }) => ({
+  height: 24,
+  fontWeight: 'bold',
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  '& .MuiChip-label': {
+    color: theme.palette.primary.dark,
+    px: 1,
+  },
+}));
+
 // Loading Bot Message Component
 const BotLoadingMessage = () => {
   const theme = useTheme();
 
   return (
     <Stack direction="row" sx={{ mb: 3 }}>
-      <Card
+      <MessageCard
         sx={{
           width: '80%',
-          borderRadius: 2,
-          borderLeft: `4px solid ${theme.palette.primary.main}`,
-          boxShadow: theme.customShadows?.z8,
-          position: 'relative',
-          overflow: 'hidden',
+          borderLeft: `3px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+          bgcolor: alpha(theme.palette.primary.lighter, 0.04),
         }}
       >
         <CardHeader
           title={
             <Stack direction="row" alignItems="center" spacing={1}>
-              <CircularProgress size={16} color="primary" />
-              <Typography variant="subtitle1">Thinking...</Typography>
+              <m.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+              >
+                <Iconify icon="mdi:robot" width={24} />
+              </m.div>
+              <Typography variant="subtitle1">Analyzing your query...</Typography>
             </Stack>
           }
-          avatar={<Iconify icon="mdi:robot" width={24} />}
-          sx={{ pb: 1 }}
         />
-        <CardContent sx={{ pt: 0 }}>
-          <Box sx={{ pt: 1 }}>
-            <Skeleton animation="wave" height={20} width="90%" />
-            <Skeleton animation="wave" height={20} width="75%" />
-            <Skeleton animation="wave" height={20} width="80%" />
-          </Box>
-          <Box sx={{ pt: 2 }}>
-            <Skeleton
-              variant="rectangular"
-              animation="wave"
-              height={100}
-              width="100%"
-              sx={{ borderRadius: 1 }}
+        <CardContent>
+          <Box sx={{ position: 'relative' }}>
+            <Box
+              component={m.div}
+              variants={loadingBarVariants}
+              initial="initial"
+              animate="animate"
+              sx={{
+                height: 2,
+                bgcolor: 'primary.main',
+                position: 'absolute',
+                bottom: -16,
+                left: 0,
+                right: 0,
+                transformOrigin: 'left',
+              }}
             />
+            <Stack spacing={1} sx={{ opacity: 0.8 }}>
+              <Skeleton variant="rounded" height={12} width="85%" />
+              <Skeleton variant="rounded" height={12} width="70%" />
+              <Skeleton variant="rounded" height={12} width="80%" />
+            </Stack>
           </Box>
         </CardContent>
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 4,
-            bgcolor: 'primary.main',
-            animation: 'loadingAnimation 2s infinite',
-            '@keyframes loadingAnimation': {
-              '0%': { transform: 'translateX(-100%)' },
-              '50%': { transform: 'translateX(0%)' },
-              '100%': { transform: 'translateX(100%)' },
-            },
-          }}
-        />
-      </Card>
+      </MessageCard>
     </Stack>
   );
 };
@@ -154,7 +225,19 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
 
   if (!isBot) {
     return (
-      <Stack direction="row" justifyContent="flex-end" sx={{ mb: 3 }}>
+      <Stack
+        direction="row"
+        justifyContent="flex-end"
+        sx={{
+          mb: 3,
+          opacity: 0,
+          animation: 'fadeSlideIn 0.3s ease forwards',
+          '@keyframes fadeSlideIn': {
+            '0%': { opacity: 0, transform: 'translateY(10px)' },
+            '100%': { opacity: 1, transform: 'translateY(0)' },
+          },
+        }}
+      >
         <Paper
           sx={{
             p: 2,
@@ -163,6 +246,11 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
             color: theme.palette.primary.contrastText,
             borderRadius: 2,
             boxShadow: theme.customShadows?.z8,
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-1px)',
+              boxShadow: theme.customShadows?.z16,
+            },
           }}
         >
           <Typography variant="body1">{message.body}</Typography>
@@ -174,13 +262,30 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
   // Handle bot message with enhanced formatting
   if (isError) {
     return (
-      <Stack direction="row" sx={{ mb: 3 }}>
+      <Stack
+        direction="row"
+        sx={{
+          mb: 3,
+          opacity: 0,
+          animation: 'fadeSlideIn 0.3s ease forwards',
+          '@keyframes fadeSlideIn': {
+            '0%': { opacity: 0, transform: 'translateY(10px)' },
+            '100%': { opacity: 1, transform: 'translateY(0)' },
+          },
+        }}
+      >
         <Card
           sx={{
             width: '80%',
             borderRadius: 2,
             borderLeft: `4px solid ${theme.palette.error.main}`,
             boxShadow: theme.customShadows?.z8,
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-1px)',
+              boxShadow: theme.customShadows?.z16,
+            },
+            bgcolor: () => alpha(theme.palette.error.lighter, 0.6),
           }}
         >
           <CardHeader
@@ -203,7 +308,18 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
 
   if (!hasSqlSection || !hasResultsSection) {
     return (
-      <Stack direction="row" sx={{ mb: 3 }}>
+      <Stack
+        direction="row"
+        sx={{
+          mb: 3,
+          opacity: 0,
+          animation: 'fadeSlideIn 0.3s ease forwards',
+          '@keyframes fadeSlideIn': {
+            '0%': { opacity: 0, transform: 'translateY(10px)' },
+            '100%': { opacity: 1, transform: 'translateY(0)' },
+          },
+        }}
+      >
         <Card
           sx={{
             p: 2,
@@ -212,6 +328,13 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
             borderRadius: 2,
             borderLeft: `4px solid ${theme.palette.info.light}`,
             boxShadow: theme.customShadows?.z8,
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-1px)',
+              boxShadow: theme.customShadows?.z16,
+              borderLeft: `4px solid ${theme.palette.info.main}`,
+              bgcolor: (t) => alpha(t.palette.info.lighter, 0.1),
+            },
           }}
         >
           <CardHeader
@@ -341,24 +464,24 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
                       height: '8px',
                     },
                     '&::-webkit-scrollbar-track': {
-                      backgroundColor: (t) => alpha(t.palette.grey[500], 0.08),
+                      backgroundColor: (t: Theme) => alpha(t.palette.grey[500], 0.08),
                       borderRadius: '8px',
                     },
                     '&::-webkit-scrollbar-thumb': {
-                      backgroundColor: (t) => alpha(t.palette.grey[500], 0.24),
+                      backgroundColor: (t: Theme) => alpha(t.palette.grey[500], 0.24),
                       borderRadius: '8px',
                       '&:hover': {
-                        backgroundColor: (t) => alpha(t.palette.grey[500], 0.32),
+                        backgroundColor: (t: Theme) => alpha(t.palette.grey[500], 0.32),
                       },
                     },
                     // Firefox scrollbar styling
                     scrollbarWidth: 'thin',
-                    scrollbarColor: (t) =>
+                    scrollbarColor: (t: Theme) =>
                       `${alpha(t.palette.grey[500], 0.24)} ${alpha(t.palette.grey[500], 0.08)}`,
                   }}
                 >
                   <Table size="small" stickyHeader>
-                    <TableHead>
+                    <StickyTableHead>
                       <TableRow
                         sx={{
                           bgcolor: theme.palette.background.neutral,
@@ -369,7 +492,7 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
                           <TableCell key={column}>{column}</TableCell>
                         ))}
                       </TableRow>
-                    </TableHead>
+                    </StickyTableHead>
                     <TableBody>
                       {message.metadata?.results.map((row: Record<string, any>, index: number) => (
                         <TableRow
@@ -450,192 +573,217 @@ export default function ChatSection({
   messageCount = 0,
   isLoading = false,
 }: Props) {
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  // Handle scroll behavior
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setShowScrollButton(!isNearBottom);
+  };
+
+  // Scroll to bottom function
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  // Auto scroll to bottom when new messages arrive
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
+
   return (
-    <Stack sx={{ height: '100%' }}>
-      {/* Enhanced Header */}
+    <Stack sx={{ height: '100%', position: 'relative' }}>
+      {/* Enhanced Header with Motion */}
       <Box
+        component={m.div}
+        initial={{ y: -20 }}
+        animate={{ y: 0 }}
         sx={{
           p: 2,
-          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
-          bgcolor: (theme) => theme.palette.background.neutral,
+          borderBottom: (theme: Theme) => `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          bgcolor: (theme: Theme) => alpha(theme.palette.background.default, 0.9),
+          backdropFilter: 'blur(8px)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 2,
         }}
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Stack spacing={1}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Iconify icon="eva:database-fill" width={24} height={24} color="primary.main" />
-              <Typography variant="h6">{source.name}</Typography>
-              <Tooltip title={isConnected ? 'Connected' : 'Disconnected'}>
-                <Badge
-                  variant="dot"
-                  color={isConnected ? 'success' : 'error'}
-                  sx={{ '& .MuiBadge-badge': { right: -4, top: 8 } }}
-                >
-                  <Chip
-                    size="small"
-                    label={source.databaseType}
-                    sx={{
-                      height: 24,
-                      fontWeight: 'bold',
-                      bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
-                    }}
-                  />
-                </Badge>
-              </Tooltip>
-            </Stack>
-
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Tooltip title="Database Connection">
-                <Typography
-                  variant="caption"
-                  sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}
-                >
-                  <Iconify icon="eva:link-2-fill" width={14} height={14} sx={{ mr: 0.5 }} />
-                  {source.host}:{source.port}/{source.databaseName}
-                </Typography>
-              </Tooltip>
-              <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-              <Tooltip title="Total Messages">
-                <Typography
-                  variant="caption"
-                  sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}
-                >
-                  <Iconify icon="eva:message-circle-fill" width={14} height={14} sx={{ mr: 0.5 }} />
-                  {messageCount} messages
-                </Typography>
-              </Tooltip>
-            </Stack>
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Iconify
+              icon="mdi:database"
+              width={28}
+              sx={{ color: 'primary.main', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
+            />
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              {source.name}
+              <ConnectionBadge isConnected={isConnected} />
+            </Typography>
+            <DatabaseChip label={source.databaseType} />
           </Stack>
 
-          <Stack direction="row" spacing={1}>
+          {/* Animated Action Buttons */}
+          <Stack direction="row" spacing={0.5}>
             {onExportChat && (
-              <Tooltip title="Export Chat">
-                <IconButton onClick={onExportChat} size="small">
-                  <Iconify icon="eva:download-outline" />
+              <Tooltip title="Export Chat History">
+                <IconButton
+                  onClick={onExportChat}
+                  sx={{
+                    '&:hover': {
+                      bgcolor: (theme) => alpha(theme.palette.info.main, 0.1),
+                      color: 'info.main',
+                    },
+                  }}
+                >
+                  <Iconify icon="mdi:export-variant" />
                 </IconButton>
               </Tooltip>
             )}
             {onClearChat && (
-              <Tooltip title="Clear Chat">
+              <Tooltip title="Clear Conversation">
                 <IconButton
                   onClick={onClearChat}
-                  size="small"
-                  color="error"
-                  sx={{ '&:hover': { bgcolor: 'error.lighter' } }}
+                  sx={{
+                    '&:hover': {
+                      bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
+                      color: 'error.main',
+                    },
+                  }}
                 >
-                  <Iconify icon="eva:trash-2-outline" />
+                  <Iconify icon="mdi:trash-can-outline" />
                 </IconButton>
               </Tooltip>
             )}
           </Stack>
         </Stack>
+
+        {/* Connection Info */}
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              color: 'text.secondary',
+              fontFamily: 'monospace',
+              bgcolor: (theme: Theme) => alpha(theme.palette.grey[500], 0.08),
+              px: 1,
+              borderRadius: 1,
+            }}
+          >
+            <Iconify icon="mdi:server-network" width={14} sx={{ mr: 0.5 }} />
+            {source.host}:{source.port}/{source.databaseName}
+          </Typography>
+        </Stack>
       </Box>
 
-      {/* Chat Area with custom message components */}
+      {/* Chat Messages Area */}
       <Box
+        ref={chatContainerRef}
+        onScroll={handleScroll}
+        component={m.div}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         sx={{
           flexGrow: 1,
           height: 0,
-          overflow: 'auto',
-          bgcolor: (theme) => theme.palette.background.default,
           p: 3,
-          scrollBehavior: 'smooth',
-          '&::-webkit-scrollbar': {
-            width: '8px',
-            height: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: (t) => alpha(t.palette.grey[500], 0.08),
-            borderRadius: '8px',
-          },
+          overflow: 'auto',
+          bgcolor: (theme: Theme) => alpha(theme.palette.background.default, 0.4),
+          backgroundImage:
+            'radial-gradient(circle at 10% 10%, rgba(145, 158, 171, 0.05) 0%, transparent 50%)',
+          '&::-webkit-scrollbar': { width: '6px' },
           '&::-webkit-scrollbar-thumb': {
-            backgroundColor: (t) => alpha(t.palette.grey[500], 0.24),
-            borderRadius: '8px',
-            '&:hover': {
-              backgroundColor: (t) => alpha(t.palette.grey[500], 0.32),
-            },
+            borderRadius: 3,
+            bgcolor: (theme: Theme) => alpha(theme.palette.grey[500], 0.24),
           },
-          // Firefox scrollbar styling
-          scrollbarWidth: 'thin',
-          scrollbarColor: (t) =>
-            `${alpha(t.palette.grey[500], 0.24)} ${alpha(t.palette.grey[500], 0.08)}`,
-          // Show scroll shadows
-          background: (theme) => `
-            linear-gradient(${theme.palette.background.default} 33%, rgba(255,255,255,0)),
-            linear-gradient(rgba(255,255,255,0), ${theme.palette.background.default} 66%) 0 100%,
-            radial-gradient(farthest-side at 50% 0, rgba(0,0,0,0.12), rgba(0,0,0,0)),
-            radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,0.12), rgba(0,0,0,0)) 0 100%
-          `,
-          backgroundSize: '100% 48px, 100% 48px, 100% 16px, 100% 16px',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'local, local, scroll, scroll',
-          backgroundPosition: '0 0, 0 100%, 0 0, 0 100%',
         }}
       >
-        {messages.length === 0 ? (
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{ height: '100%', color: 'text.secondary' }}
+        {messages.map((message, index) => (
+          <m.div
+            key={index}
+            variants={messageVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
           >
-            <Iconify
-              icon="eva:message-square-outline"
-              width={40}
-              height={40}
-              sx={{ opacity: 0.3, mb: 2 }}
-            />
-            <Typography variant="body2">
-              No messages yet. Ask a question about your database.
-            </Typography>
-          </Stack>
-        ) : (
-          <>
-            {messages.map((message, index) => (
-              <ChatMessage key={index} message={message} />
-            ))}
-            {isLoading && <BotLoadingMessage />}
-          </>
+            <ChatMessage message={message} />
+          </m.div>
+        ))}
+
+        {isLoading && (
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <BotLoadingMessage />
+          </m.div>
         )}
       </Box>
 
       {/* Enhanced Input Area */}
       <Box
+        component={m.div}
+        initial={{ y: 20 }}
+        animate={{ y: 0 }}
         sx={{
           p: 2,
-          borderTop: (theme) => `1px solid ${theme.palette.divider}`,
-          bgcolor: (theme) => theme.palette.background.neutral,
-          position: 'relative',
+          borderTop: (theme: Theme) => `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          bgcolor: (theme) => alpha(theme.palette.background.default, 0.9),
+          backdropFilter: 'blur(8px)',
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 2,
         }}
       >
-        {(() => {
-          let placeholderText = 'Reconnecting to database...';
-          if (isLoading) {
-            placeholderText = 'Processing your request...';
-          } else if (isConnected) {
-            placeholderText = 'Ask a question about your database...';
-          }
-
-          return (
+        <Box sx={{ position: 'relative' }}>
+          <Box
+            sx={{
+              '& .MuiInputBase-root': {
+                borderRadius: 2,
+                bgcolor: (theme: Theme) => alpha(theme.palette.grey[500], 0.08),
+                backdropFilter: 'blur(4px)',
+                border: (theme: Theme) => `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                '&:hover': {
+                  bgcolor: (theme: Theme) => alpha(theme.palette.grey[500], 0.12),
+                },
+              },
+            }}
+          >
             <ChatMessageInput
               onSend={onSendMessage}
               disabled={!isConnected || isLoading}
-              placeholder={placeholderText}
+              placeholder={isConnected ? 'Ask about your database...' : 'Connecting to database...'}
             />
-          );
-        })()}
-
-        {isLoading && (
-          <CircularProgress
-            size={20}
-            sx={{
-              position: 'absolute',
-              right: 24,
-              top: '50%',
-              transform: 'translateY(-50%)',
-            }}
-          />
-        )}
+          </Box>
+          {isLoading && (
+            <CircularProgress
+              size={20}
+              sx={{
+                position: 'absolute',
+                right: 16,
+                top: '50%',
+                transform: 'translateY(-50%)',
+              }}
+            />
+          )}
+        </Box>
       </Box>
+
+      {/* Animated Scroll Button */}
+      {showScrollButton && (
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+          <FloatingButton onClick={scrollToBottom} color="primary">
+            <Iconify icon="mdi:arrow-collapse-down" />
+          </FloatingButton>
+        </m.div>
+      )}
     </Stack>
   );
 }
