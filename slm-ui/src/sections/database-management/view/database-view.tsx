@@ -92,7 +92,7 @@ const beautifySql = (sql: string) => {
 
       // Increase indent for opening parentheses at the end of a line
       if (line.trim().endsWith('(')) {
-        indentLevel++;
+        indentLevel += 1;
       }
 
       return indentedLine;
