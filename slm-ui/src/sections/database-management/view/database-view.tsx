@@ -1,5 +1,8 @@
 import { useState, useCallback } from 'react';
 
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
@@ -15,6 +18,7 @@ import { DatabaseSource } from 'src/types/database';
 import ChatSection from '../chat-section';
 import axiosEngine from '../../../utils/axios-engine';
 import DatabaseCreateDialog from '../database-create-dialog';
+import DataSourceManagement from '../data-source-management';
 import ConversationList, { Conversation } from '../conversation-list';
 
 // Styled components
@@ -24,7 +28,7 @@ const RootStyle = styled('div')(({ theme }) => ({
   overflow: 'hidden',
 }));
 
-const SidebarStyle = styled('div')(({ theme }) => ({
+const PrimarySidebarStyle = styled('div')(({ theme }) => ({
   width: 280,
   flexShrink: 0,
   display: 'flex',
@@ -32,12 +36,36 @@ const SidebarStyle = styled('div')(({ theme }) => ({
   borderRight: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
   boxShadow: theme.customShadows?.z4,
+  overflow: 'hidden',
 }));
+
+const SecondarySidebarStyle = styled('div')(({ theme }) => ({
+  width: 280,
+  flexShrink: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  borderRight: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.customShadows?.z4,
+  overflow: 'hidden',
+}));
+
+const TabsContainerStyle = styled('div')(({ theme }) => ({
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.background.paper,
+}));
+
+const ScrollableContent = styled('div')({
+  flexGrow: 1,
+  overflow: 'auto',
+});
 
 const MainStyle = styled('div')({
   flexGrow: 1,
   height: '100%',
   overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
 });
 
 // SQL Beautifier function
@@ -107,11 +135,15 @@ export default function DatabaseView() {
   const [selectedSource, setSelectedSource] = useState<DatabaseSource | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
   // Conversation states
   const [conversations, setConversations] = useState<Record<string, Conversation[]>>({});
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Record<string, IChatMessage[]>>({});
+
+  // Check if user is owner of selected data source
+  const isOwner = true;
 
   const handleOpenCreateDialog = () => {
     setIsCreateDialogOpen(true);
@@ -124,6 +156,11 @@ export default function DatabaseView() {
   const handleSourceSelect = (source: DatabaseSource) => {
     setSelectedSource(source);
     setSelectedConversation(null);
+    setTabValue(0); // Default to chat tab when selecting a source
+  };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
   };
 
   const handleNewChat = useCallback(() => {
@@ -146,10 +183,12 @@ export default function DatabaseView() {
       ...prev,
       [newConversation.id]: [],
     }));
+    setTabValue(0); // Switch to chat tab
   }, [selectedSource, conversations]);
 
   const handleSelectConversation = useCallback((conversation: Conversation) => {
     setSelectedConversation(conversation);
+    setTabValue(0); // Switch to chat tab
   }, []);
 
   const updateConversationPreview = useCallback(
@@ -327,10 +366,112 @@ export default function DatabaseView() {
     [selectedConversation, selectedSource, addMessage, updateConversationPreview]
   );
 
+  // Handle data source update (for the management tab)
+  const handleUpdateDataSource = (updatedSource: DatabaseSource) => {
+    setDataSources((prev) =>
+      prev.map((source) => (source.name === updatedSource.name ? updatedSource : source))
+    );
+    setSelectedSource(updatedSource);
+  };
+
+  // Render the content based on the active tab
+  const renderMainContent = () => {
+    if (!selectedSource) {
+      return (
+        <Stack
+          alignItems="center"
+          justifyContent="center"
+          sx={{
+            height: '100%',
+            color: 'text.secondary',
+            bgcolor: 'background.default',
+          }}
+        >
+          <Typography variant="h6">Select a data source to start</Typography>
+        </Stack>
+      );
+    }
+
+    // Chat tab content
+    if (tabValue === 0) {
+      if (!selectedConversation) {
+        return (
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            sx={{
+              height: '100%',
+              color: 'text.secondary',
+              bgcolor: 'background.default',
+            }}
+          >
+            <Typography variant="h6" sx={{ mb: 1 }}>
+              Select or start a conversation
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="eva:plus-fill" />}
+              onClick={handleNewChat}
+              sx={{ mt: 2 }}
+            >
+              New Chat
+            </Button>
+          </Stack>
+        );
+      }
+
+      return (
+        <ChatSection
+          source={selectedSource}
+          messages={messages[selectedConversation.id] || []}
+          onSendMessage={handleSendMessage}
+          onClearChat={handleClearChat}
+          onExportChat={handleExportChat}
+          messageCount={messages[selectedConversation.id]?.length || 0}
+          isLoading={isLoading}
+        />
+      );
+    }
+
+    // Management tab content
+    if (tabValue === 1) {
+      if (!isOwner) {
+        return (
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            sx={{
+              height: '100%',
+              color: 'text.secondary',
+              bgcolor: 'background.default',
+            }}
+          >
+            <Typography variant="h6">
+              You need to be the owner of this data source to manage it
+            </Typography>
+          </Stack>
+        );
+      }
+
+      return (
+        <DataSourceManagement
+          dataSource={selectedSource}
+          onUpdate={handleUpdateDataSource}
+          onDelete={(sourceId) => {
+            setDataSources((prev) => prev.filter((source) => source.name !== sourceId));
+            setSelectedSource(null);
+          }}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
     <RootStyle>
       {/* Primary Sidebar - Data Sources */}
-      <SidebarStyle>
+      <PrimarySidebarStyle>
         <Stack sx={{ p: 2.5, pb: 0 }} spacing={2}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Typography variant="h6">Data Sources</Typography>
@@ -346,90 +487,76 @@ export default function DatabaseView() {
           </Button>
         </Stack>
 
-        <Stack sx={{ p: 2.5, flexGrow: 1, overflow: 'auto' }} spacing={1}>
-          {dataSources.map((source) => (
-            <Button
-              key={source.name}
-              fullWidth
-              variant={selectedSource?.name === source.name ? 'contained' : 'outlined'}
-              onClick={() => handleSourceSelect(source)}
-              sx={{
-                justifyContent: 'flex-start',
-                px: 2,
-                py: 1.5,
-                borderRadius: 1,
-                mb: 0.5,
-              }}
-            >
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Iconify icon="eva:database-fill" width={20} height={20} />
-                <Typography variant="body2" noWrap>
-                  {source.name}
-                </Typography>
-              </Stack>
-            </Button>
-          ))}
-        </Stack>
-      </SidebarStyle>
-
-      {/* Secondary Sidebar - Conversations */}
-      <SidebarStyle>
-        {selectedSource ? (
-          <ConversationList
-            conversations={conversations[selectedSource.name] || []}
-            selectedId={selectedConversation?.id || null}
-            onSelect={handleSelectConversation}
-            onNewChat={handleNewChat}
-          />
-        ) : (
-          <Stack sx={{ p: 2.5 }}>
-            <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
-              Select a data source to view conversations
-            </Typography>
-          </Stack>
-        )}
-      </SidebarStyle>
-
-      {/* Main Content Area */}
-      <MainStyle>
-        {selectedSource && selectedConversation ? (
-          <ChatSection
-            source={selectedSource}
-            messages={messages[selectedConversation.id] || []}
-            onSendMessage={handleSendMessage}
-            onClearChat={handleClearChat}
-            onExportChat={handleExportChat}
-            messageCount={messages[selectedConversation.id]?.length || 0}
-            isLoading={isLoading}
-          />
-        ) : (
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              height: '100%',
-              color: 'text.secondary',
-              bgcolor: 'background.default',
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              {selectedSource
-                ? 'Select or start a conversation'
-                : 'Select a data source to start chatting'}
-            </Typography>
-            {selectedSource && (
+        <ScrollableContent>
+          <Stack sx={{ p: 2.5 }} spacing={1}>
+            {dataSources.map((source) => (
               <Button
-                variant="contained"
-                startIcon={<Iconify icon="eva:plus-fill" />}
-                onClick={handleNewChat}
-                sx={{ mt: 2 }}
+                key={source.name}
+                fullWidth
+                variant={selectedSource?.name === source.name ? 'contained' : 'outlined'}
+                onClick={() => handleSourceSelect(source)}
+                sx={{
+                  justifyContent: 'flex-start',
+                  px: 2,
+                  py: 1.5,
+                  borderRadius: 1,
+                  mb: 0.5,
+                }}
               >
-                New Chat
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Iconify icon="eva:database-fill" width={20} height={20} />
+                  <Typography variant="body2" noWrap>
+                    {source.name}
+                  </Typography>
+                </Stack>
               </Button>
-            )}
+            ))}
           </Stack>
+        </ScrollableContent>
+      </PrimarySidebarStyle>
+
+      {/* Secondary Area - Tabs + Content */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, height: '100%' }}>
+        {/* Tabs for Chat/Management - placed above second sidebar */}
+        {selectedSource && (
+          <TabsContainerStyle>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              aria-label="data source tabs"
+              sx={{ borderBottom: 1, borderColor: 'divider' }}
+            >
+              <Tab label="Chat" />
+              {isOwner && <Tab label="Manage Data Source" />}
+            </Tabs>
+          </TabsContainerStyle>
         )}
-      </MainStyle>
+
+        <Box sx={{ display: 'flex', flexGrow: 1, height: 'calc(100% - 48px)', overflow: 'hidden' }}>
+          {/* Secondary Sidebar - Conversations (only visible when Chat tab is active) */}
+          {tabValue === 0 && (
+            <SecondarySidebarStyle>
+              {selectedSource ? (
+                <ConversationList
+                  conversations={conversations[selectedSource.name] || []}
+                  selectedId={selectedConversation?.id || null}
+                  onSelect={handleSelectConversation}
+                  onNewChat={handleNewChat}
+                />
+              ) : (
+                <Stack sx={{ p: 2.5 }}>
+                  <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
+                    Select a data source to view conversations
+                  </Typography>
+                </Stack>
+              )}
+            </SecondarySidebarStyle>
+          )}
+
+          {/* Main Content Area */}
+          <MainStyle>{renderMainContent()}</MainStyle>
+        </Box>
+      </Box>
 
       <DatabaseCreateDialog
         open={isCreateDialogOpen}

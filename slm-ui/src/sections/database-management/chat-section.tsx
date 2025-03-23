@@ -335,6 +335,26 @@ const ChatMessage = ({ message }: { message: IChatMessage }) => {
                   sx={{
                     maxHeight: showFullResults ? 'none' : 300,
                     border: `1px solid ${theme.palette.divider}`,
+                    scrollBehavior: 'smooth',
+                    '&::-webkit-scrollbar': {
+                      width: '8px',
+                      height: '8px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      backgroundColor: (t) => alpha(t.palette.grey[500], 0.08),
+                      borderRadius: '8px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      backgroundColor: (t) => alpha(t.palette.grey[500], 0.24),
+                      borderRadius: '8px',
+                      '&:hover': {
+                        backgroundColor: (t) => alpha(t.palette.grey[500], 0.32),
+                      },
+                    },
+                    // Firefox scrollbar styling
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: (t) =>
+                      `${alpha(t.palette.grey[500], 0.24)} ${alpha(t.palette.grey[500], 0.08)}`,
                   }}
                 >
                   <Table size="small" stickyHeader>
@@ -515,9 +535,41 @@ export default function ChatSection({
       <Box
         sx={{
           flexGrow: 1,
+          height: 0,
           overflow: 'auto',
           bgcolor: (theme) => theme.palette.background.default,
           p: 3,
+          scrollBehavior: 'smooth',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+            height: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: (t) => alpha(t.palette.grey[500], 0.08),
+            borderRadius: '8px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: (t) => alpha(t.palette.grey[500], 0.24),
+            borderRadius: '8px',
+            '&:hover': {
+              backgroundColor: (t) => alpha(t.palette.grey[500], 0.32),
+            },
+          },
+          // Firefox scrollbar styling
+          scrollbarWidth: 'thin',
+          scrollbarColor: (t) =>
+            `${alpha(t.palette.grey[500], 0.24)} ${alpha(t.palette.grey[500], 0.08)}`,
+          // Show scroll shadows
+          background: (theme) => `
+            linear-gradient(${theme.palette.background.default} 33%, rgba(255,255,255,0)),
+            linear-gradient(rgba(255,255,255,0), ${theme.palette.background.default} 66%) 0 100%,
+            radial-gradient(farthest-side at 50% 0, rgba(0,0,0,0.12), rgba(0,0,0,0)),
+            radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,0.12), rgba(0,0,0,0)) 0 100%
+          `,
+          backgroundSize: '100% 48px, 100% 48px, 100% 16px, 100% 16px',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'local, local, scroll, scroll',
+          backgroundPosition: '0 0, 0 100%, 0 0, 0 100%',
         }}
       >
         {messages.length === 0 ? (

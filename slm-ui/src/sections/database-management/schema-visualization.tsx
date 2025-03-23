@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import { alpha } from '@mui/material/styles';
 
 import { TableDefinition } from 'src/types/database';
 
@@ -597,6 +598,26 @@ export function SchemaVisualization({
         bgcolor: '#F7FAFC',
         borderRadius: 1,
         border: '1px solid #E2E8F0',
+        scrollBehavior: 'smooth',
+        '&::-webkit-scrollbar': {
+          width: '8px',
+          height: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: (theme) => alpha(theme.palette.grey[500], 0.08),
+          borderRadius: '8px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: (theme) => alpha(theme.palette.grey[500], 0.24),
+          borderRadius: '8px',
+          '&:hover': {
+            backgroundColor: (theme) => alpha(theme.palette.grey[500], 0.32),
+          },
+        },
+        // Firefox scrollbar styling
+        scrollbarWidth: 'thin',
+        scrollbarColor: (theme) =>
+          `${alpha(theme.palette.grey[500], 0.24)} ${alpha(theme.palette.grey[500], 0.08)}`,
       }}
     />
   );
