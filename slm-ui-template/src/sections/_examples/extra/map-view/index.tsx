@@ -7,7 +7,6 @@ import CardContent from '@mui/material/CardContent';
 
 import { paths } from 'src/routes/paths';
 
-import { MAPBOX_API } from 'src/config-global';
 import { cities as CITIES } from 'src/_mock/map/cities';
 import { countries as COUNTRIES } from 'src/_mock/map/countries';
 
@@ -38,7 +37,7 @@ const THEMES = {
 };
 
 const baseSettings = {
-  mapboxAccessToken: MAPBOX_API,
+  mapboxAccessToken: '',
   minZoom: 1,
 };
 

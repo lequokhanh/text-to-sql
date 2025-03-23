@@ -2,6 +2,7 @@ streamlit
 requests
 flask
 flask[async]
+flask-cors
 llama-index
 llama-index-core
 llama-index-embeddings-huggingface

@@ -44,8 +44,8 @@ export default function LoginView() {
   });
 
   const defaultValues = {
-    username: 'demo',
-    password: 'demo1234',
+    username: '',
+    password: '',
   };
 
   const methods = useForm({
@@ -124,10 +124,6 @@ export default function LoginView() {
   return (
     <>
       {renderHead}
-
-      <Alert severity="info" sx={{ mb: 3 }}>
-        Use username : <strong>demo</strong> / password :<strong> demo1234</strong>
-      </Alert>
 
       {!!errorMsg && (
         <Alert severity="error" sx={{ mb: 3 }}>

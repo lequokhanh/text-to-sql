@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
@@ -22,6 +21,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import LinearProgress from '@mui/material/LinearProgress';
 import InputAdornment from '@mui/material/InputAdornment';
+
+import axios, { endpoints } from 'src/utils/axios-embed';
 
 import Iconify from 'src/components/iconify';
 
@@ -144,12 +145,12 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:8181/db/connect', formData);
+      const response = await axios.post(endpoints.db.connect, formData);
       const [host, portAndDb] = formData.url.split(':');
       const [port, databaseName] = portAndDb?.split('/') || [];
 
       const sourceData: DatabaseSource = {
-        tableDefinitions: response.data.data.tables,
+        tableDefinitions: response.data.tables,
         databaseType: formData.dbType.toUpperCase() as 'POSTGRESQL' | 'MYSQL',
         host: host || '',
         port: port || '',
@@ -188,7 +189,7 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
     setError('');
 
     try {
-      await axios.post('http://localhost:8181/db/test-connection', formData);
+      await axios.post(endpoints.db.testConnection, formData);
       setConnectionSuccess(true);
       setError('');
     } catch (err) {
@@ -199,13 +200,12 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
     }
   };
 
-  const isFormValid = () => (
-      !!sourceName &&
-      !!formData.url &&
-      !!formData.username &&
-      !!formData.password &&
-      Object.keys(validationErrors).length === 0
-    );
+  const isFormValid = () =>
+    !!sourceName &&
+    !!formData.url &&
+    !!formData.username &&
+    !!formData.password &&
+    Object.keys(validationErrors).length === 0;
 
   return (
     <Dialog

@@ -3,6 +3,7 @@ import atexit
 import consul
 import socket
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from core.workflow import SQLAgentWorkflow
 from core.templates import TEXT_TO_SQL_TMPL, TABLE_RETRIEVAL_TMPL
 from core.services import get_schema
@@ -18,6 +19,7 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)
 
 # Register error handlers
 register_error_handlers(app)

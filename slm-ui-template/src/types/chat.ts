@@ -17,6 +17,7 @@ export type IChatMessage = {
   senderId: string;
   contentType: string;
   attachments: IChatAttachment[];
+  metadata?: Record<string, any>;
 };
 
 export type IChatParticipant = {

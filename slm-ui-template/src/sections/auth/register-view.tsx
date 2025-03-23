@@ -25,7 +25,7 @@ import FormProvider, { RHFTextField } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
-export default function JwtRegisterView() {
+export default function RegisterView() {
   const { register } = useAuthContext();
 
   const router = useRouter();

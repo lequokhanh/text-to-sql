@@ -5,15 +5,19 @@ import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
+import axiosEmbed, { endpoints } from 'src/utils/axios-embed';
+
 import Iconify from 'src/components/iconify';
 
 import { IChatMessage } from 'src/types/chat';
 import { DatabaseSource } from 'src/types/database';
 
 import ChatSection from '../chat-section';
+import axiosEngine from "../../../utils/axios-engine";
 import DatabaseCreateDialog from '../database-create-dialog';
 import ConversationList, { Conversation } from '../conversation-list';
 
+// Styled components
 const RootStyle = styled('div')(({ theme }) => ({
   display: 'flex',
   height: '100%',
@@ -26,6 +30,8 @@ const SidebarStyle = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   borderRight: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.customShadows?.z4,
 }));
 
 const MainStyle = styled('div')({
@@ -38,6 +44,7 @@ export default function DatabaseView() {
   const [dataSources, setDataSources] = useState<DatabaseSource[]>([]);
   const [selectedSource, setSelectedSource] = useState<DatabaseSource | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Conversation states
   const [conversations, setConversations] = useState<Record<string, Conversation[]>>({});
@@ -83,9 +90,85 @@ export default function DatabaseView() {
     setSelectedConversation(conversation);
   }, []);
 
+  const updateConversationPreview = useCallback(
+    (sourceId: string, conversationId: string, preview: string) => {
+      setConversations((prev) => ({
+        ...prev,
+        [sourceId]: prev[sourceId].map((conv) =>
+          conv.id === conversationId ? { ...conv, preview } : conv
+        ),
+      }));
+    },
+    []
+  );
+
+  const handleClearChat = useCallback(() => {
+    if (!selectedConversation || !selectedSource) return;
+
+    setMessages((prev) => ({
+      ...prev,
+      [selectedConversation.id]: [],
+    }));
+
+    updateConversationPreview(selectedSource.name, selectedConversation.id, 'Chat cleared');
+  }, [selectedConversation, selectedSource, updateConversationPreview]);
+
+  const handleExportChat = useCallback(() => {
+    if (!selectedConversation || !selectedSource) return;
+
+    const chatData = messages[selectedConversation.id] || [];
+    const chatText = chatData
+      .map((msg) => {
+        const sender = msg.senderId === 'user' ? 'User' : 'Database';
+        return `${sender} (${new Date(msg.createdAt).toLocaleString()}):\n${msg.body}\n`;
+      })
+      .join('\n----------\n\n');
+
+    const blob = new Blob([chatText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${selectedSource.name}-chat-${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [selectedConversation, selectedSource, messages]);
+
+  const addMessage = useCallback((conversationId: string, message: IChatMessage) => {
+    setMessages((prev) => ({
+      ...prev,
+      [conversationId]: [...(prev[conversationId] || []), message],
+    }));
+  }, []);
+
+  const formatResultsAsMarkdownTable = (data: any[]) => {
+    if (!data.length) return '```\nNo results found\n```';
+
+    const columns = Object.keys(data[0]);
+
+    // Create header row
+    let table = `| ${columns.join(' | ')} |\n`;
+    table += `| ${columns.map(() => '---').join(' | ')} |\n`;
+
+    // Add data rows
+    data.forEach((row) => {
+      table += `| ${columns
+        .map((col) => {
+          const value = row[col];
+          if (value === null || value === undefined) return '';
+          if (typeof value === 'object') return JSON.stringify(value);
+          return String(value);
+        })
+        .join(' | ')} |\n`;
+    });
+
+    return table;
+  };
+
   const handleSendMessage = useCallback(
-    (message: string) => {
-      if (!selectedConversation) return;
+    async (message: string) => {
+      if (!selectedConversation || !selectedSource) return;
 
       const userMessage: IChatMessage = {
         id: `msg-${Date.now()}`,
@@ -96,37 +179,88 @@ export default function DatabaseView() {
         attachments: [],
       };
 
-      setMessages((prev) => ({
-        ...prev,
-        [selectedConversation.id]: [...(prev[selectedConversation.id] || []), userMessage],
-      }));
+      addMessage(selectedConversation.id, userMessage);
+      updateConversationPreview(selectedSource.name, selectedConversation.id, message);
 
-      // Update conversation preview
-      setConversations((prev) => ({
-        ...prev,
-        [selectedSource!.name]: prev[selectedSource!.name].map((conv) =>
-          conv.id === selectedConversation.id ? { ...conv, preview: message } : conv
-        ),
-      }));
+      setIsLoading(true);
+      try {
+        // Get SQL query from NL query
+        let { data: query } = await axiosEngine
+          .post('/query', {
+            query: message,
+            connection_payload: {
+              url: `${selectedSource.host}:${selectedSource.port}/${selectedSource.databaseName}`,
+              username: selectedSource.username,
+              password: selectedSource.password,
+              dbType: selectedSource.databaseType.toLowerCase(),
+            },
+          });
 
-      // Simulate bot response
-      setTimeout(() => {
+        query = query.replace(/;$/, '');
+
+        // Execute query against the database
+        const { data } = await axiosEmbed.post(endpoints.db.query, {
+          query,
+          url: `${selectedSource.host}:${selectedSource.port}/${selectedSource.databaseName}`,
+          username: selectedSource.username,
+          password: selectedSource.password,
+          dbType: selectedSource.databaseType.toLowerCase(),
+        });
+
+        let resultText = '';
+
+        if (Array.isArray(data)) {
+          // Format the response with two clear sections
+          const sqlQuerySection = `## SQL Query\n\`\`\`sql\n${query}\n\`\`\`\n\n`;
+          const resultsSection = `## Results (${data.length} ${
+            data.length === 1 ? 'row' : 'rows'
+          })\n`;
+
+          // Format as markdown table when possible
+          resultText = sqlQuerySection + resultsSection + formatResultsAsMarkdownTable(data);
+        } else {
+          // Fallback for other data formats
+          const sqlQuerySection = `## SQL Query\n\`\`\`sql\n${query}\n\`\`\`\n\n`;
+          resultText = `${sqlQuerySection}## Results\n\`\`\`json\n${JSON.stringify(
+            data,
+            null,
+            2
+          )}\n\`\`\``;
+        }
+
         const botMessage: IChatMessage = {
           id: `msg-${Date.now()}`,
-          body: 'This is a simulated response. Replace with actual database query results.',
+          body: resultText,
+          contentType: 'text',
+          createdAt: new Date(),
+          senderId: 'bot',
+          attachments: [],
+          metadata: {
+            query,
+            results: data,
+            rowCount: Array.isArray(data) ? data.length : 0,
+          },
+        };
+
+        addMessage(selectedConversation.id, botMessage);
+      } catch (error) {
+        const errorMessage: IChatMessage = {
+          id: `msg-${Date.now()}`,
+          body: `## Error\n\`\`\`\n${
+            error instanceof Error ? error.message : 'An unexpected error occurred'
+          }\n\`\`\``,
           contentType: 'text',
           createdAt: new Date(),
           senderId: 'bot',
           attachments: [],
         };
 
-        setMessages((prev) => ({
-          ...prev,
-          [selectedConversation.id]: [...(prev[selectedConversation.id] || []), botMessage],
-        }));
-      }, 1000);
+        addMessage(selectedConversation.id, errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
     },
-    [selectedConversation, selectedSource]
+    [selectedConversation, selectedSource, addMessage, updateConversationPreview]
   );
 
   return (
@@ -155,7 +289,13 @@ export default function DatabaseView() {
               fullWidth
               variant={selectedSource?.name === source.name ? 'contained' : 'outlined'}
               onClick={() => handleSourceSelect(source)}
-              sx={{ justifyContent: 'flex-start', px: 2, py: 1 }}
+              sx={{
+                justifyContent: 'flex-start',
+                px: 2,
+                py: 1.5,
+                borderRadius: 1,
+                mb: 0.5,
+              }}
             >
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Iconify icon="eva:database-fill" width={20} height={20} />
@@ -193,18 +333,36 @@ export default function DatabaseView() {
             source={selectedSource}
             messages={messages[selectedConversation.id] || []}
             onSendMessage={handleSendMessage}
+            onClearChat={handleClearChat}
+            onExportChat={handleExportChat}
+            messageCount={messages[selectedConversation.id]?.length || 0}
+            isLoading={isLoading}
           />
         ) : (
           <Stack
             alignItems="center"
             justifyContent="center"
-            sx={{ height: '100%', color: 'text.secondary' }}
+            sx={{
+              height: '100%',
+              color: 'text.secondary',
+              bgcolor: 'background.default',
+            }}
           >
-            <Typography variant="body2">
+            <Typography variant="h6" sx={{ mb: 1 }}>
               {selectedSource
                 ? 'Select or start a conversation'
                 : 'Select a data source to start chatting'}
             </Typography>
+            {selectedSource && (
+              <Button
+                variant="contained"
+                startIcon={<Iconify icon="eva:plus-fill" />}
+                onClick={handleNewChat}
+                sx={{ mt: 2 }}
+              >
+                New Chat
+              </Button>
+            )}
           </Stack>
         )}
       </MainStyle>

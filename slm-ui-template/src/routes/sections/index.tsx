@@ -6,7 +6,6 @@ import { AuthGuard } from 'src/auth/guard';
 import { authRoutes } from './auth';
 import { authDemoRoutes } from './auth-demo';
 import { HomePage, mainRoutes } from './main';
-import { dashboardRoutes } from './dashboard';
 import { componentsRoutes } from './components';
 
 // ----------------------------------------------------------------------
@@ -34,9 +33,6 @@ export default function Router() {
     // Auth routes
     ...authRoutes,
     ...authDemoRoutes,
-
-    // Dashboard routes
-    ...dashboardRoutes,
 
     // Main routes
     ...mainRoutes,

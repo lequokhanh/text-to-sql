@@ -18,9 +18,3 @@ security:
   jwt:
     secret-key: qwertyuiopasdfghjklzxcvbnmqwertyuiopaASDFGHJKLZXCVBNM123456
     expiration-time: 432000000  # Example: 5 days in milliseconds
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health

@@ -11,9 +11,9 @@ public class Whitelist {
 
     static {
         WHITELIST.put("/api/v1/auth/**", "ANY"); // "ANY" to allow all methods
-        WHITELIST.put("/api/v1/public/**", "GET"); // Allow only GET method
         WHITELIST.put("/swagger-ui/**", "ANY");
         WHITELIST.put("/v3/api-docs/**", "ANY");
+        WHITELIST.put("/health-check", "GET");
     }
 
     public static Map<String, String> get() {
