@@ -13,7 +13,7 @@ import { IChatMessage } from 'src/types/chat';
 import { DatabaseSource } from 'src/types/database';
 
 import ChatSection from '../chat-section';
-import axiosEngine from "../../../utils/axios-engine";
+import axiosEngine from '../../../utils/axios-engine';
 import DatabaseCreateDialog from '../database-create-dialog';
 import ConversationList, { Conversation } from '../conversation-list';
 
@@ -39,6 +39,68 @@ const MainStyle = styled('div')({
   height: '100%',
   overflow: 'hidden',
 });
+
+// SQL Beautifier function
+const beautifySql = (sql: string) => {
+  if (!sql) return sql;
+
+  // Replace multiple spaces with a single space
+  let formatted = sql.replace(/\s+/g, ' ').trim();
+
+  // Add newlines after specific SQL keywords
+  const keywords = [
+    'SELECT',
+    'FROM',
+    'WHERE',
+    'JOIN',
+    'LEFT JOIN',
+    'RIGHT JOIN',
+    'INNER JOIN',
+    'GROUP BY',
+    'ORDER BY',
+    'HAVING',
+    'LIMIT',
+    'UNION',
+    'UNION ALL',
+    'INSERT INTO',
+    'UPDATE',
+    'DELETE FROM',
+    'CREATE TABLE',
+    'ALTER TABLE',
+    'DROP TABLE',
+    'TRUNCATE TABLE',
+  ];
+
+  // Case-insensitive regex for each keyword
+  keywords.forEach((keyword) => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+    formatted = formatted.replace(regex, (match) => `\n${match}`);
+  });
+
+  // Add indentation
+  const lines = formatted.split('\n');
+  let indentLevel = 0;
+
+  formatted = lines
+    .map((line) => {
+      // Decrease indent for closing parentheses at the start of a line
+      if (line.trim().startsWith(')')) {
+        indentLevel = Math.max(0, indentLevel - 1);
+      }
+
+      const indentedLine = ' '.repeat(indentLevel * 2) + line.trim();
+
+      // Increase indent for opening parentheses at the end of a line
+      if (line.trim().endsWith('(')) {
+        indentLevel++;
+      }
+
+      return indentedLine;
+    })
+    .join('\n');
+
+  return formatted;
+};
 
 export default function DatabaseView() {
   const [dataSources, setDataSources] = useState<DatabaseSource[]>([]);
@@ -185,18 +247,20 @@ export default function DatabaseView() {
       setIsLoading(true);
       try {
         // Get SQL query from NL query
-        let { data: query } = await axiosEngine
-          .post('/query', {
-            query: message,
-            connection_payload: {
-              url: `${selectedSource.host}:${selectedSource.port}/${selectedSource.databaseName}`,
-              username: selectedSource.username,
-              password: selectedSource.password,
-              dbType: selectedSource.databaseType.toLowerCase(),
-            },
-          });
+        let { data: query } = await axiosEngine.post('/query', {
+          query: message,
+          connection_payload: {
+            url: `${selectedSource.host}:${selectedSource.port}/${selectedSource.databaseName}`,
+            username: selectedSource.username,
+            password: selectedSource.password,
+            dbType: selectedSource.databaseType.toLowerCase(),
+          },
+        });
 
         query = query.replace(/;$/, '');
+
+        // Apply SQL beautification
+        const beautifiedQuery = beautifySql(query);
 
         // Execute query against the database
         const { data } = await axiosEmbed.post(endpoints.db.query, {
@@ -210,8 +274,8 @@ export default function DatabaseView() {
         let resultText = '';
 
         if (Array.isArray(data)) {
-          // Format the response with two clear sections
-          const sqlQuerySection = `## SQL Query\n\`\`\`sql\n${query}\n\`\`\`\n\n`;
+          // Format the response with two clear sections and improved styling
+          const sqlQuerySection = `## SQL Query\n\`\`\`sql\n${beautifiedQuery}\n\`\`\`\n\n`;
           const resultsSection = `## Results (${data.length} ${
             data.length === 1 ? 'row' : 'rows'
           })\n`;
@@ -220,7 +284,7 @@ export default function DatabaseView() {
           resultText = sqlQuerySection + resultsSection + formatResultsAsMarkdownTable(data);
         } else {
           // Fallback for other data formats
-          const sqlQuerySection = `## SQL Query\n\`\`\`sql\n${query}\n\`\`\`\n\n`;
+          const sqlQuerySection = `## SQL Query\n\`\`\`sql\n${beautifiedQuery}\n\`\`\`\n\n`;
           resultText = `${sqlQuerySection}## Results\n\`\`\`json\n${JSON.stringify(
             data,
             null,
@@ -236,7 +300,7 @@ export default function DatabaseView() {
           senderId: 'bot',
           attachments: [],
           metadata: {
-            query,
+            query: beautifiedQuery,
             results: data,
             rowCount: Array.isArray(data) ? data.length : 0,
           },
