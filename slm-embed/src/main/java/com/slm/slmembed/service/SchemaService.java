@@ -440,17 +440,8 @@ public class SchemaService {
 
         String normalizedQuery = query.trim().toLowerCase();
 
-        // 1. Basic validation - only allow SELECT queries
-        if (!normalizedQuery.startsWith("select ")) {
-            return false;
-        }
 
-        // 2. Check for multiple statements
-        if (normalizedQuery.contains(";")) {
-            return false;
-        }
-
-        // 3. Check for common SQL injection patterns
+        // 1. Check for common SQL injection patterns
         String[] blacklistedPatterns = {
                 "into outfile",
                 "load_file",
@@ -474,7 +465,7 @@ public class SchemaService {
             }
         }
 
-        // 4. Check for balanced quotes and parentheses
+        // 2. Check for balanced quotes and parentheses
         int singleQuotes = 0;
         int doubleQuotes = 0;
         int parentheses = 0;
