@@ -3,7 +3,7 @@ import 'src/utils/highlight';
 
 import ReactQuill from 'react-quill';
 
-import { alpha } from '@mui/material/styles';
+import {alpha, Theme} from '@mui/material/styles';
 
 import { EditorProps } from './types';
 import { StyledEditor } from './styles';
@@ -39,9 +39,9 @@ export default function Editor({
       <StyledEditor
         sx={{
           ...(error && {
-            border: (theme) => `solid 1px ${theme.palette.error.main}`,
+            border: (theme: Theme) => `solid 1px ${theme.palette.error.main}`,
             '& .ql-editor': {
-              bgcolor: (theme) => alpha(theme.palette.error.main, 0.08),
+              bgcolor: (theme: Theme) => alpha(theme.palette.error.main, 0.08),
             },
           }),
           ...sx,
