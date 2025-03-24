@@ -14,5 +14,6 @@ public class DataSourceConfigurationDTO {
     private Integer port;
     private String databaseName;
     private String username;
+    private String password;
     private String collectionName;
 }
