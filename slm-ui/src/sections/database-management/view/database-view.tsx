@@ -1,3 +1,4 @@
+import sqlFormatter from '@sqltools/formatter';
 import {useMemo, useState, useEffect, useCallback} from 'react';
 
 import Tab from '@mui/material/Tab';
@@ -21,6 +22,8 @@ import axiosEngine from '../../../utils/axios-engine';
 import DatabaseCreateDialog from '../database-create-dialog';
 import DataSourceManagement from '../data-source-management';
 import ConversationList, { Conversation } from '../conversation-list';
+
+
 
 // Styled components
 const RootStyle = styled('div')(({ theme }) => ({
@@ -68,68 +71,6 @@ const MainStyle = styled('div')({
   display: 'flex',
   flexDirection: 'column',
 });
-
-// SQL Beautifier function
-const beautifySql = (sql: string) => {
-  if (!sql) return sql;
-
-  // Replace multiple spaces with a single space
-  let formatted = sql.replace(/\s+/g, ' ').trim();
-
-  // Add newlines after specific SQL keywords
-  const keywords = [
-    'SELECT',
-    'FROM',
-    'WHERE',
-    'JOIN',
-    'LEFT JOIN',
-    'RIGHT JOIN',
-    'INNER JOIN',
-    'GROUP BY',
-    'ORDER BY',
-    'HAVING',
-    'LIMIT',
-    'UNION',
-    'UNION ALL',
-    'INSERT INTO',
-    'UPDATE',
-    'DELETE FROM',
-    'CREATE TABLE',
-    'ALTER TABLE',
-    'DROP TABLE',
-    'TRUNCATE TABLE',
-  ];
-
-  // Case-insensitive regex for each keyword
-  keywords.forEach((keyword) => {
-    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-    formatted = formatted.replace(regex, (match) => `\n${match}`);
-  });
-
-  // Add indentation
-  const lines = formatted.split('\n');
-  let indentLevel = 0;
-
-  formatted = lines
-    .map((line) => {
-      // Decrease indent for closing parentheses at the start of a line
-      if (line.trim().startsWith(')')) {
-        indentLevel = Math.max(0, indentLevel - 1);
-      }
-
-      const indentedLine = ' '.repeat(indentLevel * 2) + line.trim();
-
-      // Increase indent for opening parentheses at the end of a line
-      if (line.trim().endsWith('(')) {
-        indentLevel += 1;
-      }
-
-      return indentedLine;
-    })
-    .join('\n');
-
-  return formatted.trim();
-};
 
 export default function DatabaseView() {
   const [dataSources, setDataSources] = useState<DatabaseSource[]>([]);
@@ -320,7 +261,7 @@ export default function DatabaseView() {
         query = query.replace(/;$/, '');
 
         // Apply SQL beautification
-        const beautifiedQuery = beautifySql(query);
+        const beautifiedQuery = sqlFormatter.format(query);
 
         // Execute query against the database
         const { data } = await axiosEmbed.post(endpoints.db.query, {
