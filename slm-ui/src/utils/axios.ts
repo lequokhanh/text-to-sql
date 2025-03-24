@@ -37,4 +37,8 @@ export const endpoints = {
     login: '/api/v1/auth/login',
     register: '/api/v1/auth/register',
   },
+  dataSource: {
+    create: '/api/v1/data-sources',
+    owned: '/api/v1/data-sources/owned',
+  }
 };

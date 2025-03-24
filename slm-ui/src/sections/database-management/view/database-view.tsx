@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import {useMemo, useState, useEffect, useCallback} from 'react';
 
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -9,6 +9,7 @@ import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
 import axiosEmbed, { endpoints } from 'src/utils/axios-embed';
+import axios, { endpoints as endpointBackend } from 'src/utils/axios';
 
 import Iconify from 'src/components/iconify';
 
@@ -145,6 +146,22 @@ export default function DatabaseView() {
   // Check if user is owner of selected data source
   const isOwner = true;
 
+  // Memoize the fetchDataSources function
+  const fetchDataSources = useMemo(() => async () => {
+    try {
+      const { data } = await axios.get(endpointBackend.dataSource.owned);
+      setDataSources(data);
+
+      // Set the first data source as selected if available and no source is currently selected
+      if (data.length > 0 && !selectedSource) {
+        setSelectedSource(data[0]);
+        setTabValue(0); // Default to chat tab when selecting a source
+      }
+    } catch (error) {
+      console.error('Error fetching data sources:', error);
+    }
+  }, [selectedSource]); // Dependencies for the memoized function
+
   const handleOpenCreateDialog = () => {
     setIsCreateDialogOpen(true);
   };
@@ -159,9 +176,13 @@ export default function DatabaseView() {
     setTabValue(0); // Default to chat tab when selecting a source
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
+  useEffect(() => {
+    fetchDataSources();
+  }, [fetchDataSources]); // Empty dependency array to run once on mount
 
   const handleNewChat = useCallback(() => {
     if (!selectedSource) return;
@@ -374,6 +395,16 @@ export default function DatabaseView() {
     setSelectedSource(updatedSource);
   };
 
+  const handleCreateDataSource = async (source: DatabaseSource) => {
+    try {
+      await axios.post(endpointBackend.dataSource.create, source);
+      await fetchDataSources(); // Call the memoized function
+      handleCloseCreateDialog();
+    } catch (error) {
+      console.error('Error creating data source:', error);
+    }
+  };
+
   // Render the content based on the active tab
   const renderMainContent = () => {
     if (!selectedSource) {
@@ -561,11 +592,7 @@ export default function DatabaseView() {
       <DatabaseCreateDialog
         open={isCreateDialogOpen}
         onClose={handleCloseCreateDialog}
-        onCreateSource={(source: DatabaseSource) => {
-          setDataSources((prev) => [...prev, source]);
-          setSelectedSource(source);
-          handleCloseCreateDialog();
-        }}
+        onCreateSource={handleCreateDataSource}
       />
     </RootStyle>
   );
