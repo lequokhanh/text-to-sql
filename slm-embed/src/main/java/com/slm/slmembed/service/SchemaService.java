@@ -1,10 +1,14 @@
 package com.slm.slmembed.service;
 
+import com.slm.slmembed.dto.DatabaseSchemaDto;
+import com.slm.slmembed.dto.TableDto;
+import com.slm.slmembed.exception.AppException;
 import com.slm.slmembed.request.DbConnectionRequest;
 import com.slm.slmembed.request.DbConnectionWithQueryRequest;
-import com.slm.slmembed.response.DefaultResponse;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,24 +16,48 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.io.File;
-import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static com.slm.slmembed.enums.ResponseEnum.*;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SchemaService {
 
     private static final String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String POSTGRESQL_DRIVER = "org.postgresql.Driver";
     private static final String SQLITE_DRIVER = "org.sqlite.JDBC";
 
+    // Connection timeout settings
+    private static final int CONNECTION_TIMEOUT = 30000; // 30 seconds
+    private static final int IDLE_TIMEOUT = 300000; // 5 minutes
+    private static final int MAX_POOL_SIZE = 5;
+    private static final int MIN_IDLE = 1;
+
     // Connection pool storage using a thread-safe map
-    // Key is a combination of connection details, value is the DataSource
     private final Map<String, DataSource> connectionPool = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final FileService fileService;
+
+    // SQL injection prevention patterns
+    private static final String[] BLACKLISTED_PATTERNS = {
+            "into outfile", "load_file", "--", "/*", "xp_", "shutdown",
+            "drop", "delete", "update", "insert", "exec", "execute",
+            "waitfor", "delay"
+    };
+
+    @PostConstruct
+    public void init() {
+        scheduledExecutor.scheduleAtFixedRate(this::cleanupIdleConnections, 10, 10, TimeUnit.MINUTES);
+    }
 
     /**
      * Creates a unique key for identifying connections
@@ -45,23 +73,19 @@ public class SchemaService {
         String connectionKey = createConnectionKey(url, username, driverClassName);
 
         // Return existing connection if it exists
-        if (connectionPool.containsKey(connectionKey)) {
-            log.info("Using existing connection for {}", connectionKey);
-            return connectionPool.get(connectionKey);
-        }
+        return connectionPool.computeIfAbsent(connectionKey, key -> {
+            log.info("Creating new connection for {}", key);
+            return createDataSource(url, username, password, driverClassName);
+        });
+    }
 
-        // Create a new connection if none exists
-        log.info("Creating new connection for {}", connectionKey);
+    /**
+     * Create a new HikariCP data source with optimal settings
+     */
+    private DataSource createDataSource(String url, String username, String password, String driverClassName) {
         HikariConfig hikariConfig = new HikariConfig();
 
-        String jdbcUrl;
-        switch (driverClassName) {
-            case MYSQL_DRIVER -> jdbcUrl = "jdbc:mysql://" + url;
-            case POSTGRESQL_DRIVER -> jdbcUrl = "jdbc:postgresql://" + url;
-            case SQLITE_DRIVER -> jdbcUrl = "jdbc:sqlite:" + url;
-            default -> jdbcUrl = url;
-        }
-
+        String jdbcUrl = buildJdbcUrl(url, driverClassName);
         hikariConfig.setJdbcUrl(jdbcUrl);
 
         if (!SQLITE_DRIVER.equals(driverClassName)) {
@@ -72,14 +96,46 @@ public class SchemaService {
         hikariConfig.setDriverClassName(driverClassName);
 
         // Configure connection pool settings
-        hikariConfig.setMaximumPoolSize(5);
-        hikariConfig.setMinimumIdle(1);
-        hikariConfig.setIdleTimeout(300000); // 5 minutes
-        hikariConfig.setConnectionTimeout(30000); // 30 seconds
+        hikariConfig.setMaximumPoolSize(MAX_POOL_SIZE);
+        hikariConfig.setMinimumIdle(MIN_IDLE);
+        hikariConfig.setIdleTimeout(IDLE_TIMEOUT);
+        hikariConfig.setConnectionTimeout(CONNECTION_TIMEOUT);
+        hikariConfig.setPoolName("HikariPool-" + driverClassName.substring(driverClassName.lastIndexOf('.') + 1));
 
-        DataSource dataSource = new HikariDataSource(hikariConfig);
-        connectionPool.put(connectionKey, dataSource);
-        return dataSource;
+        hikariConfig.setConnectionTestQuery("SELECT 1");
+
+        return new HikariDataSource(hikariConfig);
+    }
+
+    /**
+     * Build JDBC URL based on driver type
+     */
+    private String buildJdbcUrl(String url, String driverClassName) {
+        return switch (driverClassName) {
+            case MYSQL_DRIVER -> "jdbc:mysql://" + url;
+            case POSTGRESQL_DRIVER -> "jdbc:postgresql://" + url;
+            case SQLITE_DRIVER -> "jdbc:sqlite:" + url;
+            default -> url;
+        };
+    }
+
+    /**
+     * Clean up idle connections
+     */
+    private void cleanupIdleConnections() {
+        log.info("Checking for idle connections to clean up");
+
+        Iterator<Map.Entry<String, DataSource>> iterator = connectionPool.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, DataSource> entry = iterator.next();
+            if (entry.getValue() instanceof HikariDataSource hikariDataSource) {
+                if (hikariDataSource.getHikariPoolMXBean().getIdleConnections() == hikariDataSource.getHikariPoolMXBean().getTotalConnections()) {
+                    log.info("Closing idle connection pool: {}", entry.getKey());
+                    closeDataSource(hikariDataSource);
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     /**
@@ -87,7 +143,8 @@ public class SchemaService {
      */
     @PreDestroy
     public void cleanupConnections() {
-        log.info("Closing all database connections");
+        log.info("Shutting down schema service and closing all database connections");
+        scheduledExecutor.shutdownNow();
         for (DataSource dataSource : connectionPool.values()) {
             closeDataSource(dataSource);
         }
@@ -97,36 +154,25 @@ public class SchemaService {
     /**
      * Entry point to retrieve database schema
      */
-    public DefaultResponse getDatabaseSchema(DbConnectionRequest request) {
+    public DatabaseSchemaDto getDatabaseSchema(DbConnectionRequest request) {
         String dbType = request.getDbType().toLowerCase();
 
         try {
-            switch (dbType) {
-                case "mysql":
-                    return getDatabaseSchemaInternal(request, MYSQL_DRIVER);
-                case "postgresql":
-                    return getDatabaseSchemaInternal(request, POSTGRESQL_DRIVER);
-                default:
-                    return new DefaultResponse()
-                            .setStatusCode(400)
-                            .setMessage("Unsupported database type: " + request.getDbType())
-                            .setData(null);
-            }
+            return switch (dbType) {
+                case "mysql" -> getDatabaseSchemaInternal(request, MYSQL_DRIVER);
+                case "postgresql" -> getDatabaseSchemaInternal(request, POSTGRESQL_DRIVER);
+                default -> throw new AppException(UNSUPPORTED_DATABASE_TYPE);
+            };
         } catch (Exception e) {
             log.error("Failed to retrieve schema: ", e);
-            return new DefaultResponse()
-                    .setStatusCode(400)
-                    .setMessage("Failed to retrieve schema: " + e.getMessage())
-                    .setData(null);
+            throw new AppException(DATABASE_CONNECTION_ERROR);
         }
     }
 
     /**
      * Common implementation for MySQL and PostgreSQL schema retrieval
      */
-    private DefaultResponse getDatabaseSchemaInternal(DbConnectionRequest request, String driver) {
-        Map<String, Object> schema = new HashMap<>();
-
+    private DatabaseSchemaDto getDatabaseSchemaInternal(DbConnectionRequest request, String driver) {
         try {
             DataSource dataSource = getOrCreateDataSource(
                     request.getUrl(), request.getUsername(), request.getPassword(), driver);
@@ -135,68 +181,88 @@ public class SchemaService {
                 DatabaseMetaData metaData = connection.getMetaData();
                 log.info("Connected to {} {}", metaData.getDatabaseProductName(), metaData.getDatabaseProductVersion());
 
-                schema.put("database", connection.getCatalog());
+                DatabaseSchemaDto schema = new DatabaseSchemaDto();
+                schema.setDatabase(connection.getCatalog());
+                List<TableDto> tables = new ArrayList<>();
 
-                List<Map<String, Object>> tablesList = new ArrayList<>();
-
-                try (ResultSet tables = metaData.getTables(connection.getCatalog(), null, "%", new String[]{"TABLE"})) {
-                    while (tables.next()) {
-                        String tableName = tables.getString("TABLE_NAME");
+                try (ResultSet tablesResultSet = metaData.getTables(connection.getCatalog(), null, "%", new String[]{"TABLE"})) {
+                    while (tablesResultSet.next()) {
+                        String tableName = tablesResultSet.getString("TABLE_NAME");
                         log.debug("Processing table: {}", tableName);
 
-                        Map<String, Object> tableMap = new HashMap<>();
-                        tableMap.put("tableIdentifier", tableName);
-
-                        Map<String, List<Map<String, String>>> foreignKeys = new HashMap<>();
-
-                        try (ResultSet fkResult = metaData.getImportedKeys(connection.getCatalog(), null, tableName)) {
-                            while (fkResult.next()) {
-                                String columnName = fkResult.getString("FKCOLUMN_NAME");
-                                Map<String, String> relation = new HashMap<>();
-                                relation.put("toColumn", fkResult.getString("PKCOLUMN_NAME"));
-                                relation.put("tableIdentifier", fkResult.getString("PKTABLE_NAME"));
-                                relation.put("type", "OTM");
-
-                                foreignKeys.computeIfAbsent(columnName, k -> new ArrayList<>()).add(relation);
-                            }
-                        }
-
-                        List<Map<String, Object>> columnsList = new ArrayList<>();
-
-                        try (ResultSet columns = metaData.getColumns(connection.getCatalog(), null, tableName, "%")) {
-                            while (columns.next()) {
-                                Map<String, Object> columnMap = new HashMap<>();
-                                String columnName = columns.getString("COLUMN_NAME");
-
-                                columnMap.put("columnIdentifier", columnName);
-                                columnMap.put("columnType", columns.getString("TYPE_NAME") + "(" + columns.getInt("COLUMN_SIZE") + ")");
-                                columnMap.put("isPrimaryKey", isPrimaryKey(metaData, connection.getCatalog(), tableName, columnName));
-                                columnMap.put("columnDescription", Optional.ofNullable(columns.getString("REMARKS")).orElse(""));
-                                columnMap.put("relations", foreignKeys.getOrDefault(columnName, new ArrayList<>()));
-
-                                columnsList.add(columnMap);
-                            }
-                        }
-
-                        tableMap.put("columns", columnsList);
-                        tablesList.add(tableMap);
+                        TableDto table = extractTableMetadata(metaData, connection.getCatalog(), tableName);
+                        tables.add(table);
                     }
                 }
 
-                schema.put("tables", tablesList);
-            }
+                schema.setTables(tables);
 
-            return new DefaultResponse()
-                    .setStatusCode(200)
-                    .setMessage("Schema retrieved successfully")
-                    .setData(schema);
-        } catch (Exception e) {
+                return schema;
+            }
+        } catch (SQLException e) {
             log.error("Schema retrieval error: ", e);
-            return new DefaultResponse()
-                    .setStatusCode(400)
-                    .setMessage("Failed to retrieve schema: " + e.getMessage())
-                    .setData(null);
+            throw new AppException(DATABASE_CONNECTION_ERROR);
         }
+    }
+
+    /**
+     * Extract table metadata including columns and foreign keys
+     */
+    private TableDto extractTableMetadata(DatabaseMetaData metaData, String catalog, String tableName) throws SQLException {
+        TableDto table = new TableDto();
+        table.setTableIdentifier(tableName);
+
+        Map<String, List<Map<String, String>>> foreignKeys = extractForeignKeys(metaData, catalog, tableName);
+        List<Map<String, Object>> columns = extractColumns(metaData, catalog, tableName, foreignKeys);
+
+        table.setColumns(columns);
+        return table;
+    }
+
+    /**
+     * Extract foreign key information for a table
+     */
+    private Map<String, List<Map<String, String>>> extractForeignKeys(DatabaseMetaData metaData, String catalog, String tableName) throws SQLException {
+        Map<String, List<Map<String, String>>> foreignKeys = new HashMap<>();
+
+        try (ResultSet fkResult = metaData.getImportedKeys(catalog, null, tableName)) {
+            while (fkResult.next()) {
+                String columnName = fkResult.getString("FKCOLUMN_NAME");
+                Map<String, String> relation = new HashMap<>();
+                relation.put("toColumn", fkResult.getString("PKCOLUMN_NAME"));
+                relation.put("tableIdentifier", fkResult.getString("PKTABLE_NAME"));
+                relation.put("type", "OTM");
+
+                foreignKeys.computeIfAbsent(columnName, k -> new ArrayList<>()).add(relation);
+            }
+        }
+
+        return foreignKeys;
+    }
+
+    /**
+     * Extract column information for a table
+     */
+    private List<Map<String, Object>> extractColumns(DatabaseMetaData metaData, String catalog,
+                                                     String tableName, Map<String, List<Map<String, String>>> foreignKeys) throws SQLException {
+        List<Map<String, Object>> columnsList = new ArrayList<>();
+
+        try (ResultSet columns = metaData.getColumns(catalog, null, tableName, "%")) {
+            while (columns.next()) {
+                Map<String, Object> columnMap = new HashMap<>();
+                String columnName = columns.getString("COLUMN_NAME");
+
+                columnMap.put("columnIdentifier", columnName);
+                columnMap.put("columnType", columns.getString("TYPE_NAME") + "(" + columns.getInt("COLUMN_SIZE") + ")");
+                columnMap.put("isPrimaryKey", isPrimaryKey(metaData, catalog, tableName, columnName));
+                columnMap.put("columnDescription", Optional.ofNullable(columns.getString("REMARKS")).orElse(""));
+                columnMap.put("relations", foreignKeys.getOrDefault(columnName, new ArrayList<>()));
+
+                columnsList.add(columnMap);
+            }
+        }
+
+        return columnsList;
     }
 
     private boolean isPrimaryKey(DatabaseMetaData metaData, String catalog, String tableName, String columnName) throws SQLException {
@@ -213,136 +279,124 @@ public class SchemaService {
     /**
      * Implementation for SQLite schema retrieval
      */
-    public DefaultResponse getDatabaseSchemaSQLite(MultipartFile file) {
-        Map<String, Object> schema = new HashMap<>();
-        DataSource dataSource = null;
+    public DatabaseSchemaDto getDatabaseSchemaSQLite(MultipartFile file) {
         File tempFile = null;
 
         try {
-            tempFile = File.createTempFile("sqlite_db", ".db");
-            file.transferTo(tempFile);
+            tempFile = fileService.saveToTempFile(file);
             String url = tempFile.getAbsolutePath();
 
             // For SQLite files, use the file path as the key
-            dataSource = getOrCreateDataSource(url, null, null, SQLITE_DRIVER);
+            DataSource dataSource = getOrCreateDataSource(url, null, null, SQLITE_DRIVER);
 
             try (var connection = dataSource.getConnection()) {
                 DatabaseMetaData metaData = connection.getMetaData();
                 log.info("Connected to {} {}", metaData.getDatabaseProductName(), metaData.getDatabaseProductVersion());
 
-                schema.put("database", tempFile.getAbsolutePath());
+                DatabaseSchemaDto schema = new DatabaseSchemaDto();
+                schema.setDatabase(tempFile.getName());
+                List<TableDto> tables = new ArrayList<>();
 
-                List<Map<String, Object>> tablesList = new ArrayList<>();
                 try (var statement = connection.createStatement();
                      var resultSet = statement.executeQuery(
                              "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")) {
                     while (resultSet.next()) {
+                        TableDto table = new TableDto();
                         String tableName = resultSet.getString("name");
-                        log.debug("Processing SQLite table: {}", tableName);
+                        table.setTableIdentifier(tableName);
 
-                        Map<String, Object> tableMap = new HashMap<>();
-                        tableMap.put("tableIdentifier", tableName);
+                        Map<String, List<Map<String, String>>> foreignKeys = extractSQLiteForeignKeys(connection, tableName);
+                        List<Map<String, Object>> columns = extractSQLiteColumns(connection, tableName, foreignKeys);
 
-                        List<Map<String, Object>> columnsList = new ArrayList<>();
-                        Map<String, List<Map<String, String>>> foreignKeys = new HashMap<>();
-
-                        try (var fkStatement = connection.createStatement();
-                             var fkResult = fkStatement.executeQuery("PRAGMA foreign_key_list(" + tableName + ")")) {
-                            while (fkResult.next()) {
-                                String fromColumn = fkResult.getString("from");
-                                Map<String, String> foreignKeyMap = new HashMap<>();
-                                foreignKeyMap.put("toColumn", fkResult.getString("to"));
-                                foreignKeyMap.put("tableIdentifier", fkResult.getString("table"));
-                                foreignKeyMap.put("type", "OTM");
-
-                                foreignKeys.computeIfAbsent(fromColumn, k -> new ArrayList<>()).add(foreignKeyMap);
-                            }
-                        }
-
-                        try (var pragmaStatement = connection.createStatement();
-                             var pragmaResult = pragmaStatement.executeQuery("PRAGMA table_info(" + tableName + ")")) {
-                            while (pragmaResult.next()) {
-                                Map<String, Object> columnMap = new HashMap<>();
-                                String columnName = pragmaResult.getString("name");
-                                columnMap.put("columnIdentifier", columnName);
-                                columnMap.put("columnType", pragmaResult.getString("type"));
-                                columnMap.put("isPrimaryKey", pragmaResult.getInt("pk") == 1);
-                                columnMap.put("columnDescription",
-                                        Optional.ofNullable(pragmaResult.getString("dflt_value"))
-                                                .orElse(""));
-
-                                columnMap.put("relations", foreignKeys.getOrDefault(columnName, new ArrayList<>()));
-
-                                columnsList.add(columnMap);
-                            }
-                        }
-
-                        tableMap.put("columns", columnsList);
-                        tablesList.add(tableMap);
+                        table.setColumns(columns);
+                        tables.add(table);
                     }
                 }
-                schema.put("tables", tablesList);
-            }
 
-            return new DefaultResponse()
-                    .setStatusCode(200)
-                    .setMessage("SQLite schema retrieved successfully")
-                    .setData(schema);
-        } catch (Exception e) {
+                schema.setTables(tables);
+
+                return schema;
+            }
+        } catch (SQLException e) {
             log.error("SQLite schema retrieval error: ", e);
-            return new DefaultResponse()
-                    .setStatusCode(400)
-                    .setMessage("Failed to retrieve SQLite schema: " + e.getMessage())
-                    .setData(null);
+            throw new AppException(DATABASE_CONNECTION_ERROR);
         } finally {
-            // For SQLite, we need to handle temporary files but keep connections in pool
-            if (tempFile != null && tempFile.exists()) {
-                tempFile.delete();
+            fileService.safeDeleteFile(tempFile);
+        }
+    }
+
+    /**
+     * Extract foreign key information for a SQLite table
+     */
+    private Map<String, List<Map<String, String>>> extractSQLiteForeignKeys(java.sql.Connection connection, String tableName) throws SQLException {
+        Map<String, List<Map<String, String>>> foreignKeys = new HashMap<>();
+
+        try (var fkStatement = connection.createStatement();
+             var fkResult = fkStatement.executeQuery("PRAGMA foreign_key_list(" + tableName + ")")) {
+            while (fkResult.next()) {
+                String fromColumn = fkResult.getString("from");
+                Map<String, String> foreignKeyMap = new HashMap<>();
+                foreignKeyMap.put("toColumn", fkResult.getString("to"));
+                foreignKeyMap.put("tableIdentifier", fkResult.getString("table"));
+                foreignKeyMap.put("type", "OTM");
+
+                foreignKeys.computeIfAbsent(fromColumn, k -> new ArrayList<>()).add(foreignKeyMap);
             }
         }
+
+        return foreignKeys;
+    }
+
+    /**
+     * Extract column information for a SQLite table
+     */
+    private List<Map<String, Object>> extractSQLiteColumns(java.sql.Connection connection, String tableName,
+                                                           Map<String, List<Map<String, String>>> foreignKeys) throws SQLException {
+        List<Map<String, Object>> columnsList = new ArrayList<>();
+
+        try (var pragmaStatement = connection.createStatement();
+             var pragmaResult = pragmaStatement.executeQuery("PRAGMA table_info(" + tableName + ")")) {
+            while (pragmaResult.next()) {
+                Map<String, Object> columnMap = new HashMap<>();
+                String columnName = pragmaResult.getString("name");
+                columnMap.put("columnIdentifier", columnName);
+                columnMap.put("columnType", pragmaResult.getString("type"));
+                columnMap.put("isPrimaryKey", pragmaResult.getInt("pk") == 1);
+                columnMap.put("columnDescription",
+                        Optional.ofNullable(pragmaResult.getString("dflt_value")).orElse(""));
+                columnMap.put("relations", foreignKeys.getOrDefault(columnName, new ArrayList<>()));
+
+                columnsList.add(columnMap);
+            }
+        }
+
+        return columnsList;
     }
 
     /**
      * Entry point for executing queries on databases
      */
-    public DefaultResponse queryDatabase(DbConnectionWithQueryRequest request) {
+    public List<Map<String, Object>> queryDatabase(DbConnectionWithQueryRequest request) {
         String dbType = request.getDbType().toLowerCase();
         String query = request.getQuery();
 
         // Validate query
-        if (!isValidSQLQuery(query)) {
-            return new DefaultResponse()
-                    .setStatusCode(400)
-                    .setMessage("Invalid or unsafe SQL query")
-                    .setData(null);
+        if (isNotValidSQLQuery(query)) {
+            throw new AppException(INVALID_QUERY);
         }
 
         // Execute query based on database type
-        try {
-            switch (dbType) {
-                case "mysql":
-                    return executeQuery(request, query, MYSQL_DRIVER);
-                case "postgresql":
-                    return executeQuery(request, query, POSTGRESQL_DRIVER);
-                default:
-                    return new DefaultResponse()
-                            .setStatusCode(400)
-                            .setMessage("Unsupported database type: " + request.getDbType())
-                            .setData(null);
-            }
-        } catch (Exception e) {
-            log.error("Query execution error: ", e);
-            return new DefaultResponse()
-                    .setStatusCode(400)
-                    .setMessage("Failed to execute query: " + e.getMessage())
-                    .setData(null);
-        }
+        return switch (dbType) {
+            case "mysql" -> executeQuery(request, query, MYSQL_DRIVER);
+            case "postgresql" -> executeQuery(request, query, POSTGRESQL_DRIVER);
+            default -> throw new AppException(UNSUPPORTED_DATABASE_TYPE);
+        };
     }
 
     /**
      * Common implementation for executing queries (MySQL/PostgreSQL)
      */
-    private DefaultResponse executeQuery(DbConnectionRequest request, String query, String driver) {
+    private List<Map<String, Object>> executeQuery(DbConnectionRequest request, String query, String driver) {
         List<Map<String, Object>> result = new ArrayList<>();
 
         try {
@@ -364,27 +418,23 @@ public class SchemaService {
                 }
             }
 
-            return new DefaultResponse()
-                    .setStatusCode(200)
-                    .setMessage("Query executed successfully")
-                    .setData(result);
+            return result;
         } catch (SQLException e) {
             log.error("SQL query execution error: ", e);
-            return new DefaultResponse()
-                    .setStatusCode(400)
-                    .setMessage("Failed to execute query: " + e.getMessage())
-                    .setData(null);
+            throw new AppException(SQL_ERROR, e.getMessage());
         }
     }
 
-    public DefaultResponse executeQuerySQLite(MultipartFile file, String query) {
+    public List<Map<String, Object>> executeQuerySQLite(MultipartFile file, String query) {
+        if (isNotValidSQLQuery(query)) {
+        }
+
         List<Map<String, Object>> result = new ArrayList<>();
         File tempFile = null;
 
         try {
             // Save the uploaded file to a temporary directory.
-            tempFile = File.createTempFile("sqlite_db", ".db");
-            file.transferTo(tempFile);
+            tempFile = fileService.saveToTempFile(file);
 
             // Create the SQLite connection URL using the temporary file's absolute path.
             String url = tempFile.getAbsolutePath();
@@ -405,27 +455,13 @@ public class SchemaService {
                 }
             }
 
-            return new DefaultResponse()
-                    .setStatusCode(200)
-                    .setMessage("SQLite query executed successfully")
-                    .setData(result);
+            return result;
         } catch (SQLException e) {
             log.error("SQLite query execution error: ", e);
-            return new DefaultResponse()
-                    .setStatusCode(400)
-                    .setMessage("Failed to execute SQLite query: " + e.getMessage())
-                    .setData(null);
-        } catch (IOException e) {
-            log.error("Failed to process uploaded file: ", e);
-            return new DefaultResponse()
-                    .setStatusCode(400)
-                    .setMessage("Failed to process uploaded file: " + e.getMessage())
-                    .setData(null);
+            throw new AppException(SQL_ERROR, e.getMessage());
         } finally {
             // Delete the temporary file after processing but keep connection in pool
-            if (tempFile != null && tempFile.exists()) {
-                tempFile.delete();
-            }
+            fileService.safeDeleteFile(tempFile);
         }
     }
 
@@ -433,35 +469,17 @@ public class SchemaService {
      * Validate SQL query for security
      * Implements multiple layers of SQL injection prevention
      */
-    private boolean isValidSQLQuery(String query) {
+    private boolean isNotValidSQLQuery(String query) {
         if (query == null || query.trim().isEmpty()) {
-            return false;
+            return true;
         }
 
         String normalizedQuery = query.trim().toLowerCase();
 
-
         // 1. Check for common SQL injection patterns
-        String[] blacklistedPatterns = {
-                "into outfile",
-                "load_file",
-                "--",
-                "/*",
-                "xp_",
-                "shutdown",
-                "drop",
-                "delete",
-                "update",
-                "insert",
-                "exec",
-                "execute",
-                "waitfor",
-                "delay"
-        };
-
-        for (String pattern : blacklistedPatterns) {
+        for (String pattern : BLACKLISTED_PATTERNS) {
             if (normalizedQuery.contains(pattern)) {
-                return false;
+                return true;
             }
         }
 
@@ -472,24 +490,16 @@ public class SchemaService {
 
         for (char c : query.toCharArray()) {
             switch (c) {
-                case '\'':
-                    singleQuotes++;
-                    break;
-                case '"':
-                    doubleQuotes++;
-                    break;
-                case '(':
-                    parentheses++;
-                    break;
-                case ')':
-                    parentheses--;
-                    break;
+                case '\'' -> singleQuotes++;
+                case '"' -> doubleQuotes++;
+                case '(' -> parentheses++;
+                case ')' -> parentheses--;
             }
         }
 
-        return singleQuotes % 2 == 0
-                && doubleQuotes % 2 == 0
-                && parentheses == 0;
+        return singleQuotes % 2 != 0
+                || doubleQuotes % 2 != 0
+                || parentheses != 0;
     }
 
     /**
@@ -502,29 +512,113 @@ public class SchemaService {
     }
 
     /**
-     * Utility method to get connection pool statistics
+     * Test database connection without retrieving schema
      */
-    public DefaultResponse getConnectionPoolStats() {
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("activeConnections", connectionPool.size());
+    public void testDatabaseConnection(DbConnectionRequest request) {
+        String dbType = request.getDbType().toLowerCase();
+        String driver;
 
-        Map<String, Object> connectionDetails = new HashMap<>();
-        for (String key : connectionPool.keySet()) {
-            DataSource ds = connectionPool.get(key);
-            if (ds instanceof HikariDataSource) {
-                HikariDataSource hds = (HikariDataSource) ds;
-                Map<String, Object> detail = new HashMap<>();
-                detail.put("activeConnections", hds.getHikariPoolMXBean().getActiveConnections());
-                detail.put("idleConnections", hds.getHikariPoolMXBean().getIdleConnections());
-                detail.put("totalConnections", hds.getHikariPoolMXBean().getTotalConnections());
-                connectionDetails.put(key, detail);
-            }
+        switch (dbType) {
+            case "mysql" -> driver = MYSQL_DRIVER;
+            case "postgresql" -> driver = POSTGRESQL_DRIVER;
+            default -> throw new AppException(UNSUPPORTED_DATABASE_TYPE);
         }
-        stats.put("details", connectionDetails);
 
-        return new DefaultResponse()
-                .setStatusCode(200)
-                .setMessage("Connection pool statistics")
-                .setData(stats);
+        try {
+            // Create a temporary data source that won't be added to the connection pool
+            HikariConfig hikariConfig = getHikariConfig(request, driver);
+
+            try (HikariDataSource dataSource = new HikariDataSource(hikariConfig)) {
+                try (var connection = dataSource.getConnection()) {
+                    DatabaseMetaData metaData = connection.getMetaData();
+
+                    Map<String, Object> connectionInfo = new HashMap<>();
+                    connectionInfo.put("databaseProductName", metaData.getDatabaseProductName());
+                    connectionInfo.put("databaseProductVersion", metaData.getDatabaseProductVersion());
+                    connectionInfo.put("driverName", metaData.getDriverName());
+                    connectionInfo.put("driverVersion", metaData.getDriverVersion());
+                    connectionInfo.put("url", metaData.getURL());
+                    connectionInfo.put("username", metaData.getUserName());
+                    connectionInfo.put("catalog", connection.getCatalog());
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Connection test failed: ", e);
+            throw new AppException(DATABASE_CONNECTION_ERROR);
+        }
     }
+
+    private HikariConfig getHikariConfig(DbConnectionRequest request, String driver) {
+        HikariConfig hikariConfig = new HikariConfig();
+        String jdbcUrl = buildJdbcUrl(request.getUrl(), driver);
+        hikariConfig.setJdbcUrl(jdbcUrl);
+        hikariConfig.setUsername(request.getUsername());
+        hikariConfig.setPassword(request.getPassword());
+        hikariConfig.setDriverClassName(driver);
+        hikariConfig.setConnectionTimeout(CONNECTION_TIMEOUT);
+
+        // Reduce connection pool size for test connections
+        hikariConfig.setMaximumPoolSize(1);
+        hikariConfig.setMinimumIdle(0);
+        return hikariConfig;
+    }
+
+    /**
+     * Test SQLite database connection without retrieving schema
+     */
+    public void testSqliteConnection(MultipartFile file) {
+        File tempFile = null;
+
+        try {
+            tempFile = fileService.saveToTempFile(file);
+            HikariConfig hikariConfig = getHikariConfig(tempFile);
+
+            try (HikariDataSource dataSource = new HikariDataSource(hikariConfig)) {
+                try (var connection = dataSource.getConnection()) {
+                    DatabaseMetaData metaData = connection.getMetaData();
+
+                    // Get table count to verify database can be read
+                    int tableCount = 0;
+                    try (var statement = connection.createStatement();
+                         var resultSet = statement.executeQuery(
+                                 "SELECT count(name) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")) {
+                        if (resultSet.next()) {
+                            tableCount = resultSet.getInt(1);
+                        }
+                    }
+
+                    Map<String, Object> connectionInfo = new HashMap<>();
+                    connectionInfo.put("databaseProductName", metaData.getDatabaseProductName());
+                    connectionInfo.put("databaseProductVersion", metaData.getDatabaseProductVersion());
+                    connectionInfo.put("driverName", metaData.getDriverName());
+                    connectionInfo.put("driverVersion", metaData.getDriverVersion());
+                    connectionInfo.put("fileName", file.getOriginalFilename());
+                    connectionInfo.put("fileSize", file.getSize());
+                    connectionInfo.put("tableCount", tableCount);
+                }
+            }
+        } catch (SQLException e) {
+            log.error("SQLite connection test failed: ", e);
+            throw new AppException(DATABASE_CONNECTION_ERROR);
+        } finally {
+            // Delete the temporary file after testing
+            fileService.safeDeleteFile(tempFile);
+        }
+    }
+
+    private static HikariConfig getHikariConfig(File tempFile) {
+        String url = tempFile.getAbsolutePath();
+
+        // Create a temporary data source that won't be added to the connection pool
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:sqlite:" + url);
+        hikariConfig.setDriverClassName(SQLITE_DRIVER);
+        hikariConfig.setConnectionTimeout(CONNECTION_TIMEOUT);
+
+        // Set minimal pool settings for test
+        hikariConfig.setMaximumPoolSize(1);
+        hikariConfig.setMinimumIdle(0);
+        return hikariConfig;
+    }
+
 }

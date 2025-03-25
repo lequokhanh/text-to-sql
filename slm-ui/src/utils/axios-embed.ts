@@ -25,8 +25,8 @@ export const fetcher = async (args: string | [string, AxiosRequestConfig]) => {
 
 export const endpoints = {
   db: {
-    connect: '/db/connect',
-    query: '/db/query',
-    testConnection: '/db/test-connection',
+    connect: '/api/v1/db/get-schema',
+    query: '/api/v1/db/query',
+    testConnection: '/api/v1/db/test-connection',
   },
 };
