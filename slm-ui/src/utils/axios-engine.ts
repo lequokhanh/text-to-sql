@@ -5,7 +5,12 @@ import { ENGINE_HOST_API } from 'src/config-global';
 const axiosInstance = axios.create({ baseURL: ENGINE_HOST_API });
 
 axiosInstance.interceptors.response.use(
-  (res) => res.data,
+  (res) => {
+    if (res.data && res.data.code !== 0) {
+      return Promise.reject(res.data);
+    }
+    return res.data;
+  },
   (error) => Promise.reject((error.response && error.response.data) || 'Something went wrong')
 );
 
