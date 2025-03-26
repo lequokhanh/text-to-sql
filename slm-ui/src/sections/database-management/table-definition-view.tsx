@@ -284,7 +284,13 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
             Schema Diagram
           </Typography>
           <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-            <SchemaVisualization tables={editableTables} selectedTable={selectedTable} />
+            <SchemaVisualization
+              tables={editableTables}
+              selectedTable={selectedTable}
+              onTableClick={(tableId: string) => {
+                toggleTable(tableId);
+              }}
+            />
           </Box>
         </Paper>
       </Grid>
