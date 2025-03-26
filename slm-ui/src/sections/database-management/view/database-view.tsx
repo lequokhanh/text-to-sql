@@ -312,9 +312,7 @@ export default function DatabaseView() {
       } catch (error) {
         const errorMessage: IChatMessage = {
           id: `msg-${Date.now()}`,
-          body: `## Error\n\`\`\`\n${
-            error instanceof Error ? error.message : 'An unexpected error occurred'
-          }\n\`\`\``,
+          body: `## Error\n\`\`\`\n${error}\n\`\`\``,
           contentType: 'text',
           createdAt: new Date(),
           senderId: 'bot',

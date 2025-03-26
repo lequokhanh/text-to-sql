@@ -7,11 +7,15 @@ const axiosInstance = axios.create({ baseURL: ENGINE_HOST_API });
 axiosInstance.interceptors.response.use(
   (res) => {
     if (res.data && res.data.code !== 0) {
-      return Promise.reject(res.data);
+      return Promise.reject(res.data.message);
     }
     return res.data;
   },
-  (error) => Promise.reject((error.response && error.response.data) || 'Something went wrong')
+  (error) =>
+    Promise.reject(
+      (error.response && error.response.data && error.response.data.message) ||
+        'Something went wrong'
+    )
 );
 
 export default axiosInstance;
