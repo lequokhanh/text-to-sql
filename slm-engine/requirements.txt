@@ -5,8 +5,8 @@ flask[async]
 flask-cors
 llama-index
 llama-index-core
-llama-index-embeddings-huggingface
 llama-index-llms-ollama
+llama_index.llms.openai_like
 sqlalchemy-utils
 python-dotenv
 pyvi

@@ -8,12 +8,16 @@ from core.workflow import SQLAgentWorkflow
 from core.templates import TEXT_TO_SQL_TMPL, TABLE_RETRIEVAL_TMPL
 from core.services import get_schema
 from llama_index.llms.ollama import Ollama
+from llama_index.llms.openai_like import OpenAILike
 from core.services import validate_connection_payload
 from exceptions.global_exception_handler import register_error_handlers
 from exceptions.app_exception import AppException
 from response.app_response import ResponseWrapper
 from dotenv import load_dotenv
 from config.consul import ConsulClient
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 
@@ -33,6 +37,16 @@ llm = Ollama(
     base_url=OLLAMA_HOST,
     request_timeout=120.0
 )
+
+# llm = OpenAILike(
+#     model="Qwen/Qwen2.5-Coder-7B-Instruct-GPTQ-Int8", 
+#     api_base="http://prepared-anemone-routinely.ngrok-free.app/v1", 
+#     api_key="fake",
+#     temperature=0.7,
+#     top_p=0.8,
+#     repetition_penalty=1.05,
+#     max_tokens=512  # Maximum number of tokens to generate
+# )
 
 workflow = SQLAgentWorkflow(
     text2sql_prompt=TEXT_TO_SQL_TMPL,
@@ -85,7 +99,8 @@ async def query():
 
         response = await workflow.run(
             query=query,
-            table_details=table_details
+            table_details=table_details,
+            connection_payload=connection_payload
         )
         return ResponseWrapper.success(response)
 

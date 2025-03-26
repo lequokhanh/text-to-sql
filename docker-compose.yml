@@ -64,6 +64,7 @@ services:
             context: ./slm-engine
         environment:
             - CONSUL_HOST=consul
+            - OLLAMA_MODEL=qwen2.5-coder:14b
         networks:
             - slm
         healthcheck:

@@ -1,22 +1,149 @@
 import ast
 import re
+import logging
+from typing import List, Any
 from llama_index.core.llms import ChatResponse
 
+# Configure logging
+logger = logging.getLogger(__name__)
 
+    
 def extract_table_list(response: ChatResponse) -> list:
-    """Extracts a list of table names from a ChatResponse object."""
-    response = response.message.content
+    """Extracts a list of table names from a response string that may contain code blocks."""
+    # First, strip any code block formatting
+    cleaned_response = response.message.content
+    
+    # Remove markdown code block if present
+    code_block_pattern = r"```(?:python)?\s*([\s\S]*?)\s*```"
+    code_block_match = re.search(code_block_pattern, cleaned_response)
+    
+    if code_block_match:
+        # Use the content inside the code block
+        cleaned_response = code_block_match.group(1).strip()
+    
     try:
-        # Cố gắng parse trực tiếp nếu đã định dạng chính xác
-        return ast.literal_eval(response.strip())
-    except:  # noqa: E722
-        # Fallback: tìm kiếm các chuỗi trong dấu ngoặc đơn
+        # Try to parse as a Python literal
+        return ast.literal_eval(cleaned_response)
+    except (SyntaxError, ValueError):
+        # Fallback: look for strings in single quotes
         pattern = r"'([^']+)'"
-        matches = re.findall(pattern, response)
+        matches = re.findall(pattern, cleaned_response)
         if matches:
             return matches
-        # Nếu không có matches, cố gắng tách theo dấu phẩy
-        return [item.strip().strip("'\"") for item in response.split(',') if item.strip()]
+            
+        # Try double quotes if no single quotes found
+        pattern = r'"([^"]+)"'
+        matches = re.findall(pattern, cleaned_response)
+        if matches:
+            return matches
+            
+        # If no quotes found, split by commas and clean up
+        items = [item.strip().strip("'\"") for item in cleaned_response.split(',')]
+        return [item for item in items if item]
+
+def extract_tables_from_sql(sql_query: str) -> list[str]:
+    """
+    Extract all table names from a SQL query, excluding tables defined in CTEs.
+    
+    Args:
+        sql_query (str): The SQL query to analyze
+        
+    Returns:
+        List[str]: List of table names referenced in the query (excluding CTE tables)
+    """
+    # Normalize whitespace and line breaks
+    sql_query = " ".join(sql_query.split())
+    
+    # Step 1: Identify and extract all CTE names to exclude them later
+    cte_pattern = r"WITH\s+(?:RECURSIVE\s+)?([^(].*?)\s+AS\s*\("
+    cte_tables = []
+    
+    # Find CTEs at the start of the query
+    cte_match = re.search(cte_pattern, sql_query, re.IGNORECASE)
+    if cte_match:
+        cte_part = cte_match.group(1)
+        # Handle multiple CTEs separated by commas
+        cte_sections = cte_part.split(',')
+        for section in cte_sections:
+            # Extract the CTE name
+            cte_name_match = re.search(r"^\s*(\w+)(?:\s*\(.*?\))?\s*$", section.strip())
+            if cte_name_match:
+                cte_tables.append(cte_name_match.group(1).lower())
+    
+    # Also handle the case of multiple CTEs defined using comma and the AS keyword
+    cte_segments_pattern = r"WITH(?:\s+RECURSIVE)?\s+.*?(?:,\s*(\w+)\s+AS\s*\()"
+    for cte_segment in re.finditer(cte_segments_pattern, sql_query, re.IGNORECASE):
+        if cte_segment.group(1):
+            cte_tables.append(cte_segment.group(1).lower())
+    
+    # Step 2: Extract tables from FROM and JOIN clauses
+    # Pattern for FROM clause
+    from_pattern = r"FROM\s+([^\s,();]*)(?:\s+AS\s+\w+)?(?:\s*,\s*([^\s,();]*)(?:\s+AS\s+\w+)?)*"
+    
+    # Pattern for JOIN clauses
+    join_pattern = r"JOIN\s+([^\s,();]*)(?:\s+AS\s+\w+)?"
+    
+    # Find all tables in FROM clauses
+    table_names = []
+    for match in re.finditer(from_pattern, sql_query, re.IGNORECASE):
+        # The first group contains the first table
+        if match.group(1) and match.group(1).strip():
+            table_name = re.sub(r'^\(|\)$', '', match.group(1).strip())
+            if "." in table_name:
+                # Extract just the table name if schema.table format is used
+                table_name = table_name.split('.')[-1]
+            table_names.append(table_name.lower())
+        
+        # Check if we have multiple tables in the FROM clause
+        rest_of_from = match.group(0)[len("FROM ") + len(match.group(1)):].strip()
+        if rest_of_from.startswith(','):
+            # Split by comma to get additional tables
+            additional_tables = re.findall(r',\s*([^\s,();]*)', rest_of_from)
+            for table in additional_tables:
+                if table and table.strip():
+                    table_name = re.sub(r'^\(|\)$', '', table.strip())
+                    if "." in table_name:
+                        table_name = table_name.split('.')[-1]
+                    table_names.append(table_name.lower())
+    
+    # Find all tables in JOIN clauses
+    for match in re.finditer(join_pattern, sql_query, re.IGNORECASE):
+        if match.group(1) and match.group(1).strip():
+            table_name = re.sub(r'^\(|\)$', '', match.group(1).strip())
+            if "." in table_name:
+                table_name = table_name.split('.')[-1]
+            table_names.append(table_name.lower())
+    
+    # Step 3: Filter out CTE tables and SQL keywords
+    sql_keywords = {'select', 'where', 'group', 'order', 'limit', 'offset', 'having', 'union', 'intersect', 'except'}
+    filtered_tables = []
+    
+    for table in table_names:
+        # Skip empty strings
+        if not table:
+            continue
+            
+        # Skip CTEs
+        if table.lower() in cte_tables:
+            continue
+            
+        # Skip if it's just a SQL keyword
+        if table.lower() in sql_keywords:
+            continue
+            
+        # Skip if it's a subquery (likely starts with SELECT)
+        if table.lower().startswith('select'):
+            continue
+            
+        filtered_tables.append(table)
+    
+    # Remove duplicates while preserving order
+    unique_tables = []
+    for table in filtered_tables:
+        if table not in unique_tables:
+            unique_tables.append(table)
+    
+    return unique_tables
 
 
 def schema_parser(tables: list, type: str):
@@ -69,9 +196,32 @@ def schema_parser(tables: list, type: str):
         return "\n\n".join(synthesis_statements)
 
 
-def show_prompt(prompt_messages):
+def log_prompt(prompt_messages: List[Any], step_name: str) -> None:
+    """
+    Logs the formatted prompt messages with detailed formatting.
+    
+    Args:
+        prompt_messages (list): A list of ChatMessage objects containing the prompt
+        step_name (str): The name of the current workflow step
+    """
+    logger.info(f"\033[95m===== {step_name} PROMPT =====\033[0m")
+    for i, message in enumerate(prompt_messages):
+        logger.info(f"\033[96mRole: {message.role}\033[0m")
+        for block in message.blocks:
+            if block.block_type == "text":
+                # Truncate very long content for log readability
+                content = block.text
+                if len(content) > 1000:
+                    content = content[:1000] + "... [truncated]"
+                logger.info(f"\033[97mContent:\n{content}\033[0m")
+        if i < len(prompt_messages) - 1:
+            logger.info("\033[95m---------------------\033[0m")
+    logger.info(f"\033[95m===== END {step_name} PROMPT =====\033[0m")
+
+def show_prompt(prompt_messages: List[Any]) -> None:
     """
     Displays the formatted prompt messages in a readable format.
+    This is a more console-friendly version that uses print instead of logging.
 
     Args:
         prompt_messages (list): A list of ChatMessage objects containing the prompt.
@@ -84,7 +234,6 @@ def show_prompt(prompt_messages):
             if block.block_type == "text":
                 print(f"Content:\n{block.text}")
         print("-" * 80)  # Separator for readability
-
 
 def extract_sql_query(response_text):
         """

@@ -1,28 +1,99 @@
 from llama_index.core import PromptTemplate
 
-TEXT_TO_SQL_TMPL_BK = """
-<|start_header_id|>user<|end_header_id|>
-Generate a SQL query to answer this question: `{question}`
-Instructions:
-{instructions}
-DDL statements:
-{create_table_statements}
-{insert_statements}
-{foreign_key_statements}<|eot_id|><|start_header_id|>assistant<|end_header_id>
-The following SQL query best answers the question `{question}`:
-```sql
-"""
+# TEXT_TO_SQL_TMPL_BK = """
+# <|start_header_id|>user<|end_header_id|>
+# Generate a SQL query to answer this question: `{question}`
+# Instructions:
+# {instructions}
+# DDL statements:
+# {create_table_statements}
+# {insert_statements}
+# {foreign_key_statements}<|eot_id|><|start_header_id|>assistant<|end_header_id>
+# The following SQL query best answers the question `{question}`:
+# ```sql
+# """
 
+# """ 
+# ### Instructions:
+# Your task is to convert a question into a SQL query, given a Postgres database schema.
+# Adhere to these rules:
+# - **Deliberately go through the question and database schema word by word** to appropriately answer the question
+# - **Use Table Aliases** to prevent ambiguity. For example, `SELECT table1.col1, table2.col1 FROM table1 JOIN table2 ON table1.id = table2.id`.
+# - When creating a ratio, always cast the numerator as float
+
+# ### Input:
+# Generate a SQL query that answers the question `{question}`.
+# This query will run on a database whose schema is represented in this string:
+# CREATE TABLE products (
+#   product_id INTEGER PRIMARY KEY, -- Unique ID for each product
+#   name VARCHAR(50), -- Name of the product
+#   price DECIMAL(10,2), -- Price of each unit of the product
+#   quantity INTEGER  -- Current quantity in stock
+# );
+
+# CREATE TABLE customers (
+#    customer_id INTEGER PRIMARY KEY, -- Unique ID for each customer
+#    name VARCHAR(50), -- Name of the customer
+#    address VARCHAR(100) -- Mailing address of the customer
+# );
+
+# CREATE TABLE salespeople (
+#   salesperson_id INTEGER PRIMARY KEY, -- Unique ID for each salesperson
+#   name VARCHAR(50), -- Name of the salesperson
+#   region VARCHAR(50) -- Geographic sales region
+# );
+
+# CREATE TABLE sales (
+#   sale_id INTEGER PRIMARY KEY, -- Unique ID for each sale
+#   product_id INTEGER, -- ID of product sold
+#   customer_id INTEGER,  -- ID of customer who made purchase
+#   salesperson_id INTEGER, -- ID of salesperson who made the sale
+#   sale_date DATE, -- Date the sale occurred
+#   quantity INTEGER -- Quantity of product sold
+# );
+
+# CREATE TABLE product_suppliers (
+#   supplier_id INTEGER PRIMARY KEY, -- Unique ID for each supplier
+#   product_id INTEGER, -- Product ID supplied
+#   supply_price DECIMAL(10,2) -- Unit price charged by supplier
+# );
+
+# -- sales.product_id can be joined with products.product_id
+# -- sales.customer_id can be joined with customers.customer_id
+# -- sales.salesperson_id can be joined with salespeople.salesperson_id
+# -- product_suppliers.product_id can be joined with products.product_id
+
+# ### Response:
+# Based on your instructions, here is the SQL query I have generated to answer the question `{question}`:
+# ```sql
+# """
+# TEXT_TO_SQL_PROMPT_SQL_CODER = (
+#     "### Instructions:\n"
+#     "Your task is to convert a question into a {dialect} SQL query, given a {dialect} database schema.\n"
+#     "Adhere to these rules:\n"
+#     "- **Deliberately go through the question and database schema word by word** to appropriately answer the question\n"
+#     "- **Use Table Aliases** to prevent ambiguity. For example, `SELECT table1.col1, table2.col1 FROM table1 JOIN table2 ON table1.id = table2.id`.\n"
+#     "- When creating a ratio, always cast the numerator as float\n"
+#     "\n"
+#     "### Input:\n"
+#     "Generate a {dialect} SQL query that answers the question `{user_question}`.\n"
+#     "This query will run on a database whose schema is represented in this string:\n"
+#     "{table_schemas}\n"
+#     "\n"
+#     "### Response:\n"
+#     "Based on your instructions, here is the {dialect} SQL query I have generated to answer the question `{question}`:\n"
+#     "```sql\n"
+# )
 
 TEXT_TO_SQL_PROMPT = (
-    "You are a SQL expert. Generate a SQL query based on the user's question. Only return the SQL query, no explanations.\n"
+    "You are a {dialect} SQL expert. Generate a SQL query based on the user's question. Only return the SQL query, no explanations.\n"
     "User question: {user_question}\n"
     "Available tables and their schema:\n"
     "{table_schemas}\n"
     "Requirements:\n"
     "1. Write a precise SQL query that answers the user's question exactly\n"
     "2. Use only the tables and columns provided above\n"
-    "3. Follow standard SQL syntax compatible with {database_type} (MySQL/PostgreSQL/SQLite)\n"
+    "3. Follow standard SQL syntax compatible with {dialect} (MySQL/PostgreSQL/SQLite)\n"
     "4. Include proper JOINs when data needs to be combined from multiple tables\n"
     "5. Use appropriate aggregation functions (COUNT, SUM, AVG, etc.) when needed\n"
     "6. Ensure your query is efficient and follows best practices\n"
@@ -30,14 +101,20 @@ TEXT_TO_SQL_PROMPT = (
     "8. If you can't answer the question with the given tables, return \"Cannot generate SQL with available schema\"\n"
     "SQL query:\n"
 )
+
+# TEXT_TO_SQL_PROMPT = (
+#     "{table_schemas}\n"
+#     "-- Using valid {dialect} SQL, answer the following questions for the tables provided above.\n"
+#     "Question: {user_question}\n"
+# )
 TEXT_TO_SQL_TMPL = PromptTemplate(TEXT_TO_SQL_PROMPT)
 
 
 TABLE_RETRIEVAL_PROMPT = (
     "Return ONLY the names of SQL tables that MIGHT be relevant to the user question.\n"
     "The question is: {query_str}\n"
-    "The tables are:\n"
-    "{table_names}\n"
+    "The tables are:\n\n"
+    "{table_names}\n\n"
     "Instructions:\n"
     "1. Include ALL POTENTIALLY RELEVANT tables, even if you're not sure that they're needed.\n"
     "2. Return ONLY a Python list of table names in the format: ['table1', 'table2', 'table3']\n"
@@ -46,6 +123,41 @@ TABLE_RETRIEVAL_PROMPT = (
     "5. Make sure your response can be directly parsed as a Python list.\n"
 )
 TABLE_RETRIEVAL_TMPL = PromptTemplate(TABLE_RETRIEVAL_PROMPT)
+
+TABLE_EXTRACTION_PROMPT = (
+    "You are a {dialect} SQL expert. Extract all tables referenced in the SQL query and return them as a Python list.\n"
+    "SQL query: {sql_query}\n"
+    "Requirements:\n"
+    "1. Identify ALL tables referenced in the query\n"
+    "2. Include tables from FROM clauses, JOIN statements, subqueries, and CTEs\n"
+    "3. Return ONLY a valid Python list of table names as strings\n"
+    "4. Format the response exactly as: [\"table1\", \"table2\", \"table3\"]\n"
+    "5. Return an empty list [] if no tables are found\n"
+    "6. Do not include any explanations, comments, or additional text\n"
+    "7. Ensure table names are extracted exactly as they appear in the query\n"
+    "8. If table has an alias, only include the original table name, not the alias\n"
+    "Python list of tables:\n"
+)
+TABLE_EXTRACTION_TMPL = PromptTemplate(TABLE_EXTRACTION_PROMPT)
+
+SQL_ERROR_REFLECTION_PROMPT = (
+    "You are a {dialect} SQL expert. Reflect on the given SQL query and error message to determine the cause of the error and suggest a possible solution.\n"
+    "User query: {sql_query}\n"
+    "Database schema: {database_schema}\n"
+    "Original SQL query: {sql_query}\n"
+    "Error message: {error_message}\n"
+    "Requirements:\n"
+    "1. Analyze the error and determine the cause\n"
+    "2. Fix the SQL query to resolve the error\n"
+    "3. Ensure compatibility with the database schema provided\n"
+    "4. Return ONLY the corrected SQL query with no explanations or comments\n"
+    "5. Maintain the original query's intent while fixing the syntax or logical errors\n"
+    "6. Follow standard SQL syntax compatible with the database type\n"
+    "7. If the query cannot be fixed with the given information, return a simplified valid query\n"
+    "8. Do not include any text before or after the SQL query\n"
+    "Corrected SQL query:\n"
+)
+SQL_ERROR_REFLECTION_TMPL = PromptTemplate(SQL_ERROR_REFLECTION_PROMPT)
 
 
 SEMANTIC_ROWS_TMPL = """

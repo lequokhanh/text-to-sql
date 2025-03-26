@@ -14,7 +14,11 @@ class ResponseEnum(Enum):
     SUCCESS = (0, "Success")
     CANNOT_CONNECT_TO_EMBEB_SERVER = (1, "Cannot connect to the Embeb server")
     FAILED_TO_GET_SCHEMA = (2, "Failed to get schema")
-
+    NOT_RELEVANT_QUERY = (3, "Not relevant to the schema")
+    FAILED_TO_REFLECT_QUERY = (4, "Failed to reflect on generated SQL Query")
+    TIMEOUT_ERROR = (5, "Query execution timed out after 200 seconds")
+    FAILED_TO_EXECUTE_QUERY = (6, "Failed to execute query")
+    
     def __init__(self, code, message):
         self._code = code
         self._message = message
