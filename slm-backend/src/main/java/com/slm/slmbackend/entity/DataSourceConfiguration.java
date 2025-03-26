@@ -20,7 +20,6 @@ public class DataSourceConfiguration {
     private Integer id;
 
     @Enumerated(EnumType.STRING)
-    @Column(unique = true)
     private DatabaseType databaseType;
     private String name;
 

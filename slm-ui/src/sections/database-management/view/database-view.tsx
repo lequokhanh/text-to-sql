@@ -1,5 +1,5 @@
 import sqlFormatter from '@sqltools/formatter';
-import {useMemo, useState, useEffect, useCallback} from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -22,8 +22,6 @@ import axiosEngine from '../../../utils/axios-engine';
 import DatabaseCreateDialog from '../database-create-dialog';
 import DataSourceManagement from '../data-source-management';
 import ConversationList, { Conversation } from '../conversation-list';
-
-
 
 // Styled components
 const RootStyle = styled('div')(({ theme }) => ({
@@ -88,20 +86,23 @@ export default function DatabaseView() {
   const isOwner = true;
 
   // Memoize the fetchDataSources function
-  const fetchDataSources = useMemo(() => async () => {
-    try {
-      const { data } = await axios.get(endpointBackend.dataSource.owned);
-      setDataSources(data);
+  const fetchDataSources = useMemo(
+    () => async () => {
+      try {
+        const { data } = await axios.get(endpointBackend.dataSource.owned);
+        setDataSources(data);
 
-      // Set the first data source as selected if available and no source is currently selected
-      if (data.length > 0 && !selectedSource) {
-        setSelectedSource(data[0]);
-        setTabValue(0); // Default to chat tab when selecting a source
+        // Set the first data source as selected if available and no source is currently selected
+        if (data.length > 0 && !selectedSource) {
+          setSelectedSource(data[0]);
+          setTabValue(0); // Default to chat tab when selecting a source
+        }
+      } catch (error) {
+        console.error('Error fetching data sources:', error);
       }
-    } catch (error) {
-      console.error('Error fetching data sources:', error);
-    }
-  }, [selectedSource]); // Dependencies for the memoized function
+    },
+    [selectedSource]
+  ); // Dependencies for the memoized function
 
   const handleOpenCreateDialog = () => {
     setIsCreateDialogOpen(true);
@@ -504,7 +505,7 @@ export default function DatabaseView() {
           </TabsContainerStyle>
         )}
 
-        <Box sx={{ display: 'flex', flexGrow: 1, height: 'calc(100% - 48px)', overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex', flexGrow: 1, height: 0, overflow: 'hidden' }}>
           {/* Secondary Sidebar - Conversations (only visible when Chat tab is active) */}
           {tabValue === 0 && (
             <SecondarySidebarStyle>
