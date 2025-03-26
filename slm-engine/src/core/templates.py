@@ -142,10 +142,10 @@ TABLE_EXTRACTION_TMPL = PromptTemplate(TABLE_EXTRACTION_PROMPT)
 
 SQL_ERROR_REFLECTION_PROMPT = (
     "You are a {dialect} SQL expert. Reflect on the given SQL query and error message to determine the cause of the error and suggest a possible solution.\n"
-    "User query: {sql_query}\n"
-    "Database schema: {database_schema}\n"
-    "Original SQL query: {sql_query}\n"
-    "Error message: {error_message}\n"
+    "\n* User query: {user_query}\n"
+    "* Database schema: {database_schema}\n"
+    "* Original SQL query: {sql_query}\n"
+    "* Error message: {error_message}\n\n"
     "Requirements:\n"
     "1. Analyze the error and determine the cause\n"
     "2. Fix the SQL query to resolve the error\n"
