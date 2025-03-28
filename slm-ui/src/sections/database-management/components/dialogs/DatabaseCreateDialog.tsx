@@ -28,7 +28,7 @@ import Iconify from 'src/components/iconify';
 
 import { DatabaseSource, DatabaseConnectionConfig } from 'src/types/database';
 
-import { TableDefinitionView } from './table-definition-view';
+import { TableDefinitionView } from './TableDefinitionView';
 
 // ----------------------------------------------------------------------
 

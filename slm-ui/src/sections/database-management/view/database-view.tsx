@@ -1,108 +1,62 @@
-import sqlFormatter from '@sqltools/formatter';
-import { useMemo, useState, useEffect, useCallback } from 'react';
+// File: src/sections/database-management/view/database-view.tsx
 
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
+import { useState, useEffect, useCallback } from 'react';
+
+import { Box } from '@mui/material';
 
 import axiosEmbed, { endpoints } from 'src/utils/axios-embed';
-import axios, { endpoints as endpointBackend } from 'src/utils/axios';
-
-import Iconify from 'src/components/iconify';
 
 import { IChatMessage } from 'src/types/chat';
 import { DatabaseSource } from 'src/types/database';
 
-import ChatSection from '../chat-section';
+import { Conversation } from '../types';
 import axiosEngine from '../../../utils/axios-engine';
-import DatabaseCreateDialog from '../database-create-dialog';
-import DataSourceManagement from '../data-source-management';
-import ConversationList, { Conversation } from '../conversation-list';
-
-// Styled components
-const RootStyle = styled('div')(({ theme }) => ({
-  display: 'flex',
-  height: '100%',
-  overflow: 'hidden',
-}));
-
-const PrimarySidebarStyle = styled('div')(({ theme }) => ({
-  width: 280,
-  flexShrink: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  borderRight: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.background.paper,
-  boxShadow: theme.customShadows?.z4,
-  overflow: 'hidden',
-}));
-
-const SecondarySidebarStyle = styled('div')(({ theme }) => ({
-  width: 280,
-  flexShrink: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  borderRight: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.background.paper,
-  boxShadow: theme.customShadows?.z4,
-  overflow: 'hidden',
-}));
-
-const TabsContainerStyle = styled('div')(({ theme }) => ({
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.background.paper,
-}));
-
-const ScrollableContent = styled('div')({
-  flexGrow: 1,
-  overflow: 'auto',
-});
-
-const MainStyle = styled('div')({
-  flexGrow: 1,
-  height: '100%',
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-});
+import { formatSqlQuery } from '../utils/sql-formatter';
+import { TabHeader } from '../components/layout/TabHeader';
+import { useDataSources, useConversations } from '../hooks';
+import { DatabaseLayout } from '../components/layout/DatabaseLayout';
+import { MainContent } from '../components/main-content/MainContent';
+import { formatResultsAsMarkdownTable } from '../utils/format-utils';
+import { NoSourceSelected } from '../components/states/NoSourceSelected';
+import { DataSourceSidebar } from '../components/sidebars/DataSourceSidebar';
+import { ConversationSidebar } from '../components/sidebars/ConversationSidebar';
+import { NoConversationSelected } from '../components/states/NoConversationSelected';
 
 export default function DatabaseView() {
-  const [dataSources, setDataSources] = useState<DatabaseSource[]>([]);
-  const [selectedSource, setSelectedSource] = useState<DatabaseSource | null>(null);
+  // State for dialog
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Tab state
   const [tabValue, setTabValue] = useState(0);
 
-  // Conversation states
-  const [conversations, setConversations] = useState<Record<string, Conversation[]>>({});
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<Record<string, IChatMessage[]>>({});
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Data sources state using custom hook
+  const {
+    dataSources,
+    selectedSource,
+    setSelectedSource,
+    fetchDataSources,
+    updateDataSource,
+    deleteDataSource,
+    createDataSource,
+  } = useDataSources();
+
+  // Conversations state using custom hook
+  const {
+    conversations,
+    selectedConversation,
+    setSelectedConversation,
+    messages,
+    addMessage,
+    updateConversationPreview,
+    clearConversation,
+    createNewConversation,
+  } = useConversations();
 
   // Check if user is owner of selected data source
   const isOwner = true;
-
-  // Memoize the fetchDataSources function
-  const fetchDataSources = useMemo(
-    () => async () => {
-      try {
-        const { data } = await axios.get(endpointBackend.dataSource.owned);
-        setDataSources(data);
-
-        // Set the first data source as selected if available and no source is currently selected
-        if (data.length > 0 && !selectedSource) {
-          setSelectedSource(data[0]);
-          setTabValue(0); // Default to chat tab when selecting a source
-        }
-      } catch (error) {
-        console.error('Error fetching data sources:', error);
-      }
-    },
-    [selectedSource]
-  ); // Dependencies for the memoized function
 
   const handleOpenCreateDialog = () => {
     setIsCreateDialogOpen(true);
@@ -124,63 +78,33 @@ export default function DatabaseView() {
 
   useEffect(() => {
     fetchDataSources();
-  }, [fetchDataSources]); // Empty dependency array to run once on mount
+  }, [fetchDataSources]);
 
   const handleNewChat = useCallback(() => {
     if (!selectedSource) return;
-
-    const newConversation: Conversation = {
-      id: `conv-${Date.now()}`,
-      title: `New Chat ${(conversations[selectedSource.name]?.length || 0) + 1}`,
-      preview: 'Start a new conversation',
-      createdAt: new Date(),
-    };
-
-    setConversations((prev) => ({
-      ...prev,
-      [selectedSource.name]: [...(prev[selectedSource.name] || []), newConversation],
-    }));
-
-    setSelectedConversation(newConversation);
-    setMessages((prev) => ({
-      ...prev,
-      [newConversation.id]: [],
-    }));
-    setTabValue(0); // Switch to chat tab
-  }, [selectedSource, conversations]);
-
-  const handleSelectConversation = useCallback((conversation: Conversation) => {
+    const conversation = createNewConversation(selectedSource.name);
     setSelectedConversation(conversation);
     setTabValue(0); // Switch to chat tab
-  }, []);
+  }, [selectedSource, createNewConversation, setSelectedConversation]);
 
-  const updateConversationPreview = useCallback(
-    (sourceId: string, conversationId: string, preview: string) => {
-      setConversations((prev) => ({
-        ...prev,
-        [sourceId]: prev[sourceId].map((conv) =>
-          conv.id === conversationId ? { ...conv, preview } : conv
-        ),
-      }));
+  const handleSelectConversation = useCallback(
+    (conversation: Conversation) => {
+      setSelectedConversation(conversation);
+      setTabValue(0); // Switch to chat tab
     },
-    []
+    [setSelectedConversation]
   );
 
   const handleClearChat = useCallback(() => {
     if (!selectedConversation || !selectedSource) return;
-
-    setMessages((prev) => ({
-      ...prev,
-      [selectedConversation.id]: [],
-    }));
-
+    clearConversation(selectedConversation.id);
     updateConversationPreview(selectedSource.name, selectedConversation.id, 'Chat cleared');
-  }, [selectedConversation, selectedSource, updateConversationPreview]);
+  }, [selectedConversation, selectedSource, clearConversation, updateConversationPreview]);
 
   const handleExportChat = useCallback(() => {
-    if (!selectedConversation || !selectedSource) return;
+    if (!selectedConversation || !selectedSource || !messages[selectedConversation.id]) return;
 
-    const chatData = messages[selectedConversation.id] || [];
+    const chatData = messages[selectedConversation.id];
     const chatText = chatData
       .map((msg) => {
         const sender = msg.senderId === 'user' ? 'User' : 'Database';
@@ -198,37 +122,6 @@ export default function DatabaseView() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, [selectedConversation, selectedSource, messages]);
-
-  const addMessage = useCallback((conversationId: string, message: IChatMessage) => {
-    setMessages((prev) => ({
-      ...prev,
-      [conversationId]: [...(prev[conversationId] || []), message],
-    }));
-  }, []);
-
-  const formatResultsAsMarkdownTable = (data: any[]) => {
-    if (!data.length) return '```\nNo results found\n```';
-
-    const columns = Object.keys(data[0]);
-
-    // Create header row
-    let table = `| ${columns.join(' | ')} |\n`;
-    table += `| ${columns.map(() => '---').join(' | ')} |\n`;
-
-    // Add data rows
-    data.forEach((row) => {
-      table += `| ${columns
-        .map((col) => {
-          const value = row[col];
-          if (value === null || value === undefined) return '';
-          if (typeof value === 'object') return JSON.stringify(value);
-          return String(value);
-        })
-        .join(' | ')} |\n`;
-    });
-
-    return table;
-  };
 
   const handleSendMessage = useCallback(
     async (message: string) => {
@@ -262,7 +155,7 @@ export default function DatabaseView() {
         query = query.replace(/;$/, '');
 
         // Apply SQL beautification
-        const beautifiedQuery = sqlFormatter.format(query);
+        const beautifiedQuery = formatSqlQuery(query);
 
         // Execute query against the database
         const { data } = await axiosEmbed.post(endpoints.db.query, {
@@ -327,72 +220,39 @@ export default function DatabaseView() {
     [selectedConversation, selectedSource, addMessage, updateConversationPreview]
   );
 
-  // Handle data source update (for the management tab)
   const handleUpdateDataSource = (updatedSource: DatabaseSource) => {
-    setDataSources((prev) =>
-      prev.map((source) => (source.name === updatedSource.name ? updatedSource : source))
-    );
+    updateDataSource(updatedSource);
     setSelectedSource(updatedSource);
   };
 
   const handleCreateDataSource = async (source: DatabaseSource) => {
     try {
-      await axios.post(endpointBackend.dataSource.create, source);
-      await fetchDataSources(); // Call the memoized function
+      await createDataSource(source);
       handleCloseCreateDialog();
     } catch (error) {
       console.error('Error creating data source:', error);
     }
   };
 
-  // Render the content based on the active tab
+  const handleDeleteDataSource = (sourceId: string) => {
+    deleteDataSource(sourceId);
+    setSelectedSource(null);
+  };
+
+  // Render the content based on the active tab and selection state
   const renderMainContent = () => {
     if (!selectedSource) {
-      return (
-        <Stack
-          alignItems="center"
-          justifyContent="center"
-          sx={{
-            height: '100%',
-            color: 'text.secondary',
-            bgcolor: 'background.default',
-          }}
-        >
-          <Typography variant="h6">Select a data source to start</Typography>
-        </Stack>
-      );
+      return <NoSourceSelected />;
     }
 
     // Chat tab content
     if (tabValue === 0) {
       if (!selectedConversation) {
-        return (
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              height: '100%',
-              color: 'text.secondary',
-              bgcolor: 'background.default',
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              Select or start a conversation
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Iconify icon="eva:plus-fill" />}
-              onClick={handleNewChat}
-              sx={{ mt: 2 }}
-            >
-              New Chat
-            </Button>
-          </Stack>
-        );
+        return <NoConversationSelected onNewChat={handleNewChat} />;
       }
 
       return (
-        <ChatSection
+        <MainContent.Chat
           source={selectedSource}
           messages={messages[selectedConversation.id] || []}
           onSendMessage={handleSendMessage}
@@ -407,31 +267,14 @@ export default function DatabaseView() {
     // Management tab content
     if (tabValue === 1) {
       if (!isOwner) {
-        return (
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              height: '100%',
-              color: 'text.secondary',
-              bgcolor: 'background.default',
-            }}
-          >
-            <Typography variant="h6">
-              You need to be the owner of this data source to manage it
-            </Typography>
-          </Stack>
-        );
+        return <MainContent.NotOwner />;
       }
 
       return (
-        <DataSourceManagement
+        <MainContent.Management
           dataSource={selectedSource}
           onUpdate={handleUpdateDataSource}
-          onDelete={(sourceId) => {
-            setDataSources((prev) => prev.filter((source) => source.name !== sourceId));
-            setSelectedSource(null);
-          }}
+          onDelete={handleDeleteDataSource}
         />
       );
     }
@@ -440,100 +283,58 @@ export default function DatabaseView() {
   };
 
   return (
-    <RootStyle>
+    <DatabaseLayout>
       {/* Primary Sidebar - Data Sources */}
-      <PrimarySidebarStyle>
-        <Stack sx={{ p: 2.5, pb: 0 }} spacing={2}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="h6">Data Sources</Typography>
-          </Stack>
-
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<Iconify icon="eva:plus-fill" />}
-            onClick={handleOpenCreateDialog}
-          >
-            Create Data Source
-          </Button>
-        </Stack>
-
-        <ScrollableContent>
-          <Stack sx={{ p: 2.5 }} spacing={1}>
-            {dataSources.map((source) => (
-              <Button
-                key={source.name}
-                fullWidth
-                variant={selectedSource?.name === source.name ? 'contained' : 'outlined'}
-                onClick={() => handleSourceSelect(source)}
-                sx={{
-                  justifyContent: 'flex-start',
-                  px: 2,
-                  py: 1.5,
-                  borderRadius: 1,
-                  mb: 0.5,
-                }}
-              >
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Iconify icon="eva:database-fill" width={20} height={20} />
-                  <Typography variant="body2" noWrap>
-                    {source.name}
-                  </Typography>
-                </Stack>
-              </Button>
-            ))}
-          </Stack>
-        </ScrollableContent>
-      </PrimarySidebarStyle>
+      <DatabaseLayout.PrimarySidebar>
+        <DataSourceSidebar
+          dataSources={dataSources}
+          selectedSource={selectedSource}
+          onSourceSelect={handleSourceSelect}
+          onCreateSource={handleOpenCreateDialog}
+        />
+      </DatabaseLayout.PrimarySidebar>
 
       {/* Secondary Area - Tabs + Content */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, height: '100%' }}>
-        {/* Tabs for Chat/Management - placed above second sidebar */}
+      <DatabaseLayout.Content>
+        {/* Tabs for Chat/Management */}
         {selectedSource && (
-          <TabsContainerStyle>
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              aria-label="data source tabs"
-              sx={{ borderBottom: 1, borderColor: 'divider' }}
-            >
-              <Tab label="Chat" />
-              {isOwner && <Tab label="Manage Data Source" />}
-            </Tabs>
-          </TabsContainerStyle>
+          <TabHeader
+            value={tabValue}
+            onChange={handleTabChange}
+            tabs={[
+              { label: 'Chat', value: 0 },
+              ...(isOwner ? [{ label: 'Manage Data Source', value: 1 }] : []),
+            ]}
+          />
         )}
 
         <Box sx={{ display: 'flex', flexGrow: 1, height: 0, overflow: 'hidden' }}>
           {/* Secondary Sidebar - Conversations (only visible when Chat tab is active) */}
           {tabValue === 0 && (
-            <SecondarySidebarStyle>
+            <DatabaseLayout.SecondarySidebar>
               {selectedSource ? (
-                <ConversationList
+                <ConversationSidebar
                   conversations={conversations[selectedSource.name] || []}
                   selectedId={selectedConversation?.id || null}
                   onSelect={handleSelectConversation}
                   onNewChat={handleNewChat}
                 />
               ) : (
-                <Stack sx={{ p: 2.5 }}>
-                  <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
-                    Select a data source to view conversations
-                  </Typography>
-                </Stack>
+                <MainContent.SelectDataSource />
               )}
-            </SecondarySidebarStyle>
+            </DatabaseLayout.SecondarySidebar>
           )}
 
           {/* Main Content Area */}
-          <MainStyle>{renderMainContent()}</MainStyle>
+          <DatabaseLayout.Main>{renderMainContent()}</DatabaseLayout.Main>
         </Box>
-      </Box>
+      </DatabaseLayout.Content>
 
-      <DatabaseCreateDialog
+      <MainContent.CreateDataSourceDialog
         open={isCreateDialogOpen}
         onClose={handleCloseCreateDialog}
         onCreateSource={handleCreateDataSource}
       />
-    </RootStyle>
+    </DatabaseLayout>
   );
 }

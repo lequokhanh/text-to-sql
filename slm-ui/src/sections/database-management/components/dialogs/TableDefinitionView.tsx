@@ -26,7 +26,7 @@ import Scrollbar from 'src/components/scrollbar';
 
 import { TableDefinition, ColumnDefinition } from 'src/types/database';
 
-import { SchemaVisualization } from './schema-visualization';
+import { SchemaVisualization } from './SchemaVisualization';
 
 // ----------------------------------------------------------------------
 
