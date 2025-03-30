@@ -207,7 +207,6 @@ class SQLAgentWorkflow(Workflow):
         logger.info(f"\033[93m[VALIDATE] SQL to validate: {sql_query}\033[0m")
         
         table_details = await context.get("table_details")
-        connection_payload = await context.get("connection_payload")
         
         # Extract tables from the SQL query
         logger.info("\033[93m[VALIDATE] Extracting tables from SQL query\033[0m")

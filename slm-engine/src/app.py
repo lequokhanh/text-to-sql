@@ -35,7 +35,12 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b-instruct-q8_0")
 llm = Ollama(
     model=OLLAMA_MODEL,
     base_url=OLLAMA_HOST,
-    request_timeout=120.0
+    request_timeout=120.0,
+    keep_alive=-1,
+    additional_kwargs={
+        "num_predict": 4096,
+        "temperature": 0.7,
+    }
 )
 
 # llm = OpenAILike(
@@ -106,33 +111,34 @@ async def query():
 
     except Exception as e:
         raise AppException(str(e), 500)
-
-
-@app.route('/query_with_schema', methods=['POST'])
-async def query_with_schema():
+    
+@app.route('/query-with-schema', methods=['POST'])
+async def query():
     try:
         data = request.json
         query = data.get("query")
-        schema = data.get("schema")
+        connection_payload = data.get("connection_payload")
+        table_details = data.get("tables")
 
-        if not query:
-            return jsonify({"error": "Missing 'query' parameter"}), 400
+        if not query or not connection_payload:
+            return jsonify({"error": "Missing 'query' or 'connection_payload'"}), 400
         
-        if not schema:
-            return jsonify({"error": "Missing 'schema' parameter"}), 400
-            
-        if not isinstance(schema, list):
-            return jsonify({"error": "'schema' must be a list of table definitions"}), 400
+        is_valid, error_message = validate_connection_payload(connection_payload)
+        if not is_valid:
+            return jsonify({"error": error_message}), 400
+
+        # table_details = get_schema(connection_payload)
 
         response = await workflow.run(
             query=query,
-            table_details=schema
+            table_details=table_details,
+            connection_payload=connection_payload
         )
-        
         return ResponseWrapper.success(response)
 
     except Exception as e:
         raise AppException(str(e), 500)
+
     
 
 @app.route('/health-check', methods=['GET'])
