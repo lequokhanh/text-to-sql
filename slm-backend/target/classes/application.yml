@@ -9,6 +9,8 @@ spring:
         enabled: true
         register: true
         prefer-ip-address: true
+        health-check-path: /health-check
+        health-check-interval: 10s
   jpa:
     hibernate:
       ddl-auto: update
@@ -18,9 +20,3 @@ security:
   jwt:
     secret-key: qwertyuiopasdfghjklzxcvbnmqwertyuiopaASDFGHJKLZXCVBNM123456
     expiration-time: 432000000  # Example: 5 days in milliseconds
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health

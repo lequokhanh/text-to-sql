@@ -6,7 +6,6 @@ export function formatSqlQuery(query: string): string {
       language: 'sql',
       reservedWordCase: 'upper',
       linesBetweenQueries: 2,
-      indent: 'standard',
     });
   } catch (error) {
     console.error('Error formatting SQL query:', error);
