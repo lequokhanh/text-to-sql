@@ -4,6 +4,7 @@ services:
         ports:
             - "8500:8500"
             - "8600:8600/udp"
+        restart: always
         environment:
             CONSUL_BIND_INTERFACE: eth0
         command: agent -server -bootstrap -ui -client=0.0.0.0 -datacenter=dc1 -node=consul-server
@@ -44,6 +45,7 @@ services:
             - 8181:8080
         build:
             context: ./slm-embed
+        restart: always
         environment:
             - CONSUL_HOST=consul
         networks:
@@ -62,6 +64,7 @@ services:
             - 8383:5000
         build:
             context: ./slm-engine
+        restart: always
         environment:
             - CONSUL_HOST=consul
             - OLLAMA_MODEL=qwen2.5-coder:14b
@@ -83,6 +86,7 @@ services:
             - 8282:8080
         build:
             context: ./slm-backend
+        restart: always
         environment:
             - CONSUL_HOST=consul
         networks:
@@ -106,6 +110,7 @@ services:
             - 4000:80
         build:
             context: ./slm-ui
+        restart: always
         environment:
             - BACKEND_HOST_API=backend
             - EMBED_HOST_API=embed

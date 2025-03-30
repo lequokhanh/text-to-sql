@@ -85,28 +85,28 @@ from llama_index.core import PromptTemplate
 #     "```sql\n"
 # )
 
-TEXT_TO_SQL_PROMPT = (
-    "You are a {dialect} SQL expert. Generate a SQL query based on the user's question. Only return the SQL query, no explanations.\n"
-    "User question: {user_question}\n"
-    "Available tables and their schema:\n"
-    "{table_schemas}\n"
-    "Requirements:\n"
-    "1. Write a precise SQL query that answers the user's question exactly\n"
-    "2. Use only the tables and columns provided above\n"
-    "3. Follow standard SQL syntax compatible with {dialect} (MySQL/PostgreSQL/SQLite)\n"
-    "4. Include proper JOINs when data needs to be combined from multiple tables\n"
-    "5. Use appropriate aggregation functions (COUNT, SUM, AVG, etc.) when needed\n"
-    "6. Ensure your query is efficient and follows best practices\n"
-    "7. Return ONLY the SQL query without any additional text, comments, or explanations\n"
-    "8. If you can't answer the question with the given tables, return \"Cannot generate SQL with available schema\"\n"
-    "SQL query:\n"
-)
-
 # TEXT_TO_SQL_PROMPT = (
+#     "You are a {dialect} SQL expert. Generate a SQL query based on the user's question. Only return the SQL query, no explanations.\n"
+#     "User question: {user_question}\n"
+#     "Available tables and their schema:\n"
 #     "{table_schemas}\n"
-#     "-- Using valid {dialect} SQL, answer the following questions for the tables provided above.\n"
-#     "Question: {user_question}\n"
+#     "Requirements:\n"
+#     "1. Write a precise SQL query that answers the user's question exactly\n"
+#     "2. Use only the tables and columns provided above\n"
+#     "3. Follow standard SQL syntax compatible with {dialect} (MySQL/PostgreSQL/SQLite)\n"
+#     "4. Include proper JOINs when data needs to be combined from multiple tables\n"
+#     "5. Use appropriate aggregation functions (COUNT, SUM, AVG, etc.) when needed\n"
+#     "6. Ensure your query is efficient and follows best practices\n"
+#     "7. Return ONLY the SQL query without any additional text, comments, or explanations\n"
+#     "8. If you can't answer the question with the given tables, return \"Cannot generate SQL with available schema\"\n"
+#     "SQL query:\n"
 # )
+
+TEXT_TO_SQL_PROMPT = (
+    "{table_schemas}\n"
+    "-- Using valid {dialect} SQL, answer the following questions for the tables provided above.\n"
+    "Question: {user_question}\n"
+)
 TEXT_TO_SQL_TMPL = PromptTemplate(TEXT_TO_SQL_PROMPT)
 
 
@@ -155,7 +155,7 @@ SQL_ERROR_REFLECTION_PROMPT = (
     "6. Follow standard SQL syntax compatible with the database type\n"
     "7. If the query cannot be fixed with the given information, return a simplified valid query\n"
     "8. Do not include any text before or after the SQL query\n"
-    "Corrected SQL query:\n"
+    "Corrected SQL query without explanations:\n"
 )
 SQL_ERROR_REFLECTION_TMPL = PromptTemplate(SQL_ERROR_REFLECTION_PROMPT)
 

@@ -194,6 +194,12 @@ def schema_parser(tables: list, type: str):
             synthesis_statements.append(synthesis)
 
         return "\n\n".join(synthesis_statements)
+    
+    elif type == "Simple":
+        simple_statements = []
+        for table in tables:
+            table_name = table["tableIdentifier"]
+            columns = table["columns"]
 
 
 def log_prompt(prompt_messages: List[Any], step_name: str) -> None:
