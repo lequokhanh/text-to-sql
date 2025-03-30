@@ -7,7 +7,7 @@ import com.slm.slmbackend.enums.ResponseEnum;
 import com.slm.slmbackend.exception.AppException;
 import com.slm.slmbackend.repository.ColumnRelationRepository;
 import com.slm.slmbackend.repository.DataSourceConfigurationRepository;
-import com.slm.slmbackend.repository.TableDefinitionRepository;
+import com.slm.slmbackend.repository.UserAccountRepository;
 import com.slm.slmbackend.service.DataSourceConfigurationService;
 import com.slm.slmbackend.service.IdGenerationService;
 import com.slm.slmbackend.util.MapperUtil;
@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.slm.slmbackend.enums.ResponseEnum.DATA_SOURCE_CONFIGURATION_NOT_FOUND;
 
@@ -31,6 +28,7 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
     private final DataSourceConfigurationRepository dataSourceConfigurationRepository;
     private final ColumnRelationRepository columnRelationRepository;
     private final IdGenerationService idGenerationService;
+    private final UserAccountRepository userAccountRepository;
 
     @Override
     @Transactional
@@ -107,17 +105,72 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
 
     @Override
     public List<UserAccountDTO> getAllOwnersOfDataSourceConfiguration(UserAccount user, Integer id) {
-        return List.of();
+        DataSourceConfiguration configuration = validateAndGetDataSource(user, id);
+
+        // Get all owners and map them to DTOs
+        return MapperUtil.mapList(configuration.getOwners(), UserAccountDTO.class);
     }
 
     @Override
     public List<GroupDTO> getAllGroupsOfDataSourceConfiguration(UserAccount user, Integer id) {
-        return List.of();
+        DataSourceConfiguration configuration = validateAndGetDataSource(user, id);
+
+        // Map all groups to GroupDTOs
+        if (configuration.getGroups() == null || configuration.getGroups().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return MapperUtil.mapList(configuration.getGroups(), GroupDTO.class);
     }
 
     @Override
-    public GroupDetailDTO getGroupById(UserAccount user, Integer id) {
-        return null;
+    public GroupDetailDTO getGroupById(UserAccount user, Integer groupId) {
+        // This is slightly different as we're searching by group ID, not data source ID
+
+        // First, find all data sources available to the user
+        List<DataSourceConfiguration> availableDataSources =
+                dataSourceConfigurationRepository.findAllByOwnersContains(user);
+        availableDataSources.addAll(
+                dataSourceConfigurationRepository.findAllDataSourceAvailableForUser(user));
+
+        // Look for the group in all available data sources
+        for (DataSourceConfiguration dataSource : availableDataSources) {
+            if (dataSource.getGroups() != null) {
+                Optional<UserGroup> foundGroup = dataSource.getGroups().stream()
+                        .filter(group -> group.getId().equals(groupId))
+                        .findFirst();
+
+                if (foundGroup.isPresent()) {
+                    UserGroup group = foundGroup.get();
+
+                    // Create and populate the GroupDetailDTO
+                    GroupDetailDTO dto = new GroupDetailDTO();
+                    dto.setId(group.getId());
+                    dto.setName(group.getName());
+
+                    // Map the table IDs
+                    if (group.getTableMappings() != null) {
+                        List<Integer> tableIds = group.getTableMappings().stream()
+                                .map(mapping -> mapping.getSchema().getId())
+                                .toList();
+                        dto.setTableIds(tableIds);
+                    }
+
+                    // Map the members
+                    if (group.getMembers() != null) {
+                        dto.setMembers(MapperUtil.mapList(group.getMembers(), UserAccountDTO.class));
+                    }
+
+                    // Map the data source configuration
+                    dto.setDataSourceConfiguration(MapperUtil.mapObject(dataSource, DataSourceConfigurationDetailDTO.class));
+
+                    return dto;
+                }
+            }
+        }
+
+        // If we get here, we didn't find the group
+        throw new AppException(ResponseEnum.NOT_FOUND.getCode(), "Group not found");
     }
 
     @Override
@@ -286,29 +339,125 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
         columnRelationRepository.delete(columnRelation);
     }
 
+
     @Override
     public void addGroupToDataSource(UserAccount authenticatedUser, Integer id, GroupUpsertDTO groupDTO) {
+        DataSourceConfiguration configuration = validateAndGetDataSource(authenticatedUser, id);
 
+        UserGroup userGroup = new UserGroup();
+        userGroup.setName(groupDTO.getName());
+        userGroup.setDataSourceConfiguration(configuration);
+        userGroup.setMembers(new ArrayList<>());
+
+        List<GroupTableMapping> tableMappings = new ArrayList<>();
+        if (groupDTO.getTableIds() != null && !groupDTO.getTableIds().isEmpty()) {
+            buildGroupTableMappings(groupDTO, configuration, tableMappings);
+        }
+
+        userGroup.setTableMappings(tableMappings);
+
+        if (configuration.getGroups() == null) {
+            configuration.setGroups(new ArrayList<>());
+        }
+        configuration.getGroups().add(userGroup);
+
+        dataSourceConfigurationRepository.save(configuration);
+    }
+
+    private void buildGroupTableMappings(GroupUpsertDTO groupDTO, DataSourceConfiguration configuration, List<GroupTableMapping> tableMappings) {
+        for (Integer tableId : groupDTO.getTableIds()) {
+            TableDefinition tableDefinition = configuration.getTableDefinitions().stream()
+                    .filter(table -> table.getId().equals(tableId))
+                    .findFirst()
+                    .orElseThrow(() -> new AppException(ResponseEnum.TABLE_NOT_FOUND));
+
+            GroupTableMapping mapping = new GroupTableMapping();
+            mapping.setSchema(tableDefinition);
+            tableMappings.add(mapping);
+        }
     }
 
     @Override
     public void addUserToGroup(UserAccount authenticatedUser, Integer id, Integer groupId, AddUserToGroupDTO userDTO) {
+        DataSourceConfiguration configuration = validateAndGetDataSource(authenticatedUser, id);
 
+        UserGroup userGroup = configuration.getGroups().stream()
+                .filter(group -> group.getId().equals(groupId))
+                .findFirst()
+                .orElseThrow(() -> new AppException(ResponseEnum.NOT_FOUND.getCode(), "Group not found"));
+
+        List<UserAccount> usersToAdd = new ArrayList<>();
+        for (Integer userId : userDTO.getUserIds()) {
+            UserAccount user = userAccountRepository.findById(userId)
+                    .orElseThrow(() -> new AppException(ResponseEnum.USER_NOT_FOUND));
+            usersToAdd.add(user);
+        }
+
+        if (userGroup.getMembers() == null) {
+            userGroup.setMembers(new ArrayList<>());
+        }
+        userGroup.getMembers().addAll(usersToAdd);
+
+        dataSourceConfigurationRepository.save(configuration);
     }
 
     @Override
     public void updateGroup(UserAccount authenticatedUser, Integer id, Integer groupId, GroupUpsertDTO groupDTO) {
+        DataSourceConfiguration configuration = validateAndGetDataSource(authenticatedUser, id);
 
+        UserGroup userGroup = configuration.getGroups().stream()
+                .filter(group -> group.getId().equals(groupId))
+                .findFirst()
+                .orElseThrow(() -> new AppException(ResponseEnum.NOT_FOUND.getCode(), "Group not found"));
+
+        userGroup.setName(groupDTO.getName());
+
+        // Update table mappings
+        List<GroupTableMapping> tableMappings = new ArrayList<>();
+        if (groupDTO.getTableIds() != null) {
+            buildGroupTableMappings(groupDTO, configuration, tableMappings);
+        }
+
+        // Clear existing mappings and add new ones
+        if (userGroup.getTableMappings() != null) {
+            userGroup.getTableMappings().clear();
+        }
+        userGroup.setTableMappings(tableMappings);
+
+        dataSourceConfigurationRepository.save(configuration);
     }
 
     @Override
     public void removeGroupFromDataSource(UserAccount authenticatedUser, Integer id, Integer groupId) {
+        DataSourceConfiguration configuration = validateAndGetDataSource(authenticatedUser, id);
 
+        UserGroup userGroup = configuration.getGroups().stream()
+                .filter(group -> group.getId().equals(groupId))
+                .findFirst()
+                .orElseThrow(() -> new AppException(ResponseEnum.NOT_FOUND.getCode(), "Group not found"));
+
+        configuration.getGroups().remove(userGroup);
+
+        dataSourceConfigurationRepository.save(configuration);
     }
 
     @Override
     public void removeUserFromGroup(UserAccount authenticatedUser, Integer id, Integer groupId, Integer userId) {
+        DataSourceConfiguration configuration = validateAndGetDataSource(authenticatedUser, id);
 
+        UserGroup userGroup = configuration.getGroups().stream()
+                .filter(group -> group.getId().equals(groupId))
+                .findFirst()
+                .orElseThrow(() -> new AppException(ResponseEnum.NOT_FOUND.getCode(), "Group not found"));
+
+        UserAccount userToRemove = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ResponseEnum.USER_NOT_FOUND));
+
+        if (userGroup.getMembers() != null) {
+            userGroup.getMembers().removeIf(member -> member.getId().equals(userId));
+        }
+
+        dataSourceConfigurationRepository.save(configuration);
     }
 
 

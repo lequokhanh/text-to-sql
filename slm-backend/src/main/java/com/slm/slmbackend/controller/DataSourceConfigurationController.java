@@ -1,5 +1,6 @@
 package com.slm.slmbackend.controller;
 
+import com.slm.slmbackend.dto.auth.UserAccountDTO;
 import com.slm.slmbackend.dto.datasource.*;
 import com.slm.slmbackend.entity.UserAccount;
 import com.slm.slmbackend.response.ResponseWrapper;
@@ -197,6 +198,91 @@ public class DataSourceConfigurationController {
             @Parameter(description = "ID of the column") @PathVariable Integer columnId, 
             @Parameter(description = "ID of the relation") @PathVariable Integer relationId) {
         dataSourceConfigurationService.removeRelationFromColumn(getAuthenticatedUser(), id, tableId, columnId, relationId);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Get all owners of a data source",
+            description = "Retrieves all users who own a specific data source")
+    @ApiResponse(responseCode = "200", description = "List of owners retrieved successfully")
+    @GetMapping("/{id}/owners")
+    public ResponseWrapper<List<UserAccountDTO>> getOwnersOfDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id) {
+        return ResponseWrapper.success(dataSourceConfigurationService.getAllOwnersOfDataSourceConfiguration(getAuthenticatedUser(), id));
+    }
+
+    @Operation(summary = "Get all groups of a data source",
+            description = "Retrieves all groups associated with a specific data source")
+    @ApiResponse(responseCode = "200", description = "List of groups retrieved successfully")
+    @GetMapping("/{id}/groups")
+    public ResponseWrapper<List<GroupDTO>> getGroupsOfDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id) {
+        return ResponseWrapper.success(dataSourceConfigurationService.getAllGroupsOfDataSourceConfiguration(getAuthenticatedUser(), id));
+    }
+
+    @Operation(summary = "Get group details",
+            description = "Retrieves details of a specific group")
+    @ApiResponse(responseCode = "200", description = "Group details retrieved successfully")
+    @GetMapping("/groups/{groupId}")
+    public ResponseWrapper<GroupDetailDTO> getGroupDetails(
+            @Parameter(description = "ID of the group") @PathVariable Integer groupId) {
+        return ResponseWrapper.success(dataSourceConfigurationService.getGroupById(getAuthenticatedUser(), groupId));
+    }
+
+    @Operation(summary = "Add group to data source",
+            description = "Creates a new group for a data source")
+    @ApiResponse(responseCode = "200", description = "Group added successfully")
+    @PostMapping("/{id}/groups")
+    public ResponseWrapper<Void> addGroupToDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id,
+            @Valid @RequestBody GroupUpsertDTO groupDTO) {
+        dataSourceConfigurationService.addGroupToDataSource(getAuthenticatedUser(), id, groupDTO);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Add users to group",
+            description = "Adds users to an existing group")
+    @ApiResponse(responseCode = "200", description = "Users added to group successfully")
+    @PostMapping("/{id}/groups/{groupId}/members")
+    public ResponseWrapper<Void> addUsersToGroup(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id,
+            @Parameter(description = "ID of the group") @PathVariable Integer groupId,
+            @Valid @RequestBody AddUserToGroupDTO userDTO) {
+        dataSourceConfigurationService.addUserToGroup(getAuthenticatedUser(), id, groupId, userDTO);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Update group",
+            description = "Updates an existing group in a data source")
+    @ApiResponse(responseCode = "200", description = "Group updated successfully")
+    @PutMapping("/{id}/groups/{groupId}")
+    public ResponseWrapper<Void> updateGroup(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id,
+            @Parameter(description = "ID of the group") @PathVariable Integer groupId,
+            @Valid @RequestBody GroupUpsertDTO groupDTO) {
+        dataSourceConfigurationService.updateGroup(getAuthenticatedUser(), id, groupId, groupDTO);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Remove group from data source",
+            description = "Deletes a group from a data source")
+    @ApiResponse(responseCode = "200", description = "Group removed successfully")
+    @DeleteMapping("/{id}/groups/{groupId}")
+    public ResponseWrapper<Void> removeGroupFromDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id,
+            @Parameter(description = "ID of the group") @PathVariable Integer groupId) {
+        dataSourceConfigurationService.removeGroupFromDataSource(getAuthenticatedUser(), id, groupId);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Remove user from group",
+            description = "Removes a user from a group")
+    @ApiResponse(responseCode = "200", description = "User removed from group successfully")
+    @DeleteMapping("/{id}/groups/{groupId}/members/{userId}")
+    public ResponseWrapper<Void> removeUserFromGroup(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id,
+            @Parameter(description = "ID of the group") @PathVariable Integer groupId,
+            @Parameter(description = "ID of the user") @PathVariable Integer userId) {
+        dataSourceConfigurationService.removeUserFromGroup(getAuthenticatedUser(), id, groupId, userId);
         return ResponseWrapper.success();
     }
 }
