@@ -55,6 +55,6 @@ public class DataSourceConfig {
             throw new RuntimeException("MySQL service not found in Consul");
         }
         log.info("MySQL service found at {}:{}", mysqlHost, mysqlPort);
-        return String.format("jdbc:mysql://%s:%d/slm", "localhost", mysqlPort);
+        return String.format("jdbc:mysql://%s:%d/slm", mysqlHost, mysqlPort);
     }
 }
