@@ -1,31 +1,12 @@
 services:
-    consul:
-        image: consul:1.15.4
-        ports:
-            - "8500:8500"
-            - "8600:8600/udp"
-        restart: always
-        environment:
-            CONSUL_BIND_INTERFACE: eth0
-        command: agent -server -bootstrap -ui -client=0.0.0.0 -datacenter=dc1 -node=consul-server
-        networks:
-            - slm
-        healthcheck:
-            test: ["CMD", "consul", "info"]
-            interval: 10s
-            timeout: 5s
-            retries: 3
-
     mysql:
+        image: mysql:8.0
         ports:
-            -   "3306:3306"
-        build:
-            context: ./devops/mysql
+            - "3306:3306"
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: root123
             MYSQL_DATABASE: slm
-            CONSUL_HTTP_ADDR: http://consul:8500
             MYSQL_ROOT_HOST: '%'
         volumes:
             - ./devops/data:/var/lib/mysql
@@ -36,18 +17,13 @@ services:
             interval: 5s
             timeout: 5s
             retries: 5
-        depends_on:
-            consul:
-                condition: service_healthy
 
     embed:
         ports:
-            - 8181:8080
+            - "8181:8080"
         build:
             context: ./slm-embed
         restart: always
-        environment:
-            - CONSUL_HOST=consul
         networks:
             - slm
         healthcheck:
@@ -55,19 +31,15 @@ services:
             interval: 30s
             timeout: 10s
             retries: 3
-        depends_on:
-            consul:
-                condition: service_healthy
 
     engine:
         ports:
-            - 8383:5000
+            - "8383:5000"
         build:
             context: ./slm-engine
         restart: always
         environment:
-            - CONSUL_HOST=consul
-            - OLLAMA_MODEL=qwen2.5-coder:14b
+            - EMBED_HOST_API=embed
         networks:
             - slm
         healthcheck:
@@ -76,19 +48,21 @@ services:
             timeout: 10s
             retries: 3
         depends_on:
-            consul:
-                condition: service_healthy
             embed:
                 condition: service_healthy
 
     backend:
         ports:
-            - 8282:8080
+            - "8282:8080"
         build:
             context: ./slm-backend
         restart: always
         environment:
-            - CONSUL_HOST=consul
+            - MYSQL_HOST=mysql/slm
+            - MYSQL_USER=root
+            - MYSQL_PASSWORD=root123
+            - EMBED_HOST_API=embed
+            - ENGINE_HOST_API=engine
         networks:
             - slm
         healthcheck:
@@ -97,8 +71,6 @@ services:
             timeout: 10s
             retries: 3
         depends_on:
-            consul:
-                condition: service_healthy
             mysql:
                 condition: service_healthy
             engine:
@@ -107,7 +79,7 @@ services:
                 condition: service_healthy
     ui:
         ports:
-            - 4000:80
+            - "4000:80"
         build:
             context: ./slm-ui
         restart: always
@@ -118,8 +90,6 @@ services:
         networks:
             - slm
         depends_on:
-            consul:
-                condition: service_healthy
             backend:
                 condition: service_healthy
 networks:

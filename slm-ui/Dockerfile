@@ -1,13 +1,11 @@
-# Use node to build the Vite app
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps
+RUN --mount=type=cache,target=/root/.npm npm ci --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-# Use nginx to serve the built app
-FROM nginx:alpine
+FROM nginx:1.25.2-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80

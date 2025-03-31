@@ -1,6 +1,5 @@
 package com.slm.slmbackend.config;
 
-import com.slm.slmbackend.enums.ResponseEnum;
 import com.slm.slmbackend.exception.AppException;
 import com.slm.slmbackend.repository.UserAccountRepository;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -19,7 +18,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;

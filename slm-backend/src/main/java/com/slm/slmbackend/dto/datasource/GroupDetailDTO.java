@@ -13,5 +13,5 @@ public class GroupDetailDTO extends GroupDTO{
     private String name;
     private List<Integer> tableIds;
     private List<UserAccountDTO> members;
-    private DataSourceConfigurationDetailDTO dataSourceConfiguration;
+    private DataSourceConfigurationDTO dataSourceConfiguration;
 }

@@ -1,17 +1,6 @@
 spring:
   application:
     name: slm-embed
-  cloud:
-    consul:
-      host: ${CONSUL_HOST:localhost}
-      port: 8500
-      discovery:
-        enabled: true
-        register: true
-        prefer-ip-address: true
-        health-check-path: /health-check
-        health-check-interval: 10s
-
   servlet:
     multipart:
       max-file-size: 300MB

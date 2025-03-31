@@ -4,9 +4,8 @@ import base64
 import io
 from enums.response_enum import ResponseEnum
 from exceptions.app_exception import AppException
-from config.consul import ConsulClient
 
-API_HOST = ConsulClient().get_service_address("slm-embed") or "http://localhost:8181"
+API_HOST = os.getenv("EMBED_HOST_API")
 
 _endpoints = {
     "connect": f"{API_HOST}/api/v1/db/get-schema",

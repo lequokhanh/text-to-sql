@@ -2,9 +2,8 @@ FROM maven:3.9.5 AS builder
 
 ENV APPLICATION=slm-backend
 
-COPY ./pom.xml ./
-
-RUN --mount=type=cache,target=/.m2,id=${APPLICATION},uid=500,gid=500 \
+RUN --mount=type=bind,source=pom.xml,target=pom.xml,readonly \
+    --mount=type=cache,target=/.m2,id=${APPLICATION},uid=500,gid=500 \
     mvn -Dmaven.repo.local=/.m2/repository dependency:go-offline
 
 COPY . .

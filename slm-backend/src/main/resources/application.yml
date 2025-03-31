@@ -1,16 +1,10 @@
 spring:
   application:
     name: slm-backend
-  cloud:
-    consul:
-      host: ${CONSUL_HOST:localhost}
-      port: 8500
-      discovery:
-        enabled: true
-        register: true
-        prefer-ip-address: true
-        health-check-path: /health-check
-        health-check-interval: 10s
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost:3306/slm}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root123}
   jpa:
     hibernate:
       ddl-auto: update
@@ -20,3 +14,7 @@ security:
   jwt:
     secret-key: qwertyuiopasdfghjklzxcvbnmqwertyuiopaASDFGHJKLZXCVBNM123456
     expiration-time: 432000000  # Example: 5 days in milliseconds
+
+embed-service:
+  base-url: ${EMBED_HOST_API:http://localhost:8181}
+  connection-timeout: 5000

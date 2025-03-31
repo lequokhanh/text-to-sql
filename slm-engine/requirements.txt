@@ -13,5 +13,4 @@ pyvi
 weaviate-client
 Unidecode
 sqlparse
-python-consul2
 python-dotenv

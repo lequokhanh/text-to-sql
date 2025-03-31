@@ -162,7 +162,7 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
                     }
 
                     // Map the data source configuration
-                    dto.setDataSourceConfiguration(MapperUtil.mapObject(dataSource, DataSourceConfigurationDetailDTO.class));
+                    dto.setDataSourceConfiguration(MapperUtil.mapObject(dataSource, DataSourceConfigurationDTO.class));
 
                     return dto;
                 }

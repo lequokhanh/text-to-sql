@@ -1,6 +1,5 @@
 import os
 import atexit
-import consul
 import socket
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -14,7 +13,6 @@ from exceptions.global_exception_handler import register_error_handlers
 from exceptions.app_exception import AppException
 from response.app_response import ResponseWrapper
 from dotenv import load_dotenv
-from config.consul import ConsulClient
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -60,31 +58,7 @@ workflow = SQLAgentWorkflow(
     verbose=True
 )
 
-# Consul client
-SERVICE_NAME = os.getenv("SERVICE_NAME", "slm-engine")
-SERVICE_ID = f"{SERVICE_NAME}-{socket.gethostname()}"
 SERVICE_PORT = 5000
-
-consul_client = ConsulClient().get_client()
-
-def register_service():
-    consul_client.agent.service.register(
-        name=SERVICE_NAME,
-        service_id=SERVICE_ID,
-        address=socket.gethostbyname(socket.gethostname()),
-        port=SERVICE_PORT,
-        check=consul.Check.http(f"http://{socket.gethostbyname(socket.gethostname())}:{SERVICE_PORT}/health-check", interval="10s")
-    )
-    print(f"Registered {SERVICE_NAME} on Consul")
-
-    def deregister_service():
-        consul_client.agent.service.deregister(SERVICE_ID)
-        print(f"Deregistered {SERVICE_NAME} from Consul")
-
-    atexit.register(deregister_service)
-
-register_service()
-
 
 @app.route('/query', methods=['POST'])
 async def query():
@@ -113,7 +87,7 @@ async def query():
         raise AppException(str(e), 500)
     
 @app.route('/query-with-schema', methods=['POST'])
-async def query():
+async def queryWithSchema():
     try:
         data = request.json
         query = data.get("query")
