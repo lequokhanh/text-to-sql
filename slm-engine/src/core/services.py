@@ -4,8 +4,17 @@ import base64
 import io
 from enums.response_enum import ResponseEnum
 from exceptions.app_exception import AppException
+import logging
 
-API_HOST = os.getenv("EMBED_HOST_API")
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+API_HOST = f"http://{os.getenv('EMBED_HOST_API')}:8080"
+logger.info("EMBED_HOST_API: " + API_HOST)
 
 _endpoints = {
     "connect": f"{API_HOST}/api/v1/db/get-schema",
