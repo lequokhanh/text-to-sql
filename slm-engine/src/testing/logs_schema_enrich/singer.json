@@ -1,0 +1,195 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema consists of two tables: `singer` and `song`. The `singer` table stores information about singers, including their unique identifier (`Singer_ID`), name, birth year, net worth in millions, and citizenship. The `song` table contains details about songs, such as a unique song identifier (`Song_ID`), title, the associated singer's ID (`Singer_ID`), sales figures, and highest position reached. The foreign key relationship between `song.Singer_ID` and `singer.Singer_ID` establishes a connection linking each song to its respective singer. Overall, this database is designed to manage and track information related to singers and their musical works, facilitating queries about artist details and their performance metrics.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each singer.",
+            "columnIdentifier": "Singer_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the singer.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Birth year of the singer.",
+            "columnIdentifier": "Birth_Year",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The net worth of the singer in millions.",
+            "columnIdentifier": "Net_Worth_Millions",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Citizenship status of the singer.",
+            "columnIdentifier": "Citizenship",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Liliane Bettencourt, 1944.0, 30.0, France",
+          "2, Christy Walton, 1948.0, 28.8, United States",
+          "3, Alice Walton, 1949.0, 26.3, Chile"
+        ],
+        "tableDescription": "Stores information about singers, including their unique identifier, name, birth year, net worth in millions, and citizenship.",
+        "tableIdentifier": "singer"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each song.",
+            "columnIdentifier": "Song_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Title of the song.",
+            "columnIdentifier": "Title",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking the song to its respective singer.",
+            "columnIdentifier": "Singer_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "singer",
+                "toColumn": "Singer_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Sales figures for the song in millions.",
+            "columnIdentifier": "Sales",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Highest position reached by the song in charts.",
+            "columnIdentifier": "Highest_Position",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Do They Know It's Christmas, 1, 1094000.0, 1.0",
+          "2, F**k It (I Don't Want You Back), 2, 552407.0, 3.0",
+          "3, Cha Cha Slide, 4, 351421.0, 1.0"
+        ],
+        "tableDescription": "Contains details about songs, such as a unique song identifier, title, associated singer's ID, sales figures, and highest position reached.",
+        "tableIdentifier": "song"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Singer_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Birth_Year",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Net_Worth_Millions",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Citizenship",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "singer"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Song_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Title",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Singer_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "singer",
+                "toColumn": "Singer_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Sales",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Highest_Position",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "song"
+      }
+    ]
+  },
+  "message": "Success"
+}

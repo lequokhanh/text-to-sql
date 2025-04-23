@@ -1,0 +1,697 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to manage organizational data, including employees, departments, jobs, and geographical locations. It consists of several interconnected tables that capture detailed information about each entity, such as employee details, job roles, department structures, and regional settings. The relationships between these tables are established through foreign keys, enabling a hierarchical representation of the organization's structure and the movement of employees across different roles and departments.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a region.",
+            "columnIdentifier": "REGION_ID",
+            "columnType": "decimal(5,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "REGION_NAME",
+            "columnType": "varchar(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Europe\\r",
+          "2, Americas\\r",
+          "3, Asia\\r"
+        ],
+        "tableDescription": "Lists regions, which are groups of countries sharing a similar geographical or cultural context.",
+        "tableIdentifier": "regions"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a country.",
+            "columnIdentifier": "COUNTRY_ID",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "COUNTRY_NAME",
+            "columnType": "varchar(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "REGION_ID",
+            "columnType": "decimal(10,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "regions",
+                "toColumn": "REGION_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "AR, Argentina, 2",
+          "AU, Australia, 3",
+          "BE, Belgium, 1"
+        ],
+        "tableDescription": "Stores information about countries, including their names and associated regions.",
+        "tableIdentifier": "countries"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "DEPARTMENT_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the department.",
+            "columnIdentifier": "DEPARTMENT_NAME",
+            "columnType": "varchar(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "MANAGER_ID",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "LOCATION_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "10, Administration, 200, 1700",
+          "20, Marketing, 201, 1800",
+          "30, Purchasing, 114, 2400"
+        ],
+        "tableDescription": "Stores information about different departments within an organization, including their names, managers, and locations.",
+        "tableIdentifier": "departments"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "JOB_ID",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Title of the job role.",
+            "columnIdentifier": "JOB_TITLE",
+            "columnType": "varchar(35)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "MIN_SALARY",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "MAX_SALARY",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "AC_ACCOUNT, President, 20000, 40000",
+          "AC_MGR, Administration Vice President, 15000, 30000",
+          "AD_ASST, Administration Assistant, 3000, 6000"
+        ],
+        "tableDescription": "Stores information about different job roles within the organization, including their titles and salary ranges.",
+        "tableIdentifier": "jobs"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "EMPLOYEE_ID",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "FIRST_NAME",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the employee.",
+            "columnIdentifier": "LAST_NAME",
+            "columnType": "varchar(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Email address of the employee.",
+            "columnIdentifier": "EMAIL",
+            "columnType": "varchar(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "PHONE_NUMBER",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the employee was hired.",
+            "columnIdentifier": "HIRE_DATE",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the job role of the employee.",
+            "columnIdentifier": "JOB_ID",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "jobs",
+                "toColumn": "JOB_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "SALARY",
+            "columnType": "decimal(8,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "COMMISSION_PCT",
+            "columnType": "decimal(2,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "MANAGER_ID",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "DEPARTMENT_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "departments",
+                "toColumn": "DEPARTMENT_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "100, Steven, King, SKING, 515.123.4567, 1987-06-17, AD_PRES, 24000, 0, 0, 90",
+          "101, Neena, Kochhar, NKOCHHAR, 515.123.4568, 1987-06-18, AD_VP, 17000, 0.4, 100, 60",
+          "102, Lex, De Haan, LDEHAAN, 515.123.4569, 1987-06-19, IT_PROG, 9000, 0.3, 102, 100"
+        ],
+        "tableDescription": "Stores information about employees in the organization.",
+        "tableIdentifier": "employees"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for an employee.",
+            "columnIdentifier": "EMPLOYEE_ID",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "employees",
+                "toColumn": "EMPLOYEE_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date when the employee started in the current or previous role.",
+            "columnIdentifier": "START_DATE",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the employee ended their role.",
+            "columnIdentifier": "END_DATE",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique identifier for a job role.",
+            "columnIdentifier": "JOB_ID",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "jobs",
+                "toColumn": "JOB_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "DEPARTMENT_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "departments",
+                "toColumn": "DEPARTMENT_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "0, 0000-00-00, 1998-07-24, IT_PROG, 60",
+          "101, 1989-09-21, 1993-10-27, AC_ACCOUNT, 110",
+          "102, 1993-10-28, 1997-03-15, AC_MGR, 20"
+        ],
+        "tableDescription": "Records the job history of employees, including the start and end dates of their roles, job IDs, and department IDs.",
+        "tableIdentifier": "job_history"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "LOCATION_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "STREET_ADDRESS",
+            "columnType": "varchar(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "POSTAL_CODE",
+            "columnType": "varchar(12)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "City where the location is situated.",
+            "columnIdentifier": "CITY",
+            "columnType": "varchar(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "STATE_PROVINCE",
+            "columnType": "varchar(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "COUNTRY_ID",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "countries",
+                "toColumn": "COUNTRY_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1000, 1297 Via Cola di Rie, 989, Roma, , IT",
+          "1100, 93091 Calle della Testa, 10934, Venice, Tokyo Prefecture, JP",
+          "1200, 2017 Shinjuku-ku, 1689, Tokyo, Texas, US"
+        ],
+        "tableDescription": "Contains details about geographical locations, including addresses and associated countries.",
+        "tableIdentifier": "locations"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "REGION_ID",
+            "columnType": "decimal(5,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "REGION_NAME",
+            "columnType": "varchar(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "regions"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "COUNTRY_ID",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "COUNTRY_NAME",
+            "columnType": "varchar(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "REGION_ID",
+            "columnType": "decimal(10,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "regions",
+                "toColumn": "REGION_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "countries"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "DEPARTMENT_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DEPARTMENT_NAME",
+            "columnType": "varchar(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "MANAGER_ID",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "LOCATION_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "departments"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "JOB_ID",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "JOB_TITLE",
+            "columnType": "varchar(35)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "MIN_SALARY",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "MAX_SALARY",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "jobs"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "EMPLOYEE_ID",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "FIRST_NAME",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "LAST_NAME",
+            "columnType": "varchar(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMAIL",
+            "columnType": "varchar(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "PHONE_NUMBER",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "HIRE_DATE",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "JOB_ID",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "jobs",
+                "toColumn": "JOB_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "SALARY",
+            "columnType": "decimal(8,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "COMMISSION_PCT",
+            "columnType": "decimal(2,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "MANAGER_ID",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "DEPARTMENT_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "departments",
+                "toColumn": "DEPARTMENT_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "employees"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMPLOYEE_ID",
+            "columnType": "decimal(6,0)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "employees",
+                "toColumn": "EMPLOYEE_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "START_DATE",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "END_DATE",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "JOB_ID",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "jobs",
+                "toColumn": "JOB_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "DEPARTMENT_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "departments",
+                "toColumn": "DEPARTMENT_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "job_history"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "LOCATION_ID",
+            "columnType": "decimal(4,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "STREET_ADDRESS",
+            "columnType": "varchar(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "POSTAL_CODE",
+            "columnType": "varchar(12)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CITY",
+            "columnType": "varchar(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "STATE_PROVINCE",
+            "columnType": "varchar(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "COUNTRY_ID",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "countries",
+                "toColumn": "COUNTRY_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "locations"
+      }
+    ]
+  },
+  "message": "Success"
+}

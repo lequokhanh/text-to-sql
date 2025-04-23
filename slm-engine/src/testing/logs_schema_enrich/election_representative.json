@@ -1,0 +1,223 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema consists of two tables: `election` and `representative`. The `election` table records election results with details such as election ID, representative ID, date, votes received, vote percentage, seats won, and place. The `representative` table contains information about each representative, including their ID, name, state, party affiliation, and lifespan. These tables are linked through the foreign key relationship where `election.Representative_ID` references `representative.Representative_ID`. Together, this schema is designed to track and analyze voting outcomes for representatives across various elections.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each election.",
+            "columnIdentifier": "Election_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the representative table.",
+            "columnIdentifier": "Representative_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "representative",
+                "toColumn": "Representative_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date of the election.",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of votes received by the representative.",
+            "columnIdentifier": "Votes",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of votes received by the representative.",
+            "columnIdentifier": "Vote_Percent",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of seats won by the representative.",
+            "columnIdentifier": "Seats",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Ranking of the representative in the election.",
+            "columnIdentifier": "Place",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, July 1942, 9423.0, 16.2, 6.0, 3.0",
+          "2, 2, October 1942, 11059.0, 18.5, 10.0, 1.0",
+          "3, 4, 1946, 13049.0, 19.5, 9.0, 2.0"
+        ],
+        "tableDescription": "Records election results for representatives.",
+        "tableIdentifier": "election"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each representative.",
+            "columnIdentifier": "Representative_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the representative.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "State where the representative is from.",
+            "columnIdentifier": "State",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Political party affiliation of the representative.",
+            "columnIdentifier": "Party",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Lifespan of the representative.",
+            "columnIdentifier": "Lifespan",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Dan Quayle, Indiana, Republican, 1947–",
+          "2, John Quayle, New York, Democratic, 1868–1930",
+          "3, Al Quie, Minnesota, Republican, 1923–"
+        ],
+        "tableDescription": "Contains information about each representative.",
+        "tableIdentifier": "representative"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Election_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Representative_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "representative",
+                "toColumn": "Representative_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Votes",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Vote_Percent",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Seats",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Place",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "election"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Representative_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "State",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Party",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Lifespan",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "representative"
+      }
+    ]
+  },
+  "message": "Success"
+}

@@ -1,0 +1,251 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema consists of three tables: `college`, `member`, and `round`. The `college` table stores information about colleges, including their unique identifiers, names, leaders' names, and locations. The `member` table contains details about individual members, such as their IDs, names, countries, and the college they belong to, linking back to the `college` table through a foreign key relationship. The `round` table records information about rounds, including round identifiers, member participation linked to the `member` table via a foreign key, decoration themes for each round, and the rank of members within those rounds. Together, these tables manage data related to colleges, their members, and performance metrics in various rounds or competitions.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each college.",
+            "columnIdentifier": "College_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the college.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the leader of the college.",
+            "columnIdentifier": "Leader_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Location where the college is situated.",
+            "columnIdentifier": "College_Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Saskatchewan School, Ousame Tounkara, Ottawa",
+          "2, B.C. School, Ryan Thelwell, Minnesota",
+          "3, Calgary School, Andre Arlain, St. Francis Xavier"
+        ],
+        "tableDescription": "Stores information about colleges, including their unique identifiers, names, leaders' names, and locations.",
+        "tableIdentifier": "college"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each member.",
+            "columnIdentifier": "Member_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the member.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the member is from.",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the member to their college.",
+            "columnIdentifier": "College_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "college",
+                "toColumn": "College_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, Jack Nicklaus, United States, 1",
+          "2, Billy Casper, Canada, 4",
+          "3, Arnold Palmer, United States, 2"
+        ],
+        "tableDescription": "Contains details about individual members, such as their IDs, names, countries, and the college they belong to.",
+        "tableIdentifier": "member"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each round.",
+            "columnIdentifier": "Round_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the member participating in the round.",
+            "columnIdentifier": "Member_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "member",
+                "toColumn": "Member_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Theme of the decoration for the round.",
+            "columnIdentifier": "Decoration_Theme",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Rank of the member within the round.",
+            "columnIdentifier": "Rank_in_Round",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, Walk on the Moon, 1",
+          "2, 2, Soft Dream, 2",
+          "1, 4, Dark Nights, 4"
+        ],
+        "tableDescription": "Records information about rounds, including round identifiers, member participation linked to the member table via a foreign key, decoration themes for each round, and the rank of members within those rounds.",
+        "tableIdentifier": "round"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "College_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Leader_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "College_Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "college"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Member_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "College_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "college",
+                "toColumn": "College_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "member"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Round_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Member_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "member",
+                "toColumn": "Member_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Decoration_Theme",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Rank_in_Round",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "round"
+      }
+    ]
+  },
+  "message": "Success"
+}

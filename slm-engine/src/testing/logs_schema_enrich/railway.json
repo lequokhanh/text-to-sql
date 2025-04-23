@@ -1,0 +1,419 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema manages records related to railways, trains, and their respective managers. The `railway` table stores information about different railway lines, including details such as builder, construction date, number of wheels, location, and object number. The `train` table contains data about individual trains, linking each train to a specific railway line through the `Railway_ID`. The `manager` table holds details about managers, including their name, country, start year of employment, age, and level. The `railway_manage` table establishes a many-to-many relationship between railways and managers by referencing both `Railway_ID` and `Manager_ID`. Together, these tables facilitate the tracking and management of railway infrastructure, train operations, and managerial responsibilities.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each railway line.",
+            "columnIdentifier": "Railway_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the railway line.",
+            "columnIdentifier": "Railway",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Builder or manufacturer of the railway.",
+            "columnIdentifier": "Builder",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Construction date and any relevant history of the railway.",
+            "columnIdentifier": "Built",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Wheel configuration of the trains on this railway.",
+            "columnIdentifier": "Wheels",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Geographical location of the railway.",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique object number for identification purposes.",
+            "columnIdentifier": "ObjectNumber",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, SECR, SECR Ashford, 1901, 4-4-0, York, 1975-7006",
+          "2, MR, MR Derby, 1902 Midland Railway 1000 was rebuilt in 1914., 4-4-2, Bo'ness, 1975-7018",
+          "3, GNRD, GNR Doncaster, 1902, 0-6-0T, Barrow Hill, 1975-7005"
+        ],
+        "tableDescription": "Stores information about different railway lines.",
+        "tableIdentifier": "railway"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each train.",
+            "columnIdentifier": "Train_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Train number or identifier.",
+            "columnIdentifier": "Train_Num",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the train.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Departure station of the train.",
+            "columnIdentifier": "From",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Arrival time of the train.",
+            "columnIdentifier": "Arrival",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking the train to its associated railway line.",
+            "columnIdentifier": "Railway_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "railway",
+                "toColumn": "Railway_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, 51195, Wardha-Ballarshah Pass, Wardha, 08:54, 1",
+          "2, 12139, Sewagram Exp, Mumbai CST, 09:08, 2",
+          "3, 12140, Ballarshah-Mumbai Pass, Ballarshah, 09:48, 3"
+        ],
+        "tableDescription": "Contains data about individual trains and their associated railway lines.",
+        "tableIdentifier": "train"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each manager.",
+            "columnIdentifier": "Manager_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the manager.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The country where the manager is from.",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The year when the manager started their employment.",
+            "columnIdentifier": "Working_year_starts",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The age of the manager.",
+            "columnIdentifier": "Age",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The level or rank of the manager within the organization.",
+            "columnIdentifier": "Level",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Ben Curtis, United States, 2003, 45, 5",
+          "2, Todd Hamilton, Scotland, 2004, 55, 7",
+          "3, Tiger Woods, England, 2006, 46, 8"
+        ],
+        "tableDescription": "Stores information about railway managers, including their personal details and employment levels.",
+        "tableIdentifier": "manager"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each railway.",
+            "columnIdentifier": "Railway_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "railway",
+                "toColumn": "Railway_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for each manager.",
+            "columnIdentifier": "Manager_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "manager",
+                "toColumn": "Manager_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The year when the specified manager started managing the specified railway.",
+            "columnIdentifier": "From_Year",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "2, 4, 2010",
+          "7, 3, 2011",
+          "8, 1, 2012"
+        ],
+        "tableDescription": "Establishes a many-to-many relationship between railways and managers, indicating which manager oversees each railway since a certain year.",
+        "tableIdentifier": "railway_manage"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Railway_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Railway",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Builder",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Built",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Wheels",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ObjectNumber",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "railway"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Train_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Train_Num",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "From",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Arrival",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Railway_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "railway",
+                "toColumn": "Railway_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "train"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Manager_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Working_year_starts",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Age",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Level",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "manager"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Railway_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "railway",
+                "toColumn": "Railway_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Manager_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "manager",
+                "toColumn": "Manager_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "From_Year",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "railway_manage"
+      }
+    ]
+  },
+  "message": "Success"
+}

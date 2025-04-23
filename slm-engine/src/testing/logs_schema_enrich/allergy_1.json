@@ -1,0 +1,251 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema appears to manage student records and track their allergies. The `Student` table contains basic information about students such as their names, age, sex, major, advisor, and city code. The `Allergy_Type` table classifies different types of allergies, linking each allergy to its type. The `Has_Allergy` table establishes a many-to-many relationship between students and allergies, indicating which students have specific allergies. Together, these tables allow for efficient tracking and management of student allergies within an educational institution.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Name of the allergy type.",
+            "columnIdentifier": "Allergy",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The type of the allergy (e.g., food, environmental, animal).",
+            "columnIdentifier": "AllergyType",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Anchovies, food",
+          "Bee Stings, environmental",
+          "Cat, animal"
+        ],
+        "tableDescription": "Classifies different types of allergies.",
+        "tableIdentifier": "Allergy_Type"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a student.",
+            "columnIdentifier": "StuID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Student",
+                "toColumn": "StuID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the allergy that the student has.",
+            "columnIdentifier": "Allergy",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Allergy_Type",
+                "toColumn": "Allergy",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1001, Cat",
+          "1002, Shellfish",
+          "1003, Tree Pollen"
+        ],
+        "tableDescription": "Establishes a many-to-many relationship between students and allergies.",
+        "tableIdentifier": "Has_Allergy"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a student.",
+            "columnIdentifier": "StuID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the student.",
+            "columnIdentifier": "LName",
+            "columnType": "VARCHAR(12)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the student.",
+            "columnIdentifier": "Fname",
+            "columnType": "VARCHAR(12)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Age of the student.",
+            "columnIdentifier": "Age",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Gender of the student (M for male, F for female).",
+            "columnIdentifier": "Sex",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the student's major.",
+            "columnIdentifier": "Major",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "ID of the student's advisor.",
+            "columnIdentifier": "Advisor",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the city where the student resides.",
+            "columnIdentifier": "city_code",
+            "columnType": "VARCHAR(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1001, Smith, Linda, 18, F, 600, 1121, BAL",
+          "1002, Kim, Tracy, 19, M, 520, 7712, HKG",
+          "1003, Jones, Shiela, 21, F, 540, 7792, WAS"
+        ],
+        "tableDescription": "Stores basic information about students.",
+        "tableIdentifier": "Student"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Allergy",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "AllergyType",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Allergy_Type"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "StuID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Student",
+                "toColumn": "StuID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Allergy",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Allergy_Type",
+                "toColumn": "Allergy",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Has_Allergy"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "StuID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "LName",
+            "columnType": "VARCHAR(12)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Fname",
+            "columnType": "VARCHAR(12)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Age",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Sex",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Major",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Advisor",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city_code",
+            "columnType": "VARCHAR(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Student"
+      }
+    ]
+  },
+  "message": "Success"
+}

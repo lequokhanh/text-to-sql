@@ -1,0 +1,1113 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to manage the operations and relationships within a company's product distribution and delivery processes. It includes tables for storing information about products, customers, addresses, orders, deliveries, and employees. The schema supports tracking of regular orders, their associated products, actual order placements with statuses, delivery routes, trucks, and employee details. Through foreign key relationships, the database ensures data integrity across these entities, enabling comprehensive management of customer interactions, product distribution, and logistics operations.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Primary key uniquely identifying each product.",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the product.",
+            "columnIdentifier": "product_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Price of the product, stored as a decimal value.",
+            "columnIdentifier": "product_price",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the product's condition or other relevant details.",
+            "columnIdentifier": "product_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, dvds, 1322.78, good condition",
+          "2, cloth, 6402.09, great condition",
+          "3, electronics, 2511.29, bad condition"
+        ],
+        "tableDescription": "Stores information about various products available for sale.",
+        "tableIdentifier": "Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each address.",
+            "columnIdentifier": "address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Detailed street address information.",
+            "columnIdentifier": "address_details",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "City where the address is located.",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Postal code or ZIP code of the address.",
+            "columnIdentifier": "zip_postcode",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "State, province, or county information.",
+            "columnIdentifier": "state_province_county",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the address is located.",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 92283 Lora Forges Suite 322, Mohrville, 271, Nebraska, USA",
+          "2, 17135 Jaida Fork Suite 798, East Brody, 940, Colorado, USA",
+          "3, 41099 Crist Prairie Suite 507, Evelinebury, 003, Idaho, USA"
+        ],
+        "tableDescription": "Stores information about different addresses used by customers and companies.",
+        "tableIdentifier": "Addresses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each customer.",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Payment method used by the customer (e.g., Visa, MasterCard).",
+            "columnIdentifier": "payment_method",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Full name of the customer.",
+            "columnIdentifier": "customer_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Phone number of the customer.",
+            "columnIdentifier": "customer_phone",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Email address of the customer.",
+            "columnIdentifier": "customer_email",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the customer became a member.",
+            "columnIdentifier": "date_became_customer",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Visa, Ron Emard, 1-382-503-5179x53639, shaniya45@example.net, 2011-04-25 22:20:35",
+          "2, MasterCard, Gabe Schroeder, 1-728-537-4293x0885, alexandra91@example.net, 2011-10-17 16:08:25",
+          "3, Discover, Candace Schneider, 940.575.3682x7959, tkassulke@example.com, 2012-01-11 21:17:01"
+        ],
+        "tableDescription": "Stores information about customers including their contact details and payment methods.",
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Primary key identifying a specific regular order.",
+            "columnIdentifier": "regular_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the Customers table, identifying the customer who placed the order.",
+            "columnIdentifier": "distributer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, 12",
+          "2, 15",
+          "3, 6"
+        ],
+        "tableDescription": "Stores information about regular orders placed by customers.",
+        "tableIdentifier": "Regular_Orders"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Foreign key referencing the Regular_Orders table, identifying a specific order.",
+            "columnIdentifier": "regular_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Regular_Orders",
+                "toColumn": "regular_order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the Products table, identifying a specific product included in the order.",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Products",
+                "toColumn": "product_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "5, 3",
+          "2, 1",
+          "10, 5"
+        ],
+        "tableDescription": "Stores the relationship between regular orders and products.",
+        "tableIdentifier": "Regular_Order_Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each actual order.",
+            "columnIdentifier": "actual_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Status of the actual order (e.g., Success, Cancel).",
+            "columnIdentifier": "order_status_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the regular order associated with this actual order.",
+            "columnIdentifier": "regular_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Regular_Orders",
+                "toColumn": "regular_order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date and time when the actual order was placed.",
+            "columnIdentifier": "actual_order_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Success, 8, 2018-03-02 23:26:19",
+          "2, Cancel, 15, 2018-03-02 08:33:39",
+          "3, Success, 4, 2018-02-25 10:13:36"
+        ],
+        "tableDescription": "Stores information about actual orders placed by customers, including their status and date.",
+        "tableIdentifier": "Actual_Orders"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Foreign key referencing the Actual_Orders table, identifying a specific order.",
+            "columnIdentifier": "actual_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Actual_Orders",
+                "toColumn": "actual_order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the Products table, identifying a specific product included in the order.",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Products",
+                "toColumn": "product_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "2, 1",
+          "14, 5",
+          "13, 6"
+        ],
+        "tableDescription": "Stores the relationship between actual orders and products.",
+        "tableIdentifier": "Actual_Order_Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each customer.",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for each address associated with a customer.",
+            "columnIdentifier": "address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Addresses",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Start date of the address association for the customer.",
+            "columnIdentifier": "date_from",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of address (e.g., House, Flat, Apartment).",
+            "columnIdentifier": "address_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "End date of the address association for the customer.",
+            "columnIdentifier": "date_to",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "5, 6, 2016-09-06 19:23:46, House, 2018-02-25 15:34:58",
+          "14, 5, 2016-12-21 03:49:54, Flat, 2018-03-13 21:20:21",
+          "2, 2, 2014-06-09 06:31:49, Apartment, 2018-03-02 21:56:40"
+        ],
+        "tableDescription": "Maps customers to their addresses and specifies the type and duration of the address association.",
+        "tableIdentifier": "Customer_Addresses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a delivery route.",
+            "columnIdentifier": "route_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the delivery route.",
+            "columnIdentifier": "route_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the delivery route.",
+            "columnIdentifier": "other_route_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Torphy Ltd, \"16893 Wilderman Terrace\nPort Lucasburgh, ND 55978-5550\"",
+          "2, Heidenreich Group, \"6534 Cheyenne Trace Suite 242\nKoryburgh, PA 21391-9164\"",
+          "3, Gerhold Inc, \"70469 Unique Crest\nKatherynville, IA 92263-4974\""
+        ],
+        "tableDescription": "Stores information about delivery routes.",
+        "tableIdentifier": "Delivery_Routes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a location.",
+            "columnIdentifier": "location_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the route to which the location belongs.",
+            "columnIdentifier": "route_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Delivery_Routes",
+                "toColumn": "route_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking to the address details of the location.",
+            "columnIdentifier": "location_address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Addresses",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name or description of the location.",
+            "columnIdentifier": "location_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "04 Elm Rd, 11, 5, Labadie-Crooks",
+          "15 Sixth Av, 7, 13, \"VonRueden, Schmeler and Fay\"",
+          "27 City Rd, 10, 6, \"Carter, Pfannerstill and Rutherford\""
+        ],
+        "tableDescription": "Stores information about locations along delivery routes.",
+        "tableIdentifier": "Delivery_Route_Locations"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each truck.",
+            "columnIdentifier": "truck_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "License number of the truck.",
+            "columnIdentifier": "truck_licence_number",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the truck.",
+            "columnIdentifier": "truck_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 58110, Frida",
+          "2, 33822, Randy",
+          "3, 17106, Laverna"
+        ],
+        "tableDescription": "Stores information about the trucks used for deliveries.",
+        "tableIdentifier": "Trucks"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each employee.",
+            "columnIdentifier": "employee_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the address table, indicating the address of the employee.",
+            "columnIdentifier": "employee_address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Addresses",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the employee.",
+            "columnIdentifier": "employee_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Phone number of the employee.",
+            "columnIdentifier": "employee_phone",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 4, Kacie, 716-650-2081",
+          "2, 12, Dejuan, 211.289.9042",
+          "3, 1, Leonie, 816-890-2580"
+        ],
+        "tableDescription": "Stores information about employees of the company.",
+        "tableIdentifier": "Employees"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Code representing the delivery location.",
+            "columnIdentifier": "location_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Delivery_Route_Locations",
+                "toColumn": "location_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key linking to the actual orders table, indicating which order is being delivered.",
+            "columnIdentifier": "actual_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Actual_Orders",
+                "toColumn": "actual_order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Status of the delivery (e.g., Ready, On Road, Delivered).",
+            "columnIdentifier": "delivery_status_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the employees table, indicating which employee is driving the truck.",
+            "columnIdentifier": "driver_employee_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Employees",
+                "toColumn": "employee_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key linking to the trucks table, indicating which truck is used for the delivery.",
+            "columnIdentifier": "truck_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Trucks",
+                "toColumn": "truck_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date and time when the delivery was made.",
+            "columnIdentifier": "delivery_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "27 City Rd, 11, Ready, 6, 11, 2018-03-21 00:57:22",
+          "73 Nancy Av, 1, On Road, 4, 10, 2018-02-26 01:32:49",
+          "34 Benz St, 3, Delivered, 1, 2, 2018-03-08 17:17:12"
+        ],
+        "tableDescription": "Records details about deliveries made for orders.",
+        "tableIdentifier": "Order_Deliveries"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_price",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_details",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "zip_postcode",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state_province_county",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Addresses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "payment_method",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_phone",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_email",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_became_customer",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "regular_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "distributer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Regular_Orders"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "regular_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Regular_Orders",
+                "toColumn": "regular_order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Products",
+                "toColumn": "product_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Regular_Order_Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "actual_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_status_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "regular_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Regular_Orders",
+                "toColumn": "regular_order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "actual_order_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Actual_Orders"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "actual_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Actual_Orders",
+                "toColumn": "actual_order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Products",
+                "toColumn": "product_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Actual_Order_Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Addresses",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_from",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_to",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Customer_Addresses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "route_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "route_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_route_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Delivery_Routes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "location_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "route_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Delivery_Routes",
+                "toColumn": "route_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "location_address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Addresses",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "location_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Delivery_Route_Locations"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "truck_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "truck_licence_number",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "truck_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Trucks"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "employee_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "employee_address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Addresses",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "employee_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "employee_phone",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Employees"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "location_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Delivery_Route_Locations",
+                "toColumn": "location_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "actual_order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Actual_Orders",
+                "toColumn": "actual_order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "delivery_status_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "driver_employee_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Employees",
+                "toColumn": "employee_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "truck_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Trucks",
+                "toColumn": "truck_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "delivery_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Order_Deliveries"
+      }
+    ]
+  },
+  "message": "Success"
+}

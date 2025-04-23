@@ -1,0 +1,251 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema consists of two tables: `candidate` and `people`. The `candidate` table stores information about political candidates, including their ID, associated people ID, poll source, date of the poll, and various rates such as support, consideration, opposition, and uncertainty. The `people` table contains demographic details of individuals, including their ID, sex, name, date of birth, height, and weight. The relationship between these tables is established through a foreign key in the `candidate` table that references the primary key of the `people` table, linking each candidate to their corresponding personal information. Overall, this database appears to be designed for tracking and analyzing political candidate performance alongside demographic data of the candidates.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each candidate.",
+            "columnIdentifier": "Candidate_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the people table to link candidates with their personal information.",
+            "columnIdentifier": "People_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "people",
+                "toColumn": "People_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Source of the poll data.",
+            "columnIdentifier": "Poll_Source",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date range for which the poll was conducted.",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of people supporting the candidate.",
+            "columnIdentifier": "Support_rate",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of people considering the candidate.",
+            "columnIdentifier": "Consider_rate",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of people opposing the candidate.",
+            "columnIdentifier": "Oppose_rate",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of people unsure about the candidate.",
+            "columnIdentifier": "Unsure_rate",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, WNBC/Marist Poll, \"Feb 12–15, 2007\", 0.25, 0.3, 0.43, 0.2",
+          "2, 3, FOX News/Opinion Dynamics Poll, \"Feb 13–14, 2007\", 0.17, 0.42, 0.32, 0.9",
+          "3, 4, Newsweek Poll, \"Nov 9–10, 2006\", 0.18, 0.34, 0.44, 0.3"
+        ],
+        "tableDescription": "Stores information about political candidates, including poll results and demographic references.",
+        "tableIdentifier": "candidate"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each individual.",
+            "columnIdentifier": "People_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Gender of the individual.",
+            "columnIdentifier": "Sex",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Full name of the individual.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Birth date of the individual.",
+            "columnIdentifier": "Date_of_Birth",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Height of the individual in centimeters.",
+            "columnIdentifier": "Height",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Weight of the individual in kilograms.",
+            "columnIdentifier": "Weight",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, M, Hubert Henno, 06.10.1976, 188.0, 83.0",
+          "2, F, Dominique Daquin, 10.11.1972, 197.0, 85.0",
+          "3, M, Stéphane Antiga, 03.02.1976, 200.0, 94.0"
+        ],
+        "tableDescription": "Stores demographic details of individuals, primarily used to link with candidate information.",
+        "tableIdentifier": "people"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Candidate_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "People_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "people",
+                "toColumn": "People_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Poll_Source",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Support_rate",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Consider_rate",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Oppose_rate",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Unsure_rate",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "candidate"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "People_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Sex",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_of_Birth",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Height",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Weight",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "people"
+      }
+    ]
+  },
+  "message": "Success"
+}

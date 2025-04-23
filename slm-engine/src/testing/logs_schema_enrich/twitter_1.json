@@ -1,0 +1,249 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database appears to manage user profiles and their interactions within a social media platform. The `user_profiles` table stores essential information about users such as name, email, unique identifier (uid), partition ID, and followers count. The `tweets` table records messages posted by users, including the message text, creation date, and the user ID of the author. The `follows` table captures the relationship between users where one user follows another, linked through foreign keys to the `user_profiles` table. Together, these tables facilitate tracking user activity, interactions, and social connections within the platform.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for the user who is following.",
+            "columnIdentifier": "f1",
+            "columnType": "int(11)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "user_profiles",
+                "toColumn": "uid",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The unique identifier for the user being followed.",
+            "columnIdentifier": "f2",
+            "columnType": "int(11)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "user_profiles",
+                "toColumn": "uid",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, 2",
+          "2, 3",
+          "3, 1"
+        ],
+        "tableDescription": "Captures the relationship between users where one user follows another, linked through foreign keys to the user_profiles table.",
+        "tableIdentifier": "follows"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each tweet.",
+            "columnIdentifier": "id",
+            "columnType": "bigint(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "User ID of the author of the tweet.",
+            "columnIdentifier": "uid",
+            "columnType": "int(11)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "user_profiles",
+                "toColumn": "uid",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Text content of the tweet.",
+            "columnIdentifier": "text",
+            "columnType": "char(140)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "createdate",
+            "columnType": "datetime",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, Hello I'm Tony Stark., 2018-03-09 20:00:14",
+          "2, 3, Today I have went shopping at Laffayette., 2018-03-09 20:01:02",
+          "4, 4, My company is hiring interns., 2018-03-12 02:30:30"
+        ],
+        "tableDescription": "Records messages posted by users, including the message text, creation date, and the user ID of the author.",
+        "tableIdentifier": "tweets"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each user.",
+            "columnIdentifier": "uid",
+            "columnType": "int(11)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "name",
+            "columnType": "varchar(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "email",
+            "columnType": "varchar(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "partitionid",
+            "columnType": "int(11)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "followers",
+            "columnType": "int(11)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Iron Man, ts@richest.com, 1, 6662425",
+          "2, Mary, Mary@yale.edu, 2, 890",
+          "3, Black Widow\n, bw@superhero.com, 23, 35425845"
+        ],
+        "tableDescription": "Stores essential information about users such as name, email, unique identifier (uid), partition ID, and followers count.",
+        "tableIdentifier": "user_profiles"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "f1",
+            "columnType": "int(11)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "user_profiles",
+                "toColumn": "uid",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "f2",
+            "columnType": "int(11)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "user_profiles",
+                "toColumn": "uid",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "follows"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "bigint(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "uid",
+            "columnType": "int(11)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "user_profiles",
+                "toColumn": "uid",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "text",
+            "columnType": "char(140)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "createdate",
+            "columnType": "datetime",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "tweets"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "uid",
+            "columnType": "int(11)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "name",
+            "columnType": "varchar(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "email",
+            "columnType": "varchar(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "partitionid",
+            "columnType": "int(11)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "followers",
+            "columnType": "int(11)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "user_profiles"
+      }
+    ]
+  },
+  "message": "Success"
+}

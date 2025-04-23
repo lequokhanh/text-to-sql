@@ -1,0 +1,265 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to manage information about airlines and their flight schedules involving various airports. The `airlines` table stores details of different airlines, including their unique identifiers, full names, abbreviations, and countries of origin. The `airports` table contains information about airports, such as city locations, airport codes, names, and country affiliations with both full country names and abbreviations. The `flights` table records flight information, linking each flight to an airline by its unique identifier, featuring flight numbers, source and destination airport codes that reference the `airports` table, thereby establishing a relational structure between airlines and their operational routes.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each airline.",
+            "columnIdentifier": "uid",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique identifier for each airline.",
+            "columnIdentifier": "Airline",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Abbreviation or code for the airline.",
+            "columnIdentifier": "Abbreviation",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country of origin for the airline.",
+            "columnIdentifier": "Country",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, United Airlines, UAL, USA",
+          "2, US Airways, USAir, USA",
+          "3, Delta Airlines, Delta, USA"
+        ],
+        "tableDescription": "Stores information about different airlines.",
+        "tableIdentifier": "airlines"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "City where the airport is located.",
+            "columnIdentifier": "City",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique code for each airport.",
+            "columnIdentifier": "AirportCode",
+            "columnType": "TEXT",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the airport.",
+            "columnIdentifier": "AirportName",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Full name of the country where the airport is located.",
+            "columnIdentifier": "Country",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Abbreviation for the country where the airport is located.",
+            "columnIdentifier": "CountryAbbrev",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Aberdeen , AAF, Phillips AAF , United States , US ",
+          "Abilene , ABI, Municipal , United States , US",
+          "Abingdon , ABL, Dyess AFB , United States , US "
+        ],
+        "tableDescription": "Stores information about airports.",
+        "tableIdentifier": "airports"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the airline operating the flight.",
+            "columnIdentifier": "Airline",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique number assigned to each flight.",
+            "columnIdentifier": "FlightNo",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code of the airport where the flight originates, referencing airports.AirportCode.",
+            "columnIdentifier": "SourceAirport",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "airports",
+                "toColumn": "AirportCode",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code of the airport where the flight destination, referencing airports.AirportCode.",
+            "columnIdentifier": "DestAirport",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "airports",
+                "toColumn": "AirportCode",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, 28,  APG,  ASY",
+          "2, 29,  ASY,  APG",
+          "3, 44,  CVO,  ACV"
+        ],
+        "tableDescription": "Records flight information and links flights to airlines.",
+        "tableIdentifier": "flights"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "uid",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Airline",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Abbreviation",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Country",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "airlines"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "City",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "AirportCode",
+            "columnType": "TEXT",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "AirportName",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Country",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CountryAbbrev",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "airports"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Airline",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "FlightNo",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "SourceAirport",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "airports",
+                "toColumn": "AirportCode",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DestAirport",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "airports",
+                "toColumn": "AirportCode",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "flights"
+      }
+    ]
+  },
+  "message": "Success"
+}

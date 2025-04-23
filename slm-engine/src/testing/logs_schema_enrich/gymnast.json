@@ -1,0 +1,237 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database is designed to manage records related to gymnasts and their performance metrics. The `gymnast` table stores detailed scoring information for various gymnastic events such as floor exercise, pommel horse, rings, vault, parallel bars, and horizontal bar, including a total points column. The `people` table contains basic demographic information about the gymnasts, including their name, age, height, and hometown. The relationship between these tables is established through the foreign key `gymnast.Gymnast_ID`, which references the primary key `people.People_ID`, allowing for comprehensive tracking of each gymnast's personal details alongside their performance scores.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each gymnast, also references the people table.",
+            "columnIdentifier": "Gymnast_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "people",
+                "toColumn": "People_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Points scored in the floor exercise event.",
+            "columnIdentifier": "Floor_Exercise_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Points scored in the pommel horse event.",
+            "columnIdentifier": "Pommel_Horse_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Points scored in the rings event.",
+            "columnIdentifier": "Rings_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Points scored in the vault event.",
+            "columnIdentifier": "Vault_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Points scored in the parallel bars event.",
+            "columnIdentifier": "Parallel_Bars_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Points scored in the horizontal bar event.",
+            "columnIdentifier": "Horizontal_Bar_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Aggregate score across all gymnastic events.",
+            "columnIdentifier": "Total_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 9.725, 9.737, 9.512, 9.575, 9.762, 9.75, 58.061",
+          "2, 9.7, 9.625, 9.625, 9.65, 9.587, 9.737, 57.924",
+          "4, 8.987, 9.75, 9.75, 9.762, 9.787, 9.725, 57.649"
+        ],
+        "tableDescription": "Stores detailed scoring information for various gymnastic events and total points.",
+        "tableIdentifier": "gymnast"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each person.",
+            "columnIdentifier": "People_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Full name of the gymnast.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Age of the gymnast in years.",
+            "columnIdentifier": "Age",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Height of the gymnast in meters.",
+            "columnIdentifier": "Height",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "City where the gymnast is from.",
+            "columnIdentifier": "Hometown",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Paul Hamm, 24.0, 1.71, Santo Domingo",
+          "2, Lorraine Súarez Carmona, 21.0, 1.75, Bonao",
+          "3, Ashley Pérez Cabrera, 19.0, 1.7, Miami"
+        ],
+        "tableDescription": "Contains basic demographic information about the gymnasts.",
+        "tableIdentifier": "people"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Gymnast_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "people",
+                "toColumn": "People_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Floor_Exercise_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pommel_Horse_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Rings_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Vault_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Parallel_Bars_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Horizontal_Bar_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Total_Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "gymnast"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "People_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Age",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Height",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Hometown",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "people"
+      }
+    ]
+  },
+  "message": "Success"
+}

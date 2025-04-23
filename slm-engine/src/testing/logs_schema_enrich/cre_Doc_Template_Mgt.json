@@ -1,0 +1,349 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema manages templates and their associated documents and paragraphs. It consists of four main tables: `Ref_Template_Types` for storing different types of templates with descriptions, `Templates` for managing template details including versions and effective dates, `Documents` for linking templates to specific documents with additional metadata, and `Paragraphs` for detailing the content of each document in paragraph form. The relationships between these tables are established through foreign keys, ensuring data integrity and allowing efficient querying of template, document, and paragraph information.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code representing the type of template.",
+            "columnIdentifier": "Template_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description or name of the template type.",
+            "columnIdentifier": "Template_Type_Description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "AD, Presentation",
+          "BK, CV",
+          "CV, Advertisement"
+        ],
+        "tableDescription": "Stores different types of templates along with their descriptions.",
+        "tableIdentifier": "Ref_Template_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each template.",
+            "columnIdentifier": "Template_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Version number of the template.",
+            "columnIdentifier": "Version_Number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code linking the template to its type in Ref_Template_Types.",
+            "columnIdentifier": "Template_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Template_Types",
+                "toColumn": "Template_Type_Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Start date from which the template version is effective.",
+            "columnIdentifier": "Date_Effective_From",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "End date until which the template version is effective.",
+            "columnIdentifier": "Date_Effective_To",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details or notes about the template.",
+            "columnIdentifier": "Template_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "0, 5, PP, 2005-11-12 07:09:48, 2008-01-05 14:19:28, ",
+          "1, 9, BK, 2010-09-24 01:15:11, 1999-07-08 03:31:04, ",
+          "4, 4, PPT, 2002-03-02 14:39:49, 2001-04-18 09:29:52, "
+        ],
+        "tableDescription": "Manages details of templates including versions and effective dates.",
+        "tableIdentifier": "Templates"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each document.",
+            "columnIdentifier": "Document_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to Templates table.",
+            "columnIdentifier": "Template_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Templates",
+                "toColumn": "Template_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the document.",
+            "columnIdentifier": "Document_Name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the document.",
+            "columnIdentifier": "Document_Description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional metadata for the document.",
+            "columnIdentifier": "Other_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "0, 7, Introduction of OS, n",
+          "1, 25, Understanding DB, y",
+          "3, 6, Summer Show, u"
+        ],
+        "tableDescription": "Links templates to specific documents with additional metadata.",
+        "tableIdentifier": "Documents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each paragraph.",
+            "columnIdentifier": "Paragraph_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to Documents table.",
+            "columnIdentifier": "Document_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Documents",
+                "toColumn": "Document_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Text content of the paragraph.",
+            "columnIdentifier": "Paragraph_Text",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional metadata for the paragraph.",
+            "columnIdentifier": "Other_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "7, 2394, Korea",
+          "9, 3, Somalia",
+          "65, 50123, Palestinian Territory"
+        ],
+        "tableDescription": "Details the content of each document in paragraph form.",
+        "tableIdentifier": "Paragraphs"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Template_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Template_Type_Description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Ref_Template_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Template_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Version_Number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Template_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Template_Types",
+                "toColumn": "Template_Type_Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_Effective_From",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_Effective_To",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Template_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Templates"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Document_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Template_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Templates",
+                "toColumn": "Template_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Document_Name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Document_Description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Other_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Documents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Paragraph_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Document_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Documents",
+                "toColumn": "Document_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Paragraph_Text",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Other_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Paragraphs"
+      }
+    ]
+  },
+  "message": "Success"
+}

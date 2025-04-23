@@ -1,0 +1,205 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database appears to manage information about high school students, their friendships, and their interests. The Highschooler table stores details of each student including their unique ID, name, and grade. The Friend table records relationships between students as friends, linking them through their IDs. The Likes table captures which students have interest in or \"like\" other students. Together, these tables enable tracking social connections and preferences among high schoolers.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each student.",
+            "columnIdentifier": "ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the student.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Grade level of the student.",
+            "columnIdentifier": "grade",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1025, Jordan, 9",
+          "1101, Gabriel, 10",
+          "1247, Tiffany, 11"
+        ],
+        "tableDescription": "Stores details of each high school student, including their unique identifier, name, and grade.",
+        "tableIdentifier": "Highschooler"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "ID of one student in the friendship relationship.",
+            "columnIdentifier": "student_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Highschooler",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the second student in the friendship.",
+            "columnIdentifier": "friend_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Highschooler",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1101, 1381",
+          "1247, 1689",
+          "1304, 1709"
+        ],
+        "tableDescription": "Records friendships between high school students by linking their unique identifiers.",
+        "tableIdentifier": "Friend"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "ID of the student who has the interest.",
+            "columnIdentifier": "student_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Highschooler",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "ID of the student who is liked by the first student.",
+            "columnIdentifier": "liked_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Highschooler",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1025, 1709",
+          "1247, 1689",
+          "1316, 1247"
+        ],
+        "tableDescription": "Captures which high school students have interest in or 'like' other students, linking them through their unique identifiers.",
+        "tableIdentifier": "Likes"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "grade",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Highschooler"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "student_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Highschooler",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "friend_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Highschooler",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Friend"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "student_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Highschooler",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "liked_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Highschooler",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Likes"
+      }
+    ]
+  },
+  "message": "Success"
+}

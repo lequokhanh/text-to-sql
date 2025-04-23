@@ -1,0 +1,291 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to manage and track user interactions with items, specifically through reviews and trust relationships among users. The `item` table stores information about various items, identified by their unique ID (`i_id`) and title. The `review` table captures user feedback on these items, including the reviewer's ID (`u_id`), the item reviewed (`i_id`), a numerical rating, and a rank. The `useracct` table holds details of users, linking each user with their unique ID (`u_id`) and name. Lastly, the `trust` table records trust relationships between users, indicated by the source and target user IDs along with a trust value. Together, these tables support functionalities such as item review management, user account tracking, and trust-based user interactions within the system.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each item.",
+            "columnIdentifier": "i_id",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "title",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "0, pear",
+          "1, orange",
+          "2, apple"
+        ],
+        "tableDescription": "Stores information about various items.",
+        "tableIdentifier": "item"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each review.",
+            "columnIdentifier": "a_id",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique identifier for the reviewer.",
+            "columnIdentifier": "u_id",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "useracct",
+                "toColumn": "u_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the item being reviewed.",
+            "columnIdentifier": "i_id",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "item",
+                "toColumn": "i_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "rating",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "rank",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 1, 10, 1",
+          "2, 2, 3, 5, 2",
+          "6, 1, 4, 7, 3"
+        ],
+        "tableDescription": "Captures user feedback on items, including ratings and ranks.",
+        "tableIdentifier": "review"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each user.",
+            "columnIdentifier": "u_id",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "name",
+            "columnType": "varchar(128)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Helen",
+          "2, Mark",
+          "3, Terry"
+        ],
+        "tableDescription": "Holds details of users, linking each user with their unique ID and name.",
+        "tableIdentifier": "useracct"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the source user.",
+            "columnIdentifier": "source_u_id",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "useracct",
+                "toColumn": "u_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the target user.",
+            "columnIdentifier": "target_u_id",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "useracct",
+                "toColumn": "u_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Trust value between the source and target users.",
+            "columnIdentifier": "trust",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 2, 10",
+          "2, 3, 6",
+          "3, 4, 8"
+        ],
+        "tableDescription": "Records trust relationships between users, indicated by source and target user IDs along with a trust value.",
+        "tableIdentifier": "trust"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "i_id",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "title",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "item"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "a_id",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "u_id",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "useracct",
+                "toColumn": "u_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "i_id",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "item",
+                "toColumn": "i_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "rating",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "rank",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "review"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "u_id",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "name",
+            "columnType": "varchar(128)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "useracct"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "source_u_id",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "useracct",
+                "toColumn": "u_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "target_u_id",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "useracct",
+                "toColumn": "u_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "trust",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "trust"
+      }
+    ]
+  },
+  "message": "Success"
+}

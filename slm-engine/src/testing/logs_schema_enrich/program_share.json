@@ -1,0 +1,361 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage television programming and broadcasting details. It consists of four main tables: `program`, which stores information about each program including its ID, name, origin, launch time, and owner; `channel`, which holds data about channels such as their ID, name, owner, share percentage, and rating; `broadcast`, which records the relationship between programs and channels along with the time of day they are broadcasted; and `broadcast_share`, which tracks the viewership share of each program on specific channels over different dates. The foreign key relationships ensure that data integrity is maintained across these tables, allowing for efficient querying and management of broadcasting information.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the program.",
+            "columnIdentifier": "Program_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the program.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Origin or source of the program.",
+            "columnIdentifier": "Origin",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Year when the program was launched.",
+            "columnIdentifier": "Launch",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Owner of the program.",
+            "columnIdentifier": "Owner",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Aniworld, Hunan, 2005.0, Hunan Broadcasting System (HBS)",
+          "2, Kaku, Beijing, 2004.0, Beijing Television (BTV)",
+          "3, Toonmax, Shanghai, 2007.0, Shanghai Media Group (SMG)"
+        ],
+        "tableDescription": "Stores information about each television program.",
+        "tableIdentifier": "program"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the channel.",
+            "columnIdentifier": "Channel_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the channel.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Owner of the channel.",
+            "columnIdentifier": "Owner",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of market share held by the channel.",
+            "columnIdentifier": "Share_in_percent",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage rating or audience preference for the channel.",
+            "columnIdentifier": "Rating_in_percent",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, CCTV-1, CCTV, 4.9, 0.54",
+          "2, Hunan Satellite TV, HBS, 4.81, 0.53",
+          "3, CCTV-8, Anhui Television, 3.76, 0.41"
+        ],
+        "tableDescription": "Stores information about each television channel.",
+        "tableIdentifier": "channel"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the channel.",
+            "columnIdentifier": "Channel_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "channel",
+                "toColumn": "Channel_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the program.",
+            "columnIdentifier": "Program_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "program",
+                "toColumn": "Program_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The time of day when the program is broadcasted.",
+            "columnIdentifier": "Time_of_day",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, Morning",
+          "2, 2, Night",
+          "3, 4, Noon"
+        ],
+        "tableDescription": "Records the relationship between programs and channels along with broadcast times.",
+        "tableIdentifier": "broadcast"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the channel.",
+            "columnIdentifier": "Channel_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "channel",
+                "toColumn": "Channel_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the program.",
+            "columnIdentifier": "Program_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "program",
+                "toColumn": "Program_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date on which the viewership share is recorded.",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Viewership share of the program on the channel in percentage.",
+            "columnIdentifier": "Share_in_percent",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, \"01,May\", 3.1",
+          "2, 2, \"02,May\", 1.8",
+          "3, 4, \"03,May\", 2.8"
+        ],
+        "tableDescription": "Tracks the viewership share of each program on specific channels over different dates.",
+        "tableIdentifier": "broadcast_share"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Program_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Origin",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Launch",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Owner",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "program"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Channel_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Owner",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Share_in_percent",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Rating_in_percent",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "channel"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Channel_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "channel",
+                "toColumn": "Channel_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Program_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "program",
+                "toColumn": "Program_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Time_of_day",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "broadcast"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Channel_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "channel",
+                "toColumn": "Channel_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Program_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "program",
+                "toColumn": "Program_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Share_in_percent",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "broadcast_share"
+      }
+    ]
+  },
+  "message": "Success"
+}

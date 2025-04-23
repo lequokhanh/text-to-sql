@@ -1,0 +1,585 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to manage and track various aspects of customer orders, products, and shipments within an e-commerce system. It consists of tables for customers, invoices, orders, products, order items, shipments, and shipment items. The Customers table holds basic information about each customer. Invoices are linked to orders through the invoice_number, tracking financial transactions associated with specific orders. Orders reference customers via a foreign key relationship, and each order can include multiple items, detailed in the Order_Items table. Products are referenced by their product_id in the Order_Items table, allowing for the association of ordered products with their respective details. The Shipments table links orders to invoices and manages shipment information, including tracking numbers and dates, while Shipment_Items associate individual order items with specific shipments. Together, these tables form a comprehensive system for order management, from customer interaction through product ordering and delivery.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a customer.",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the customer.",
+            "columnIdentifier": "customer_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the customer.",
+            "columnIdentifier": "customer_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Savannah, rerum",
+          "2, George, est",
+          "3, Alberto, deleniti"
+        ],
+        "tableDescription": "Stores basic information about each customer.",
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Invoice number linked to a specific order.",
+            "columnIdentifier": "invoice_number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the invoice was issued.",
+            "columnIdentifier": "invoice_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details or notes about the invoice.",
+            "columnIdentifier": "invoice_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1989-09-03 16:03:05, vitae",
+          "2, 1989-12-11 16:40:57, magnam",
+          "3, 1995-10-07 14:13:05, et"
+        ],
+        "tableDescription": "Tracks financial transactions associated with specific orders.",
+        "tableIdentifier": "Invoices"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for an order.",
+            "columnIdentifier": "order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the customer who placed the order.",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Current status of the order (e.g., Shipped, Packing, On Road).",
+            "columnIdentifier": "order_status",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date and time when the order was placed.",
+            "columnIdentifier": "date_order_placed",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the order.",
+            "columnIdentifier": "order_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 2, Shipped, 2009-02-21 15:26:19",
+          "2, 11, Packing, 1974-06-24 22:10:26",
+          "3, 4, On Road, 1982-12-29 21:10:11"
+        ],
+        "tableDescription": "Manages order information, including status and placement date.",
+        "tableIdentifier": "Orders"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a product.",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the product.",
+            "columnIdentifier": "product_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Detailed description of the product.",
+            "columnIdentifier": "product_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, food",
+          "2, book",
+          "3, clothes"
+        ],
+        "tableDescription": "Stores information about each product available for purchase.",
+        "tableIdentifier": "Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for an order item.",
+            "columnIdentifier": "order_item_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the product associated with this item.",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Products",
+                "toColumn": "product_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the order containing this item.",
+            "columnIdentifier": "order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Orders",
+                "toColumn": "order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Current status of the order item (e.g., Finish, Payed, Cancel).",
+            "columnIdentifier": "order_item_status",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the order item.",
+            "columnIdentifier": "order_item_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 4, 6, Finish",
+          "2, 15, 15, Payed",
+          "3, 12, 8, Cancel"
+        ],
+        "tableDescription": "Associates ordered products with their respective details.",
+        "tableIdentifier": "Order_Items"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a shipment.",
+            "columnIdentifier": "shipment_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the order being shipped, linked to the Orders table.",
+            "columnIdentifier": "order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Orders",
+                "toColumn": "order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Invoice number linked to this shipment.",
+            "columnIdentifier": "invoice_number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Invoices",
+                "toColumn": "invoice_number",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Tracking number for the shipment.",
+            "columnIdentifier": "shipment_tracking_number",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the shipment was made.",
+            "columnIdentifier": "shipment_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details or notes about the shipment.",
+            "columnIdentifier": "other_shipment_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 5, 13, 3452, 1983-08-13 22:34:11",
+          "2, 7, 2, 0114, 1977-11-10 12:11:25",
+          "3, 10, 5, 478, 2006-01-17 03:08:05"
+        ],
+        "tableDescription": "Manages shipment information, including tracking numbers and dates.",
+        "tableIdentifier": "Shipments"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Foreign key referencing the shipment containing this item.",
+            "columnIdentifier": "shipment_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Shipments",
+                "toColumn": "shipment_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the order item associated with this shipment.",
+            "columnIdentifier": "order_item_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Order_Items",
+                "toColumn": "order_item_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "11, 12",
+          "10, 15",
+          "2, 2"
+        ],
+        "tableDescription": "Associates individual order items with specific shipments.",
+        "tableIdentifier": "Shipment_Items"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "invoice_number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "invoice_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "invoice_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Invoices"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_status",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_order_placed",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Orders"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_item_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Products",
+                "toColumn": "product_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Orders",
+                "toColumn": "order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_item_status",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_item_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Order_Items"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "shipment_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Orders",
+                "toColumn": "order_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "invoice_number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Invoices",
+                "toColumn": "invoice_number",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "shipment_tracking_number",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "shipment_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_shipment_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Shipments"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "shipment_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Shipments",
+                "toColumn": "shipment_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "order_item_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Order_Items",
+                "toColumn": "order_item_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Shipment_Items"
+      }
+    ]
+  },
+  "message": "Success"
+}

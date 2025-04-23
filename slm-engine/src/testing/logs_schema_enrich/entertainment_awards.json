@@ -1,0 +1,251 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage and track details of artistic festivals, including information about artworks nominated for awards in these festivals. The `festival_detail` table stores comprehensive information about each festival, such as its name, chairperson, location, year held, and number of attendees. The `artwork` table contains records of different artworks, categorized by type and named accordingly. The `nomination` table links artworks to the festivals in which they were nominated, along with the result of their nomination, thus capturing the relationship between artworks and festival events. This schema supports tracking artistic participation across various festivals and evaluating nominations systematically.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the festival.",
+            "columnIdentifier": "Festival_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the festival.",
+            "columnIdentifier": "Festival_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the chairperson organizing the festival.",
+            "columnIdentifier": "Chair_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The location where the festival is held.",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Year in which the festival was held.",
+            "columnIdentifier": "Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of attendees at the festival.",
+            "columnIdentifier": "Num_of_Audience",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Panasonic Awards, Raymond Floyd, United States, 2006, 152",
+          "2, Flower Awards, Charles Coody, United States, 2007, 155",
+          "3, Cherry Awards, Doug Ford, United States, 2008, 160"
+        ],
+        "tableDescription": "Stores comprehensive information about each festival.",
+        "tableIdentifier": "festival_detail"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each artwork.",
+            "columnIdentifier": "Artwork_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The category or type of the artwork.",
+            "columnIdentifier": "Type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the artwork.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Program Music/Variety Show, Indonesian Idol",
+          "2, Presenter Music/Variety Show, I Know",
+          "3, Program Talent Show, Loving you"
+        ],
+        "tableDescription": "Contains records of different artworks, categorized by type and named accordingly.",
+        "tableIdentifier": "artwork"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the artwork (foreign key).",
+            "columnIdentifier": "Artwork_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "artwork",
+                "toColumn": "Artwork_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the festival (foreign key).",
+            "columnIdentifier": "Festival_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "festival_detail",
+                "toColumn": "Festival_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The result of the nomination for the artwork at the festival.",
+            "columnIdentifier": "Result",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 2, Nominated",
+          "2, 1, Won",
+          "3, 5, Nominated"
+        ],
+        "tableDescription": "Links artworks to the festivals in which they were nominated, along with the result of their nomination.",
+        "tableIdentifier": "nomination"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Festival_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Festival_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Chair_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Num_of_Audience",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "festival_detail"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Artwork_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "artwork"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Artwork_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "artwork",
+                "toColumn": "Artwork_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Festival_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "festival_detail",
+                "toColumn": "Festival_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Result",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "nomination"
+      }
+    ]
+  },
+  "message": "Success"
+}

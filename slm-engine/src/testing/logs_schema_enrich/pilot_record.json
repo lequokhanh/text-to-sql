@@ -1,0 +1,349 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database is designed to manage records related to aircraft and their pilots. It consists of three main tables: `aircraft`, which stores details about various aircraft models including manufacturer, model, and propulsion type; `pilot`, which contains information about pilots such as name, rank, age, nationality, position, and join year; and `pilot_record`, which links pilots to the aircraft they have flown, recording both the pilot and aircraft IDs along with the date of the flight. The relationships between these tables are established through foreign keys, ensuring data integrity and allowing for comprehensive queries on pilot and aircraft performance.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each aircraft.",
+            "columnIdentifier": "Aircraft_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The year the aircraft was ordered.",
+            "columnIdentifier": "Order_Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the company that manufactured the aircraft.",
+            "columnIdentifier": "Manufacturer",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The model name or designation of the aircraft.",
+            "columnIdentifier": "Model",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The fleet series to which the aircraft belongs.",
+            "columnIdentifier": "Fleet_Series",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Details about the powertrain of the aircraft.",
+            "columnIdentifier": "Powertrain",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The type of fuel propulsion used by the aircraft.",
+            "columnIdentifier": "Fuel_Propulsion",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1992, Gillig, Phantom (High Floor), 444-464 (21), DD S50EGR Allison WB-400R, Diesel",
+          "2, 1996, NFI, Advantage (Low Floor), 465-467 (3), DD S50 Allison WB-400R, Hybrid",
+          "3, 1998, Gillig, GE40LFR, 468-473 (6), Cummins ISC Allison WB-400R, CNG"
+        ],
+        "tableDescription": "Stores details about various aircraft models including manufacturer, model, and propulsion type.",
+        "tableIdentifier": "aircraft"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each pilot.",
+            "columnIdentifier": "Pilot_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the pilot.",
+            "columnIdentifier": "Pilot_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The rank or position held by the pilot in their career.",
+            "columnIdentifier": "Rank",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The age of the pilot.",
+            "columnIdentifier": "Age",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The nationality of the pilot.",
+            "columnIdentifier": "Nationality",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Current job position or role of the pilot in an organization.",
+            "columnIdentifier": "Position",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The year the pilot joined their current or first organization.",
+            "columnIdentifier": "Join_Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The team or organization the pilot belongs to.",
+            "columnIdentifier": "Team",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Patrick O'Bryant, 13, 33, United States, Center Team, 2009, Bradley",
+          "2, Jermaine O'Neal, 6, 40, United Kindom, Forward-Center Team, 2008, Eau Claire High School",
+          "3, Dan O'Sullivan, 45, 37, Nigeria, Forward Team, 1999, Fordham"
+        ],
+        "tableDescription": "Contains information about pilots such as name, rank, age, nationality, position, and join year.",
+        "tableIdentifier": "pilot"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each flight record.",
+            "columnIdentifier": "Record_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the pilot who flew the aircraft.",
+            "columnIdentifier": "Pilot_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "pilot",
+                "toColumn": "Pilot_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking to the aircraft that was flown.",
+            "columnIdentifier": "Aircraft_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "aircraft",
+                "toColumn": "Aircraft_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date when the flight took place.",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 1, 2003/01/04",
+          "2, 2, 4, 2005/01/04",
+          "3, 3, 5, 2008/01/04"
+        ],
+        "tableDescription": "Links pilots to the aircraft they have flown, recording both the pilot and aircraft IDs along with the date of the flight.",
+        "tableIdentifier": "pilot_record"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Aircraft_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Order_Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Manufacturer",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Model",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Fleet_Series",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Powertrain",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Fuel_Propulsion",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "aircraft"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pilot_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pilot_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Rank",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Age",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Nationality",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Position",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Join_Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Team",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "pilot"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Record_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pilot_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "pilot",
+                "toColumn": "Pilot_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Aircraft_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "aircraft",
+                "toColumn": "Aircraft_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "pilot_record"
+      }
+    ]
+  },
+  "message": "Success"
+}

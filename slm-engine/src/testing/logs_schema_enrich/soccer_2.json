@@ -1,0 +1,237 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema consists of three tables: College, Player, and Tryout. The College table stores information about colleges, including their name, state, and enrollment numbers. The Player table contains details about players, such as their ID, name, year card status (likely referring to the year they started playing), and high school number. The Tryout table records tryouts of players for colleges, including the player's ID, college name, position played, and decision made during the tryout process. The relationships between these tables are established through foreign keys, with Tryout.pID linking to Player.pID and Tryout.cName linking to College.cName. Together, this schema supports tracking player information, college details, and tryout outcomes for various colleges and players.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique name of the college.",
+            "columnIdentifier": "cName",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The state where the college is located.",
+            "columnIdentifier": "state",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Enrollment number indicating the number of students enrolled in the college.",
+            "columnIdentifier": "enr",
+            "columnType": "numeric(5,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "ASU, LA, 18000",
+          "FSU, AZ, 12000",
+          "LSU, OK, 22000"
+        ],
+        "tableDescription": "Stores information about colleges, including their name, state, and enrollment numbers.",
+        "tableIdentifier": "College"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a player.",
+            "columnIdentifier": "pID",
+            "columnType": "numeric(5,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the player.",
+            "columnIdentifier": "pName",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The year card status of the player, indicating the year they started playing.",
+            "columnIdentifier": "yCard",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The high school number associated with the player.",
+            "columnIdentifier": "HS",
+            "columnType": "numeric(5,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "10001, Andrew, no, 1200",
+          "20002, Blake, yes, 1600",
+          "30003, Charles, no, 300"
+        ],
+        "tableDescription": "Contains details about players, such as their ID, name, year card status, and high school number.",
+        "tableIdentifier": "Player"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a player.",
+            "columnIdentifier": "pID",
+            "columnType": "numeric(5,0)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Player",
+                "toColumn": "pID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The name of the college where the tryout took place.",
+            "columnIdentifier": "cName",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "College",
+                "toColumn": "cName",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The position played by the player during the tryout.",
+            "columnIdentifier": "pPos",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The decision made regarding the player's tryout outcome.",
+            "columnIdentifier": "decision",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "10001, ASU, goalie, no",
+          "20002, LSU, striker, yes",
+          "30003, FSU, mid, no"
+        ],
+        "tableDescription": "Records tryouts of players for colleges, including the player's ID, college name, position played, and decision made during the tryout process.",
+        "tableIdentifier": "Tryout"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cName",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "enr",
+            "columnType": "numeric(5,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "College"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "pID",
+            "columnType": "numeric(5,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "pName",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "yCard",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "HS",
+            "columnType": "numeric(5,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Player"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "pID",
+            "columnType": "numeric(5,0)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Player",
+                "toColumn": "pID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cName",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "College",
+                "toColumn": "cName",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "pPos",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "decision",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Tryout"
+      }
+    ]
+  },
+  "message": "Success"
+}

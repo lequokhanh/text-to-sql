@@ -1,0 +1,265 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema consists of three tables: `department`, `head`, and `management`. The `department` table stores information about various departments including their ID, name, creation details, ranking, budget, and number of employees. The `head` table contains details about department heads such as their ID, name, birth state, and age. The `management` table links departments to their respective heads, indicating whether the head is acting temporarily. The relationships between these tables are established through foreign keys, where `department_ID` in the `management` table references `Department_ID` in the `department` table, and `head_ID` in the `management` table references `head_ID` in the `head` table. This schema is designed to manage hierarchical information about departments and their leaders within an organization.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each department.",
+            "columnIdentifier": "Department_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the department.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Year or date when the department was created.",
+            "columnIdentifier": "Creation",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Ranking or order of the department within the organization.",
+            "columnIdentifier": "Ranking",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Annual budget of the department in billions of dollars.",
+            "columnIdentifier": "Budget_in_Billions",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of employees working in the department.",
+            "columnIdentifier": "Num_Employees",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, State, 1789, 1, 9.96, 30266.0",
+          "2, Treasury, 1947, 2, 11.1, 115897.0",
+          "3, Defense, 1870, 3, 439.3, 3000000.0"
+        ],
+        "tableDescription": "Stores information about various departments including their ID, name, creation details, ranking, budget, and number of employees.",
+        "tableIdentifier": "department"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each department head.",
+            "columnIdentifier": "head_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the department head.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "State where the head was born.",
+            "columnIdentifier": "born_state",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Age of the department head.",
+            "columnIdentifier": "age",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Tiger Woods, Alabama, 67.0",
+          "2, Sergio García, California, 68.0",
+          "3, K. J. Choi, Delaware, 69.0"
+        ],
+        "tableDescription": "Contains details about department heads such as their ID, name, birth state, and age.",
+        "tableIdentifier": "head"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each department, linking to the department table.",
+            "columnIdentifier": "department_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "department",
+                "toColumn": "Department_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for each department head, linking to the head table.",
+            "columnIdentifier": "head_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "head",
+                "toColumn": "head_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Indicates whether the head is acting temporarily in the department.",
+            "columnIdentifier": "temporary_acting",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "2, 5, Yes",
+          "7, 6, No",
+          "11, 3, Yes"
+        ],
+        "tableDescription": "Links departments to their respective heads, indicating whether the head is acting temporarily.",
+        "tableIdentifier": "management"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Department_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Creation",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Ranking",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Budget_in_Billions",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Num_Employees",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "department"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "head_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "born_state",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "age",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "head"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "department_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "department",
+                "toColumn": "Department_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "head_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "head",
+                "toColumn": "head_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "temporary_acting",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "management"
+      }
+    ]
+  },
+  "message": "Success"
+}

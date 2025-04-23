@@ -1,0 +1,179 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema consists of two tables: `Person` and `PersonFriend`. The `Person` table stores information about individuals, including their name, age, city, gender, and job. The `PersonFriend` table records friendships between people, with each entry specifying the names of two friends and the year they became friends. The schema establishes a relationship between these tables through foreign keys, linking each friend's name in `PersonFriend` to the corresponding entries in the `Person` table. This design allows for tracking personal information alongside social connections within a community or network.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the person.",
+            "columnIdentifier": "name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The age of the person.",
+            "columnIdentifier": "age",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The city where the person lives.",
+            "columnIdentifier": "city",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The gender of the person.",
+            "columnIdentifier": "gender",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The job or occupation of the person.",
+            "columnIdentifier": "job",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Alice, 25, new york city, female, student",
+          "Bob, 35, salt lake city, male, engineer",
+          "Dan, 45, austin, female, doctor"
+        ],
+        "tableDescription": "Stores personal information about individuals including demographic details and occupation.",
+        "tableIdentifier": "Person"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of one friend in the friendship.",
+            "columnIdentifier": "name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Person",
+                "toColumn": "name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The name of the other friend in the friendship.",
+            "columnIdentifier": "friend",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Person",
+                "toColumn": "name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The year when the two friends became friends.",
+            "columnIdentifier": "year",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Alice, Bob, 10",
+          "Zach, Dan, 12",
+          "Bob, Zach, 5"
+        ],
+        "tableDescription": "Records friendships between individuals, including the year they became friends.",
+        "tableIdentifier": "PersonFriend"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "age",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "gender",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "job",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Person"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Person",
+                "toColumn": "name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "friend",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Person",
+                "toColumn": "name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "year",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "PersonFriend"
+      }
+    ]
+  },
+  "message": "Success"
+}

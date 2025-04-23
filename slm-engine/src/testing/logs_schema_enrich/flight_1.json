@@ -1,0 +1,335 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema models an airline company's operational data, encompassing flight details such as flight number, origin, destination, distance, dates, price, and associated aircraft ID. It also includes information about aircraft, employees, and the certifications linking employees to specific aircraft they are authorized to operate. The relationships between these tables facilitate tracking of which flights are operated by which aircraft and the crew members qualified to fly those aircraft.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique flight number for each flight.",
+            "columnIdentifier": "flno",
+            "columnType": "number(4,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Origin airport of the flight.",
+            "columnIdentifier": "origin",
+            "columnType": "varchar2(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Destination airport of the flight.",
+            "columnIdentifier": "destination",
+            "columnType": "varchar2(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Distance of the flight in miles.",
+            "columnIdentifier": "distance",
+            "columnType": "number(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Scheduled departure date and time for the flight.",
+            "columnIdentifier": "departure_date",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Scheduled arrival date and time for the flight.",
+            "columnIdentifier": "arrival_date",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Price of a ticket for this flight.",
+            "columnIdentifier": "price",
+            "columnType": "number(7,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the flight to the aircraft that will operate it.",
+            "columnIdentifier": "aid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "aircraft",
+                "toColumn": "aid",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "2, Los Angeles, Washington D.C., 2308, 04/12/2005 09:30, 04/12/2005 09:40, 235.98, 1",
+          "7, Chicago, Chicago, 1749, 04/12/2005 08:45, 04/12/2005 08:45, 220.98, 3",
+          "13, Los Angeles, Dallas, 1251, 04/12/2005 11:50, 04/12/2005 07:05, 182, 2"
+        ],
+        "tableDescription": "Stores details about flights operated by the airline company.",
+        "tableIdentifier": "flight"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each aircraft.",
+            "columnIdentifier": "aid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name or model of the aircraft.",
+            "columnIdentifier": "name",
+            "columnType": "varchar2(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Maximum operational distance of the aircraft in miles.",
+            "columnIdentifier": "distance",
+            "columnType": "number(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Boeing 747-400, 8430",
+          "2, Boeing 737-800, 3383",
+          "3, Airbus A340-300, 7120"
+        ],
+        "tableDescription": "Stores information about different aircraft models used by the airline company.",
+        "tableIdentifier": "aircraft"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Employee ID, primary key.",
+            "columnIdentifier": "eid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the employee.",
+            "columnIdentifier": "name",
+            "columnType": "varchar2(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Salary of the employee.",
+            "columnIdentifier": "salary",
+            "columnType": "number(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "11564812, James Smith, 120433",
+          "15645489, Mary Johnson, 178345",
+          "90873519, John Williams, 153972"
+        ],
+        "tableDescription": "Stores information about employees of the airline company.",
+        "tableIdentifier": "employee"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Employee ID, primary key.",
+            "columnIdentifier": "eid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "employee",
+                "toColumn": "eid",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Aircraft ID, foreign key referencing the aircraft table.",
+            "columnIdentifier": "aid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "aircraft",
+                "toColumn": "aid",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "11564812, 2",
+          "90873519, 10",
+          "141582651, 6"
+        ],
+        "tableDescription": "Records the certifications linking employees to specific aircraft they are authorized to operate.",
+        "tableIdentifier": "certificate"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "flno",
+            "columnType": "number(4,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "origin",
+            "columnType": "varchar2(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "destination",
+            "columnType": "varchar2(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "distance",
+            "columnType": "number(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "departure_date",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "arrival_date",
+            "columnType": "date",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "price",
+            "columnType": "number(7,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "aid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "aircraft",
+                "toColumn": "aid",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "flight"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "aid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "varchar2(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "distance",
+            "columnType": "number(6,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "aircraft"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "eid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "varchar2(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "salary",
+            "columnType": "number(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "employee"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "eid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "employee",
+                "toColumn": "eid",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "aid",
+            "columnType": "number(9,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "aircraft",
+                "toColumn": "aid",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "certificate"
+      }
+    ]
+  },
+  "message": "Success"
+}

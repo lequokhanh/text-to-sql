@@ -1,0 +1,919 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The described database schema is designed to manage and track various aspects of grants, organizations, projects, staff roles, and related documents. It includes tables for different types of documents, grants awarded to organizations, project outcomes, staff involved in projects, and tasks within those projects. The schema also defines the roles and types of organizations, linking these entities through foreign key relationships that ensure data integrity and consistency across the database. This structure supports comprehensive tracking and reporting on grant-funded activities, organizational structures, and project-related personnel contributions.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code identifying the type of document.",
+            "columnIdentifier": "document_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the document type.",
+            "columnIdentifier": "document_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "APP, Initial Application",
+          "REG, Regular"
+        ],
+        "tableDescription": "Stores types of documents and their descriptions.",
+        "tableIdentifier": "Document_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each document.",
+            "columnIdentifier": "document_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code referencing the type of document from Document_Types table.",
+            "columnIdentifier": "document_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Document_Types",
+                "toColumn": "document_type_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the grant associated with the document from Grants table.",
+            "columnIdentifier": "grant_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Grants",
+                "toColumn": "grant_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date when the document was sent.",
+            "columnIdentifier": "sent_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when a response to the document was received.",
+            "columnIdentifier": "response_received_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the document.",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, APP, 5, 1986-11-30 07:56:35, 1977-12-01 02:18:53, ",
+          "2, REG, 13, 2004-01-23 11:57:08, 1979-12-08 10:38:07, ",
+          "3, APP, 10, 1999-03-03 12:25:58, 1995-09-12 13:13:48, "
+        ],
+        "tableDescription": "Stores information about various documents, including their type, associated grant, and dates.",
+        "tableIdentifier": "Documents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each grant.",
+            "columnIdentifier": "grant_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the organization receiving the grant from Organisations table.",
+            "columnIdentifier": "organisation_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organisations",
+                "toColumn": "organisation_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "0",
+            "columnIdentifier": "grant_amount",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Start date of the grant period.",
+            "columnIdentifier": "grant_start_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "End date of the grant period.",
+            "columnIdentifier": "grant_end_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the grant.",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 10, 4094.542, 2016-11-20 00:18:51, 2004-10-24 09:09:39, et",
+          "2, 3, 281.2446, 1985-10-09 20:08:49, 1985-06-08 00:22:07, occaecati",
+          "3, 14, 4515947.7015, 1970-09-19 22:53:49, 1989-03-16 18:27:16, corrupti"
+        ],
+        "tableDescription": "Stores information about grants, including the organization receiving it and the grant amount.",
+        "tableIdentifier": "Grants"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the type of organization.",
+            "columnIdentifier": "organisation_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the organization type.",
+            "columnIdentifier": "organisation_type_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "RES, Research",
+          "SPON, Sponsor"
+        ],
+        "tableDescription": "Stores different types of organizations and their descriptions.",
+        "tableIdentifier": "Organisation_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the organization.",
+            "columnIdentifier": "organisation_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of the organization, linked to Organisation_Types table.",
+            "columnIdentifier": "organisation_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organisation_Types",
+                "toColumn": "organisation_type",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Additional details about the organization.",
+            "columnIdentifier": "organisation_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, RES, et",
+          "2, SPON, eius",
+          "3, RES, impedit"
+        ],
+        "tableDescription": "Stores information about different organizations, including their type and details.",
+        "tableIdentifier": "Organisations"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a project.",
+            "columnIdentifier": "project_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Projects",
+                "toColumn": "project_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the type of outcome (e.g., Paper, Patent).",
+            "columnIdentifier": "outcome_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Research_Outcomes",
+                "toColumn": "outcome_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Additional details about the outcome.",
+            "columnIdentifier": "outcome_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "4, Paper",
+          "3, Patent",
+          "9, Paper"
+        ],
+        "tableDescription": "Stores outcomes associated with projects, linking projects to specific outcome types.",
+        "tableIdentifier": "Project_Outcomes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a staff member.",
+            "columnIdentifier": "staff_id",
+            "columnType": "DOUBLE",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the project associated with the staff role.",
+            "columnIdentifier": "project_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Projects",
+                "toColumn": "project_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the role of the staff member in the project.",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff_Roles",
+                "toColumn": "role_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Start date of the staff member's role in the project.",
+            "columnIdentifier": "date_from",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "End date of the staff member's role in the project.",
+            "columnIdentifier": "date_to",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the staff member's role or involvement in the project.",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "0.0, 2, leader, 1981-10-04 22:44:50, 1985-05-30 22:26:30",
+          "3.0, 5, researcher, 2003-04-19 15:06:20, 2010-12-08 11:55:36",
+          "29.0, 4, leader, 1981-10-09 21:32:53, 2004-12-16 13:03:36"
+        ],
+        "tableDescription": "Records the roles of staff members in various projects, including their start and end dates.",
+        "tableIdentifier": "Project_Staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each project.",
+            "columnIdentifier": "project_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "ID of the organization that the project is associated with.",
+            "columnIdentifier": "organisation_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organisations",
+                "toColumn": "organisation_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Description or details about the project.",
+            "columnIdentifier": "project_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 15, porro",
+          "2, 11, et",
+          "3, 7, sint"
+        ],
+        "tableDescription": "Stores information about projects, including their ID, associated organization ID, and details.",
+        "tableIdentifier": "Projects"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code for an outcome type.",
+            "columnIdentifier": "outcome_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Detailed description of the outcome type.",
+            "columnIdentifier": "outcome_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Paper, Published Research Paper",
+          "Patent, Research Patent"
+        ],
+        "tableDescription": "Defines possible outcomes for research projects, providing descriptions for each outcome code.",
+        "tableIdentifier": "Research_Outcomes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the staff member.",
+            "columnIdentifier": "staff_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier of the organization that employs the staff member, linked to Organisations table.",
+            "columnIdentifier": "employer_organisation_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organisations",
+                "toColumn": "organisation_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Additional details about the staff member.",
+            "columnIdentifier": "staff_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, quo",
+          "2, 4, est",
+          "3, 5, aspernatur"
+        ],
+        "tableDescription": "Stores information about research staff members, including their employer organization and details.",
+        "tableIdentifier": "Research_Staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code for a specific role.",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the role, providing details about its responsibilities and scope.",
+            "columnIdentifier": "role_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "leader, Project Leader",
+          "researcher, Project Researcher"
+        ],
+        "tableDescription": "Defines different roles that can be assigned to staff members within projects.",
+        "tableIdentifier": "Staff_Roles"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each task.",
+            "columnIdentifier": "task_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "ID of the project that the task is associated with.",
+            "columnIdentifier": "project_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Projects",
+                "toColumn": "project_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Description or details about the task.",
+            "columnIdentifier": "task_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Flag indicating whether objectives have been agreed upon for the task.",
+            "columnIdentifier": "eg Agree Objectives",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, a",
+          "2, 2, b",
+          "3, 3, c"
+        ],
+        "tableDescription": "Stores information about tasks within projects, including their ID, associated project ID, details, and a flag for agreeing on objectives.",
+        "tableIdentifier": "Tasks"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Document_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Document_Types",
+                "toColumn": "document_type_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "grant_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Grants",
+                "toColumn": "grant_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "sent_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "response_received_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Documents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "grant_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organisation_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organisations",
+                "toColumn": "organisation_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "0",
+            "columnIdentifier": "grant_amount",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "grant_start_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "grant_end_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Grants"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organisation_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organisation_type_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Organisation_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organisation_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organisation_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organisation_Types",
+                "toColumn": "organisation_type",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organisation_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Organisations"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "project_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Projects",
+                "toColumn": "project_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "outcome_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Research_Outcomes",
+                "toColumn": "outcome_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "outcome_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Project_Outcomes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "staff_id",
+            "columnType": "DOUBLE",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "project_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Projects",
+                "toColumn": "project_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff_Roles",
+                "toColumn": "role_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_from",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_to",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Project_Staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "project_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organisation_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organisations",
+                "toColumn": "organisation_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "project_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Projects"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "outcome_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "outcome_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Research_Outcomes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "staff_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "employer_organisation_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organisations",
+                "toColumn": "organisation_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "staff_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Research_Staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "role_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Staff_Roles"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "task_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "project_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Projects",
+                "toColumn": "project_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "task_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "eg Agree Objectives",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Tasks"
+      }
+    ]
+  },
+  "message": "Success"
+}

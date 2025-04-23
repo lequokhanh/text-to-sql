@@ -1,0 +1,795 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema manages information related to students and candidates, their personal details, addresses, course enrollments, and assessment results. It includes tables for storing individual person data, student-specific information, courses, address records, enrollment and attendance records for students in courses, candidate details, and assessments taken by candidates. The relationships between these tables are established through foreign keys that link students to people, students to courses, addresses to people, and candidates to their respective assessments.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each address.",
+            "columnIdentifier": "address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "First line of the street address.",
+            "columnIdentifier": "line_1",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Second line of the street address, if applicable.",
+            "columnIdentifier": "line_2",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "City part of the address.",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Zip code or postal code for the address.",
+            "columnIdentifier": "zip_postcode",
+            "columnType": "CHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "State, province, or county part of the address.",
+            "columnIdentifier": "state_province_county",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the address is located.",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "5, \"0900 Roderick Oval\nNew Albina, WA 19200-7914\", Suite 096, Linnealand, 862, Montana, USA",
+          "9, \"966 Dach Ports Apt. 322\nLake Harmonyhaven, VA 65235\", Apt. 163, South Minnie, 716, Texas, USA",
+          "29, \"28550 Broderick Underpass Suite 667\nZakaryhaven, WY 22945-1534\", Apt. 419, North Trystanborough, 112, Vermont, USA"
+        ],
+        "tableDescription": "Stores detailed address information for individuals.",
+        "tableIdentifier": "Addresses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each person.",
+            "columnIdentifier": "person_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the person.",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Middle name of the person.",
+            "columnIdentifier": "middle_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the person.",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Mobile phone number of the person.",
+            "columnIdentifier": "cell_mobile_number",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Email address of the person.",
+            "columnIdentifier": "email_address",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Username used for login.",
+            "columnIdentifier": "login_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Password for account access.",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "111, Shannon, Elissa, Senger, 01955267735, javier.trantow@example.net, pgub, 5e4ff49a61b3544da3ad7dc7e2cf28847564c64c",
+          "121, Virginie, Jasmin, Hartmann, (508)319-2970x043, boyer.lonie@example.com, bkkv, b063331ea8116befaa7b84c59c6a22200f5f8caa",
+          "131, Dariana, Hayley, Bednar, (262)347-9364x516, leila14@example.net, zops, b20b6a9f24aadeda70d54e410c3219f61fb063fb"
+        ],
+        "tableDescription": "Stores personal details of individuals including contact information and login credentials.",
+        "tableIdentifier": "People"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each student.",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "People",
+                "toColumn": "person_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Additional details about the student.",
+            "columnIdentifier": "student_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "111, Marry",
+          "121, Martin",
+          "131, Barry"
+        ],
+        "tableDescription": "Stores details specific to students, linked to their personal information.",
+        "tableIdentifier": "Students"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a course.",
+            "columnIdentifier": "course_id",
+            "columnType": "VARCHAR(100)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the course.",
+            "columnIdentifier": "course_name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the course content.",
+            "columnIdentifier": "course_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional information about the course.",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "301, statistics, statistics",
+          "302, English, English",
+          "303, French, French"
+        ],
+        "tableDescription": "Stores information about courses offered.",
+        "tableIdentifier": "Courses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each person-address relationship.",
+            "columnIdentifier": "person_address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the individual's record in the People table.",
+            "columnIdentifier": "person_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "People",
+                "toColumn": "person_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking to the address record.",
+            "columnIdentifier": "address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Addresses",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Start date of the address validity period.",
+            "columnIdentifier": "date_from",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "End date of the address validity period.",
+            "columnIdentifier": "date_to",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "122, 111, 9, 2012-09-26 13:21:00, 2018-03-21 09:46:30",
+          "257, 121, 5, 2008-07-31 02:17:25, 2018-03-09 02:11:12",
+          "269, 131, 88, 2008-05-26 20:43:41, 2018-03-11 20:26:41"
+        ],
+        "tableDescription": "Links individuals to their addresses over time.",
+        "tableIdentifier": "People_Addresses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a student.",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Students",
+                "toColumn": "student_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for a course.",
+            "columnIdentifier": "course_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Courses",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date and time when the student registered for the course.",
+            "columnIdentifier": "registration_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "111, 301, 2008-11-04 10:35:13",
+          "121, 303, 2008-10-04 10:35:13",
+          "131, 302, 2008-11-14 10:35:13"
+        ],
+        "tableDescription": "Records course registration details of students.",
+        "tableIdentifier": "Student_Course_Registrations"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a student.",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Student_Course_Registrations",
+                "toColumn": "student_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for a course.",
+            "columnIdentifier": "course_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Student_Course_Registrations",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date and time when the student attended the course.",
+            "columnIdentifier": "date_of_attendance",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "111, 301, 2008-11-04 10:35:13",
+          "121, 303, 2012-04-09 11:44:34",
+          "141, 302, 2014-04-09 11:44:34"
+        ],
+        "tableDescription": "Records attendance of students in courses.",
+        "tableIdentifier": "Student_Course_Attendance"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the candidate.",
+            "columnIdentifier": "candidate_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "People",
+                "toColumn": "person_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Additional details about the candidate, such as name or other identifying information.",
+            "columnIdentifier": "candidate_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "111, Jane",
+          "121, Robert",
+          "131, Alex"
+        ],
+        "tableDescription": "Stores detailed information about candidates.",
+        "tableIdentifier": "Candidates"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the candidate.",
+            "columnIdentifier": "candidate_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Candidates",
+                "toColumn": "candidate_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Type of qualification or course the candidate is assessed on.",
+            "columnIdentifier": "qualification",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date and time when the assessment was conducted.",
+            "columnIdentifier": "assessment_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Result of the assessment (e.g., Pass, Fail).",
+            "columnIdentifier": "asessment_outcome_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "111, A, 2010-04-07 11:44:34, Pass",
+          "121, B, 2010-04-17 11:44:34, Fail",
+          "131, D, 2010-04-05 11:44:34, Pass"
+        ],
+        "tableDescription": "Stores assessment results for candidates.",
+        "tableIdentifier": "Candidate_Assessments"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "line_1",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "line_2",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "zip_postcode",
+            "columnType": "CHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state_province_county",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Addresses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "person_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "middle_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cell_mobile_number",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "email_address",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "login_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "People"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "People",
+                "toColumn": "person_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "student_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Students"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "VARCHAR(100)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Courses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "person_address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "person_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "People",
+                "toColumn": "person_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Addresses",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_from",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_to",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "People_Addresses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Students",
+                "toColumn": "student_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Courses",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "registration_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Student_Course_Registrations"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Student_Course_Registrations",
+                "toColumn": "student_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Student_Course_Registrations",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_of_attendance",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Student_Course_Attendance"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "candidate_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "People",
+                "toColumn": "person_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "candidate_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Candidates"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "candidate_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Candidates",
+                "toColumn": "candidate_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "qualification",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "assessment_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "asessment_outcome_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Candidate_Assessments"
+      }
+    ]
+  },
+  "message": "Success"
+}

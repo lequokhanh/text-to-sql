@@ -1,0 +1,1071 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema manages academic data for an educational institution, tracking classrooms, departments, courses, instructors, sections, students, and their academic activities. It uses foreign key relationships to ensure data integrity across connected tables such as course-department associations, instructor-student advising, and student-course enrollments. The system supports operations related to scheduling, enrollment management, and academic performance tracking, enabling efficient administrative functions within the educational environment.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the building where the classroom is located. This serves as a primary key.",
+            "columnIdentifier": "building",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The room number within the building. This, combined with the building name, uniquely identifies a classroom and serves as a primary key.",
+            "columnIdentifier": "room_number",
+            "columnType": "varchar(7)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The maximum number of students that can be accommodated in the classroom.",
+            "columnIdentifier": "capacity",
+            "columnType": "numeric(4,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Alumni, 143, 10",
+          "Bronfman, 547, 27",
+          "Chandler, 700, 92"
+        ],
+        "tableDescription": "Stores information about classrooms, including their location and capacity.",
+        "tableIdentifier": "classroom"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique name of each department.",
+            "columnIdentifier": "dept_name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Building where the department is located.",
+            "columnIdentifier": "building",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Budget allocated to the department.",
+            "columnIdentifier": "budget",
+            "columnType": "numeric(12,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Accounting, Chandler, 255041.46",
+          "Astronomy, Candlestick, 647610.55",
+          "Athletics, Taylor, 699140.86"
+        ],
+        "tableDescription": "Stores information about departments within the institution, including department name, building location, and budget.",
+        "tableIdentifier": "department"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each course.",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Title of the course.",
+            "columnIdentifier": "title",
+            "columnType": "varchar(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the department offering the course.",
+            "columnIdentifier": "dept_name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "department",
+                "toColumn": "dept_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Number of credit hours for the course.",
+            "columnIdentifier": "credits",
+            "columnType": "numeric(2,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "101, C  Programming, Mech. Eng., 4",
+          "105, The Music of Donovan, Comp. Sci., 3",
+          "123, Electron Microscopy, Statistics, 4"
+        ],
+        "tableDescription": "Stores information about courses offered by the institution, including course ID, title, department name, and credit hours.",
+        "tableIdentifier": "course"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each instructor.",
+            "columnIdentifier": "ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the instructor.",
+            "columnIdentifier": "name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Department to which the instructor belongs.",
+            "columnIdentifier": "dept_name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "department",
+                "toColumn": "dept_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Salary of the instructor.",
+            "columnIdentifier": "salary",
+            "columnType": "numeric(8,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "14365, McKinnon, Cybernetics, 94333.99",
+          "15347, Pingr, Statistics, 59303.62",
+          "16807, Mird, Marketing, 119921.41"
+        ],
+        "tableDescription": "Stores information about instructors, including their ID, name, department, and salary.",
+        "tableIdentifier": "instructor"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a course. This serves as a primary key and is used to link sections to courses.",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "course",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The section identifier within the course. This, combined with the course ID, uniquely identifies a section and serves as a primary key.",
+            "columnIdentifier": "sec_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The semester in which the section is offered (e.g., Fall, Spring).",
+            "columnIdentifier": "semester",
+            "columnType": "varchar(6)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The year in which the section is offered.",
+            "columnIdentifier": "year",
+            "columnType": "numeric(4,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the building where the section meets. This is a foreign key that links to the classroom table.",
+            "columnIdentifier": "building",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "classroom",
+                "toColumn": "building",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The room number in the building where the section meets. This, combined with the building name, uniquely identifies the classroom and serves as a foreign key.",
+            "columnIdentifier": "room_number",
+            "columnType": "varchar(7)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "classroom",
+                "toColumn": "room_number",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The identifier for the time slot during which the section meets.",
+            "columnIdentifier": "time_slot_id",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "105, 1, Fall, 2009, Chandler, 804, N",
+          "137, 2, Spring, 2002, Gates, 314, K",
+          "158, 3, Fall, 2008, Whitman, 434, O"
+        ],
+        "tableDescription": "Stores information about course sections, including their schedule and location.",
+        "tableIdentifier": "section"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Instructor ID who teaches the course.",
+            "columnIdentifier": "ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "instructor",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the course being taught.",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Section identifier for the course.",
+            "columnIdentifier": "sec_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "sec_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Semester during which the course is taught.",
+            "columnIdentifier": "semester",
+            "columnType": "varchar(6)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "semester",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Year in which the course is taught.",
+            "columnIdentifier": "year",
+            "columnType": "numeric(4,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "year",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "14365, 747, 1, Spring, 2004",
+          "15347, 169, 2, Fall, 2007",
+          "19368, 445, 3, Spring, 2001"
+        ],
+        "tableDescription": "Records which instructors teach specific courses in certain sections during particular semesters and years.",
+        "tableIdentifier": "teaches"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a student.",
+            "columnIdentifier": "ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the student.",
+            "columnIdentifier": "name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Department name to which the student belongs.",
+            "columnIdentifier": "dept_name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "department",
+                "toColumn": "dept_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Total credits earned by the student.",
+            "columnIdentifier": "tot_cred",
+            "columnType": "numeric(3,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1000, Schrefl, History, 4",
+          "10033, Rumat, Finance, 100",
+          "10076, Miliko, Statistics, 116"
+        ],
+        "tableDescription": "Stores information about students in the educational institution.",
+        "tableIdentifier": "student"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the enrollment record.",
+            "columnIdentifier": "ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "student",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the course taken by the student.",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Section identifier for the course.",
+            "columnIdentifier": "sec_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "sec_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Semester in which the course was taken.",
+            "columnIdentifier": "semester",
+            "columnType": "varchar(6)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "semester",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Year in which the course was taken.",
+            "columnIdentifier": "year",
+            "columnType": "numeric(4,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "year",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Grade received for the course.",
+            "columnIdentifier": "grade",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1000, 239, 1, Fall, 2006, C-",
+          "10033, 319, 2, Spring, 2003, B-",
+          "10076, 362, 3, Fall, 2005, A-"
+        ],
+        "tableDescription": "Records student enrollments in courses and their grades.",
+        "tableIdentifier": "takes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a student.",
+            "columnIdentifier": "s_ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "student",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for an instructor, who is the advisor to the student.",
+            "columnIdentifier": "i_ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "instructor",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1000, 19368",
+          "10033, 95030",
+          "10076, 22591"
+        ],
+        "tableDescription": "Stores advisor-student relationships in the educational institution.",
+        "tableIdentifier": "advisor"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each time slot.",
+            "columnIdentifier": "time_slot_id",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Day of the week on which the time slot occurs (e.g., M for Monday, T for Tuesday).",
+            "columnIdentifier": "day",
+            "columnType": "varchar(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Hour at which the time slot starts.",
+            "columnIdentifier": "start_hr",
+            "columnType": "numeric(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Minute at which the time slot starts.",
+            "columnIdentifier": "start_min",
+            "columnType": "numeric(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Hour at which the time slot ends.",
+            "columnIdentifier": "end_hr",
+            "columnType": "numeric(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Minute at which the time slot ends.",
+            "columnIdentifier": "end_min",
+            "columnType": "numeric(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "A, F, 8, 0, 8, 50",
+          "B, M, 9, 30, 9, 45",
+          "C, W, 11, 0, 11, 30"
+        ],
+        "tableDescription": "Stores information about different time slots used for scheduling classes.",
+        "tableIdentifier": "time_slot"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "ID of the course that has prerequisites.",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "course",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "ID of the prerequisite course.",
+            "columnIdentifier": "prereq_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "course",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "133, 130",
+          "158, 169",
+          "169, 345"
+        ],
+        "tableDescription": "Stores prerequisite relationships between courses, indicating which courses must be completed before taking others.",
+        "tableIdentifier": "prereq"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "building",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "room_number",
+            "columnType": "varchar(7)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "capacity",
+            "columnType": "numeric(4,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "classroom"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "dept_name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "building",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "budget",
+            "columnType": "numeric(12,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "department"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "title",
+            "columnType": "varchar(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "dept_name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "department",
+                "toColumn": "dept_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "credits",
+            "columnType": "numeric(2,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "course"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "dept_name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "department",
+                "toColumn": "dept_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "salary",
+            "columnType": "numeric(8,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "instructor"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "course",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "sec_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "semester",
+            "columnType": "varchar(6)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "year",
+            "columnType": "numeric(4,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "building",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "classroom",
+                "toColumn": "building",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "room_number",
+            "columnType": "varchar(7)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "classroom",
+                "toColumn": "room_number",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "time_slot_id",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "section"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "instructor",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "sec_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "sec_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "semester",
+            "columnType": "varchar(6)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "semester",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "year",
+            "columnType": "numeric(4,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "year",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "teaches"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "dept_name",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "department",
+                "toColumn": "dept_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "tot_cred",
+            "columnType": "numeric(3,0)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "student"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "student",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "sec_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "sec_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "semester",
+            "columnType": "varchar(6)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "semester",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "year",
+            "columnType": "numeric(4,0)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "section",
+                "toColumn": "year",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "grade",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "takes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "s_ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "student",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "i_ID",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "instructor",
+                "toColumn": "ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "advisor"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "time_slot_id",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "day",
+            "columnType": "varchar(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "start_hr",
+            "columnType": "numeric(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "start_min",
+            "columnType": "numeric(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "end_hr",
+            "columnType": "numeric(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "end_min",
+            "columnType": "numeric(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "time_slot"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "course",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "prereq_id",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "course",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "prereq"
+      }
+    ]
+  },
+  "message": "Success"
+}

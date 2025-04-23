@@ -1,0 +1,1039 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema appears to manage information related to customers, properties, residents, organizations, services, and various events and statuses associated with these entities. It tracks relationships between different elements such as residents in properties, services provided by organizations, and the usage of things (possibly equipment or assets) by residents, including their status and location over time. The schema also captures detailed notes and event records related to customers and their interactions with properties, residents, services, and things, providing a comprehensive view of how these components interconnect within a managed environment.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each customer.",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Details or name of the customer.",
+            "columnIdentifier": "customer_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "4, Mr. Raul Prosacco",
+          "5, Esteban Senger",
+          "16, Tyrique Durgan II"
+        ],
+        "tableDescription": "Stores details about customers, including their unique identifiers and names.",
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each property.",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the type of property (e.g., apartment, house).",
+            "columnIdentifier": "property_type_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The physical address of the property.",
+            "columnIdentifier": "property_address",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional information or notes about the property.",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "24, apartment, 85456 Annie Lodge Suite 449, USA",
+          "107, house, 2580 Yundt Plains, USA",
+          "108, flat, 5983 Fleta Throughway, USA"
+        ],
+        "tableDescription": "Stores information about different properties managed in the system.",
+        "tableIdentifier": "Properties"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each resident.",
+            "columnIdentifier": "resident_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking the resident to a specific property.",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Properties",
+                "toColumn": "property_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date when the resident moved into the property.",
+            "columnIdentifier": "date_moved_in",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the resident moved out of the property.",
+            "columnIdentifier": "date_moved_out",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional information or notes about the resident.",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "6, 954, 2017-06-17 15:43:33, 2017-12-18 03:46:04, Anderson Batz",
+          "10, 605, 2015-03-27 12:00:00, 2018-03-17 07:48:09, Miss Naomie Osinski",
+          "23, 879, 2016-09-27 12:00:00, 2017-11-14 06:28:48, Jess Wyman"
+        ],
+        "tableDescription": "Stores details about residents, including their association with properties and move-in/move-out dates.",
+        "tableIdentifier": "Residents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each organization.",
+            "columnIdentifier": "organization_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the parent organization in a hierarchy.",
+            "columnIdentifier": "parent_organization_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description or name of the organization.",
+            "columnIdentifier": "organization_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "7, 7, \"Reinger, Hudson and Nolan Group\"",
+          "8, 8, Denesik and Sons Party",
+          "10, 7, Robel-Schulist Group"
+        ],
+        "tableDescription": "Stores information about organizations, including their hierarchical relationships.",
+        "tableIdentifier": "Organizations"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each service.",
+            "columnIdentifier": "service_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the organization providing the service.",
+            "columnIdentifier": "organization_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organizations",
+                "toColumn": "organization_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the type of service.",
+            "columnIdentifier": "service_type_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description or details about the service.",
+            "columnIdentifier": "service_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "10, 10, Cleanning, Satisfied",
+          "11, 7, Check, Unsatisfied",
+          "13, 8, Moving Out, Satisfied"
+        ],
+        "tableDescription": "Stores information about various services offered by organizations.",
+        "tableIdentifier": "Services"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each resident.",
+            "columnIdentifier": "resident_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "resident_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for each service provided.",
+            "columnIdentifier": "service_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Services",
+                "toColumn": "service_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date when the resident moved into a property.",
+            "columnIdentifier": "date_moved_in",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "date_moved_in",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the property where the resident resides.",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "property_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date when the service was requested by the resident.",
+            "columnIdentifier": "date_requested",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the service was provided to the resident.",
+            "columnIdentifier": "date_provided",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional notes or details about the service interaction.",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "6, 49, 2017-06-17 15:43:33, 954, 2016-07-25 01:32:23, 2018-02-26 00:27:11, Satisfied",
+          "23, 41, 2015-03-27 12:00:00, 879, 2016-10-10 21:42:21, 2017-08-21 06:23:06, Unsatisfied",
+          "28, 11, 2016-09-27 12:00:00, 629, 2017-07-14 19:03:47, 2017-08-28 03:43:56, Satisfied"
+        ],
+        "tableDescription": "Records services provided to residents, including details about the service and timing.",
+        "tableIdentifier": "Residents_Services"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each thing.",
+            "columnIdentifier": "thing_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the thing to an organization.",
+            "columnIdentifier": "organization_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organizations",
+                "toColumn": "organization_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the type of the thing.",
+            "columnIdentifier": "Type_of_Thing_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code indicating the type of service associated with the thing.",
+            "columnIdentifier": "service_type_code",
+            "columnType": "CHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Details about the service provided by the thing.",
+            "columnIdentifier": "service_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 8, Electronics, Check, Unsatisfied",
+          "2, 10, Commen, Cleanning, Satisfied",
+          "10, 7, Furniture, Check, Unsatisfied"
+        ],
+        "tableDescription": "Stores information about various things, including their type, service details, and associated organization.",
+        "tableIdentifier": "Things"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each event.",
+            "columnIdentifier": "Customer_Event_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the Customers table.",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date when the customer moved into a property.",
+            "columnIdentifier": "date_moved_in",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "date_moved_in",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the property involved in the event.",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "property_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the resident involved in the event.",
+            "columnIdentifier": "resident_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "resident_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the thing (asset or equipment) involved in the event.",
+            "columnIdentifier": "thing_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Things",
+                "toColumn": "thing_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "70, 19, 2015-03-27 12:00:00, 605, 10, 1",
+          "160, 5, 2016-09-27 12:00:00, 879, 23, 80",
+          "166, 16, 2015-03-27 12:00:00, 629, 28, 14"
+        ],
+        "tableDescription": "Records events related to customers, including move-in dates and associated residents, properties, and things.",
+        "tableIdentifier": "Customer_Events"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each note.",
+            "columnIdentifier": "Customer_Event_Note_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the Customer_Events table.",
+            "columnIdentifier": "Customer_Event_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customer_Events",
+                "toColumn": "Customer_Event_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the type of service associated with the event.",
+            "columnIdentifier": "service_type_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the resident involved in the event.",
+            "columnIdentifier": "resident_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the property where the event occurred.",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the resident moved into the property.",
+            "columnIdentifier": "date_moved_in",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "18, 70, Cleanning, 58, 107, 2016-08-04 01:06:05",
+          "21, 428, Check, 87, 445, 2016-12-11 01:05:14",
+          "32, 627, Cleanning, 37, 669, 2016-07-10 04:09:56"
+        ],
+        "tableDescription": "Stores notes related to customer events, including service types, residents, properties, and move-in dates.",
+        "tableIdentifier": "Customer_Event_Notes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each thing, linking to the Things table.",
+            "columnIdentifier": "thing_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Things",
+                "toColumn": "thing_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date and time when the status was recorded.",
+            "columnIdentifier": "Date_and_Date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the status of the thing at a specific time.",
+            "columnIdentifier": "Status_of_Thing_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "2, 2016-05-27 23:33:34, Open",
+          "10, 2016-07-17 08:35:27, Close",
+          "14, 2017-06-19 02:59:21, In Progress"
+        ],
+        "tableDescription": "Tracks the statuses of things over time.",
+        "tableIdentifier": "Timed_Status_of_Things"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each thing, linking to the Things table.",
+            "columnIdentifier": "thing_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Things",
+                "toColumn": "thing_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date and time when the location was recorded.",
+            "columnIdentifier": "Date_and_Time",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the location of the thing at a specific time.",
+            "columnIdentifier": "Location_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "2, 2016-10-12 12:03:07, 064 Charles Mou",
+          "10, 2016-12-29 00:39:19, 288 Lang Ferry",
+          "14, 2017-10-21 04:21:54, 854 Keeling Sho"
+        ],
+        "tableDescription": "Records the locations of things over time.",
+        "tableIdentifier": "Timed_Locations_of_Things"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "property_type_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "property_address",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Properties"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "resident_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Properties",
+                "toColumn": "property_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_moved_in",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_moved_out",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Residents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organization_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "parent_organization_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organization_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Organizations"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "service_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organization_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organizations",
+                "toColumn": "organization_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "service_type_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "service_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Services"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "resident_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "resident_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "service_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Services",
+                "toColumn": "service_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_moved_in",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "date_moved_in",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "property_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_requested",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_provided",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Residents_Services"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "thing_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "organization_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Organizations",
+                "toColumn": "organization_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Type_of_Thing_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "service_type_code",
+            "columnType": "CHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "service_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Things"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_Event_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_moved_in",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "date_moved_in",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "property_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "resident_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Residents",
+                "toColumn": "resident_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "thing_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Things",
+                "toColumn": "thing_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Customer_Events"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_Event_Note_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_Event_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customer_Events",
+                "toColumn": "Customer_Event_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "service_type_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "resident_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "property_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_moved_in",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Customer_Event_Notes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "thing_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Things",
+                "toColumn": "thing_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_and_Date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Status_of_Thing_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Timed_Status_of_Things"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "thing_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Things",
+                "toColumn": "thing_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_and_Time",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Timed_Locations_of_Things"
+      }
+    ]
+  },
+  "message": "Success"
+}

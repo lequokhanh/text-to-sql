@@ -1,0 +1,265 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database is structured to manage information about phones and their market presence. The `phone` table stores details such as phone names, unique identifiers, memory capacity, carrier information, and prices. The `market` table contains data on various markets including their IDs, districts, employee numbers, shop counts, and rankings. The `phone_market` junction table links phones to markets, detailing the number of stocks available in each market. Together, these tables facilitate an understanding of phone inventory distribution across different market locations.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the phone model.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The unique identifier for a phone model.",
+            "columnIdentifier": "Phone_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The memory capacity of the phone in gigabytes.",
+            "columnIdentifier": "Memory_in_G",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Carrier information associated with the phone model.",
+            "columnIdentifier": "Carrier",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The price of the phone model.",
+            "columnIdentifier": "Price",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "IPhone 5s, 1, 32, Sprint, 320.0",
+          "IPhone 6, 2, 128, TMobile, 480.0",
+          "IPhone 6s, 3, 16, Sprint, 699.0"
+        ],
+        "tableDescription": "Stores details about different phone models, including their names, identifiers, memory capacity, carrier information, and prices.",
+        "tableIdentifier": "phone"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a market.",
+            "columnIdentifier": "Market_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The district where the market is located.",
+            "columnIdentifier": "District",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of employees working in the market.",
+            "columnIdentifier": "Num_of_employees",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of shops present in the market.",
+            "columnIdentifier": "Num_of_shops",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Ranking of the market based on some criteria.",
+            "columnIdentifier": "Ranking",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Alberta, 1966, 40.0, 1",
+          "2, British Columbia, 1965, 49.0, 21",
+          "3, New Brunswick, 1978, 10.0, 4"
+        ],
+        "tableDescription": "Contains data about various markets, including their IDs, locations, employee counts, shop numbers, and rankings.",
+        "tableIdentifier": "market"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a market.",
+            "columnIdentifier": "Market_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "market",
+                "toColumn": "Market_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The unique identifier for a phone model.",
+            "columnIdentifier": "Phone_ID",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "phone",
+                "toColumn": "Phone_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The number of stocks available for the phone in the specified market.",
+            "columnIdentifier": "Num_of_stock",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 2232",
+          "2, 4, 4324",
+          "5, 2, 874"
+        ],
+        "tableDescription": "Links phones to markets, detailing the stock availability of each phone in different markets.",
+        "tableIdentifier": "phone_market"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Phone_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Memory_in_G",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Carrier",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Price",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "phone"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Market_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "District",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Num_of_employees",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Num_of_shops",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Ranking",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "market"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Market_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "market",
+                "toColumn": "Market_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Phone_ID",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "phone",
+                "toColumn": "Phone_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Num_of_stock",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "phone_market"
+      }
+    ]
+  },
+  "message": "Success"
+}

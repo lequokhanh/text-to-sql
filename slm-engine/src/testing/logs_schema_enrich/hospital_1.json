@@ -1,0 +1,1503 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage and track various aspects of a hospital's operations, including patient care, medical procedures, nursing activities, and administrative tasks. It includes tables for physicians, departments, patients, nurses, appointments, medications, rooms, and stays, among others. The schema captures relationships between these entities through foreign keys, such as linking a physician to their affiliated department or a patient to their primary care physician. The overall purpose of the database is to facilitate comprehensive record-keeping and efficient management of hospital resources and patient interactions.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for each physician.",
+            "columnIdentifier": "EmployeeID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the physician.",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The job title or position of the physician.",
+            "columnIdentifier": "Position",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The social security number of the physician.",
+            "columnIdentifier": "SSN",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, John Dorian, Staff Internist, 111111111",
+          "2, Elliot Reid, Attending Physician, 222222222",
+          "3, Christopher Turk, Surgical Attending Physician, 333333333"
+        ],
+        "tableDescription": "Stores information about each physician in the hospital.",
+        "tableIdentifier": "Physician"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for each department.",
+            "columnIdentifier": "DepartmentID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the department.",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The ID of the physician who is the head of the department.",
+            "columnIdentifier": "Head",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, General Medicine, 4",
+          "2, Surgery, 7",
+          "3, Psychiatry, 9"
+        ],
+        "tableDescription": "Contains information about each department in the hospital.",
+        "tableIdentifier": "Department"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The ID of the physician affiliated with a department.",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The ID of the department the physician is affiliated with.",
+            "columnIdentifier": "Department",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Department",
+                "toColumn": "DepartmentID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Indicates if this affiliation is the primary one for the physician.",
+            "columnIdentifier": "PrimaryAffiliation",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 1",
+          "2, 2, 0",
+          "3, 3, 1"
+        ],
+        "tableDescription": "Tracks the affiliation of physicians with departments.",
+        "tableIdentifier": "Affiliated_With"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each procedure.",
+            "columnIdentifier": "Code",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the medical procedure.",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Cost associated with performing the procedure.",
+            "columnIdentifier": "Cost",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Reverse Rhinopodoplasty, 1500.0",
+          "2, Obtuse Pyloric Recombobulation, 3750.0",
+          "3, Folded Demiophtalmectomy, 4500.0"
+        ],
+        "tableDescription": "Stores information about various medical procedures available at the hospital.",
+        "tableIdentifier": "Procedures"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Identifier for the physician who is trained in a particular treatment.",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the medical procedure that the physician is certified to perform.",
+            "columnIdentifier": "Treatment",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Procedures",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date when the physician was first certified for the treatment.",
+            "columnIdentifier": "CertificationDate",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The expiration date of the physician's certification for the treatment.",
+            "columnIdentifier": "CertificationExpires",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "3, 1, 2008-01-01, 2008-12-31",
+          "6, 2, 2007-01-01, 2007-12-31",
+          "7, 5, 2008-01-01, 2008-12-31"
+        ],
+        "tableDescription": "Records the training and certification details of physicians for specific treatments.",
+        "tableIdentifier": "Trained_In"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique Social Security Number of the patient.",
+            "columnIdentifier": "SSN",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Full name of the patient.",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Residential address of the patient.",
+            "columnIdentifier": "Address",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Contact phone number of the patient.",
+            "columnIdentifier": "Phone",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the patient's insurance policy.",
+            "columnIdentifier": "InsuranceID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the primary care physician of the patient.",
+            "columnIdentifier": "PCP",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "100000001, John Smith, 42 Foobar Lane, 555-0256, 68476213, 1",
+          "100000002, Grace Ritchie, 37 Snafu Drive, 555-0512, 36546321, 2",
+          "100000003, Random J. Patient, 101 Omgbbq Street, 555-1204, 65465421, 3"
+        ],
+        "tableDescription": "Stores information about patients, including their personal details and medical affiliations.",
+        "tableIdentifier": "Patient"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each nurse.",
+            "columnIdentifier": "EmployeeID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Full name of the nurse.",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Job title or position within the nursing staff.",
+            "columnIdentifier": "Position",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Indicates whether the nurse is registered (1) or not (0).",
+            "columnIdentifier": "Registered",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Social Security Number of the nurse.",
+            "columnIdentifier": "SSN",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "101, Carla Espinosa, Head Nurse, 1, 111111110",
+          "102, Laverne Roberts, Nurse, 0, 222222220",
+          "103, Paul Flowers, Head Nurse, 1, 333333330"
+        ],
+        "tableDescription": "Stores information about nurses, including their employee ID, name, position, registration status, and SSN.",
+        "tableIdentifier": "Nurse"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each appointment.",
+            "columnIdentifier": "AppointmentID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "SSN of the patient scheduled for the appointment.",
+            "columnIdentifier": "Patient",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Patient",
+                "toColumn": "SSN",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Employee ID of the nurse responsible for preparing the patient.",
+            "columnIdentifier": "PrepNurse",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Nurse",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Employee ID of the physician conducting the appointment.",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Scheduled start time of the appointment.",
+            "columnIdentifier": "Start",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Scheduled end time of the appointment.",
+            "columnIdentifier": "End",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the examination room where the appointment will take place.",
+            "columnIdentifier": "ExaminationRoom",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "13216584, 100000001, 101, 1, 2008-04-24 10:00, 2008-04-24 11:00, A",
+          "26548913, 100000002, 102, 2, 2008-04-25 10:00, 2008-04-25 11:00, B",
+          "36549879, 100000004, 103, 4, 2008-04-26 10:00, 2008-04-26 11:00, C"
+        ],
+        "tableDescription": "Stores information about patient appointments, including details such as appointment ID, patient, nurse, physician, start and end times, and examination room.",
+        "tableIdentifier": "Appointment"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each medication.",
+            "columnIdentifier": "Code",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the medication.",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Brand name of the medication.",
+            "columnIdentifier": "Brand",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Short description or additional information about the medication.",
+            "columnIdentifier": "Description",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Procrastin-X, X, N/A",
+          "2, Thesisin, Foo Labs, N/A",
+          "3, Awakin, Bar Laboratories, N/A"
+        ],
+        "tableDescription": "Stores information about medications available in the hospital.",
+        "tableIdentifier": "Medication"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Identifier of the physician who prescribed the medication.",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Social Security Number (SSN) of the patient receiving the prescription.",
+            "columnIdentifier": "Patient",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Patient",
+                "toColumn": "SSN",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code of the medication being prescribed.",
+            "columnIdentifier": "Medication",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Medication",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date and time when the prescription was issued.",
+            "columnIdentifier": "Date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier of the appointment associated with the prescription.",
+            "columnIdentifier": "Appointment",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Appointment",
+                "toColumn": "AppointmentID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Dose or quantity of the medication prescribed.",
+            "columnIdentifier": "Dose",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 100000001, 1, 2008-04-24 10:47, 13216584, 5",
+          "9, 100000004, 2, 2008-04-27 10:53, 86213939, 10",
+          "1, 100000001, 1, 2008-04-30 16:53, 13216584, 5"
+        ],
+        "tableDescription": "Records prescriptions issued by physicians to patients.",
+        "tableIdentifier": "Prescribes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The floor number of the block.",
+            "columnIdentifier": "BlockFloor",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "A unique identifier for the block on a specific floor.",
+            "columnIdentifier": "BlockCode",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1",
+          "2, 2",
+          "3, 3"
+        ],
+        "tableDescription": "Stores information about hospital blocks, including floor and code.",
+        "tableIdentifier": "Block"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each room.",
+            "columnIdentifier": "RoomNumber",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of the room (e.g., Single, Double).",
+            "columnIdentifier": "RoomType",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Floor number where the room is located.",
+            "columnIdentifier": "BlockFloor",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Block",
+                "toColumn": "BlockFloor",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the block or section of the hospital where the room is situated.",
+            "columnIdentifier": "BlockCode",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Block",
+                "toColumn": "BlockCode",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Indicates whether the room is currently unavailable for use (0 = available, 1 = unavailable).",
+            "columnIdentifier": "Unavailable",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "101, Single, 1, 1, 0",
+          "102, Single, 2, 2, 1",
+          "103, Single, 3, 3, 0"
+        ],
+        "tableDescription": "Stores information about hospital rooms, including their type, location, and availability.",
+        "tableIdentifier": "Room"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The identifier of the nurse who is on call.",
+            "columnIdentifier": "Nurse",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Nurse",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The floor number of the block where the nurse is on call.",
+            "columnIdentifier": "BlockFloor",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Block",
+                "toColumn": "BlockFloor",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The unique code for the block on a specific floor where the nurse is on call.",
+            "columnIdentifier": "BlockCode",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Block",
+                "toColumn": "BlockCode",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The start time of the nurse's on-call period.",
+            "columnIdentifier": "OnCallStart",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The end time of the nurse's on-call period.",
+            "columnIdentifier": "OnCallEnd",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "101, 1, 1, 2008-11-04 11:00, 2008-11-04 19:00",
+          "102, 1, 2, 2008-11-04 19:00, 2008-11-05 03:00",
+          "103, 1, 3, 2008-11-04 11:00, 2008-11-04 19:00"
+        ],
+        "tableDescription": "Records the on-call schedule for nurses, including their assigned block and time slots.",
+        "tableIdentifier": "On_Call"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each patient stay.",
+            "columnIdentifier": "StayID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "SSN of the patient staying in the room.",
+            "columnIdentifier": "Patient",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Patient",
+                "toColumn": "SSN",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Room number where the patient is staying.",
+            "columnIdentifier": "Room",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Room",
+                "toColumn": "RoomNumber",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date and time when the patient's stay began.",
+            "columnIdentifier": "StayStart",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date and time when the patient's stay ended.",
+            "columnIdentifier": "StayEnd",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "3215, 100000001, 111, 2008-05-01, 2008-05-04",
+          "3216, 100000003, 123, 2008-05-03, 2008-05-14",
+          "3217, 100000004, 112, 2008-05-02, 2008-05-03"
+        ],
+        "tableDescription": "Records patient stays in the hospital, including which room they occupied and the duration of their stay.",
+        "tableIdentifier": "Stay"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The SSN of the patient who underwent the procedure.",
+            "columnIdentifier": "Patient",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Patient",
+                "toColumn": "SSN",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The code of the medical procedure performed.",
+            "columnIdentifier": "Procedures",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Procedures",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The ID of the hospital stay during which the procedure was performed.",
+            "columnIdentifier": "Stay",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Stay",
+                "toColumn": "StayID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date and time when the procedure was performed.",
+            "columnIdentifier": "DateUndergoes",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The EmployeeID of the physician who performed the procedure.",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The EmployeeID of the nurse who assisted in performing the procedure.",
+            "columnIdentifier": "AssistingNurse",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Nurse",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "100000001, 2, 3215, 2008-05-03, 3, 101",
+          "100000004, 6, 3217, 2008-05-02, 7, 102",
+          "100000001, 7, 3215, 2008-05-10, 6, 105"
+        ],
+        "tableDescription": "Records procedures undergone by patients during their stays in the hospital.",
+        "tableIdentifier": "Undergoes"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EmployeeID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Position",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "SSN",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Physician"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DepartmentID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Head",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Department"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Department",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Department",
+                "toColumn": "DepartmentID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "PrimaryAffiliation",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Affiliated_With"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Code",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Cost",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Procedures"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Treatment",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Procedures",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CertificationDate",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CertificationExpires",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Trained_In"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "SSN",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Address",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Phone",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "InsuranceID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "PCP",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Patient"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EmployeeID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Position",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Registered",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "SSN",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Nurse"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "AppointmentID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Patient",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Patient",
+                "toColumn": "SSN",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "PrepNurse",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Nurse",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Start",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "End",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ExaminationRoom",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Appointment"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Code",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Brand",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Description",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Medication"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Patient",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Patient",
+                "toColumn": "SSN",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Medication",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Medication",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Appointment",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Appointment",
+                "toColumn": "AppointmentID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Dose",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Prescribes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "BlockFloor",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "BlockCode",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Block"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "RoomNumber",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "RoomType",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "BlockFloor",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Block",
+                "toColumn": "BlockFloor",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "BlockCode",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Block",
+                "toColumn": "BlockCode",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Unavailable",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Room"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Nurse",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Nurse",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "BlockFloor",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Block",
+                "toColumn": "BlockFloor",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "BlockCode",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Block",
+                "toColumn": "BlockCode",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "OnCallStart",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "OnCallEnd",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "On_Call"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "StayID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Patient",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Patient",
+                "toColumn": "SSN",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Room",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Room",
+                "toColumn": "RoomNumber",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "StayStart",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "StayEnd",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Stay"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Patient",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Patient",
+                "toColumn": "SSN",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Procedures",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Procedures",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Stay",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Stay",
+                "toColumn": "StayID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DateUndergoes",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Physician",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Physician",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "AssistingNurse",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Nurse",
+                "toColumn": "EmployeeID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Undergoes"
+      }
+    ]
+  },
+  "message": "Success"
+}

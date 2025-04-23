@@ -1,0 +1,279 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage inventory and information related to devices across various shops. The `device` table stores details about each device, including its identifier, type, carrier, software platform, and installed applications. The `shop` table contains information about each shop, such as its name, location, opening date, and year. The `stock` table links devices to specific shops, recording the quantity of each device available at each shop. This setup allows for efficient tracking of inventory levels and device availability across different retail locations.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a device.",
+            "columnIdentifier": "Device_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name or model of the device.",
+            "columnIdentifier": "Device",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The carrier associated with the device, if applicable.",
+            "columnIdentifier": "Carrier",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Version of the software package installed on the device.",
+            "columnIdentifier": "Package_Version",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "List of applications installed on the device.",
+            "columnIdentifier": "Applications",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The software platform running on the device.",
+            "columnIdentifier": "Software_Platform",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, BlackBerry Storm 9530, MTS Mobility, 5.0.0.808, 5.0.0.419, Android",
+          "2, Apple, Verizon Wireless, 5.0.0.328, 5.0.0.328, iOS",
+          "3, Huawei, Telus Mobility, 5.0.0.419, 4.7.0.151, Android"
+        ],
+        "tableDescription": "Stores details about each device, including its identifier, type, carrier, software platform, and installed applications.",
+        "tableIdentifier": "device"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a shop.",
+            "columnIdentifier": "Shop_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the shop.",
+            "columnIdentifier": "Shop_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The location where the shop is situated.",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the shop opened.",
+            "columnIdentifier": "Open_Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Year when the shop opened.",
+            "columnIdentifier": "Open_Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Dinas Device, Dinas, 1 January, 2014",
+          "2, Best Buy, Cymmer, 15 July, 2006",
+          "3, Ferndale, Blaenllechau, 8 November, 2009"
+        ],
+        "tableDescription": "Contains information about each shop, such as its name, location, opening date, and year.",
+        "tableIdentifier": "shop"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a shop.",
+            "columnIdentifier": "Shop_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "shop",
+                "toColumn": "Shop_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for a device.",
+            "columnIdentifier": "Device_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "device",
+                "toColumn": "Device_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The quantity of the device available at the specified shop.",
+            "columnIdentifier": "Quantity",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 4, 100",
+          "2, 6, 110",
+          "3, 4, 134"
+        ],
+        "tableDescription": "Links devices to specific shops, recording the quantity of each device available at each shop.",
+        "tableIdentifier": "stock"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Device_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Device",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Carrier",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Package_Version",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Applications",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Software_Platform",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "device"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Shop_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Shop_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Open_Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Open_Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "shop"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Shop_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "shop",
+                "toColumn": "Shop_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Device_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "device",
+                "toColumn": "Device_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Quantity",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "stock"
+      }
+    ]
+  },
+  "message": "Success"
+}

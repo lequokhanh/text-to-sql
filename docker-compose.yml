@@ -17,6 +17,11 @@ services:
             interval: 5s
             timeout: 5s
             retries: 5
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "3"
 
     embed:
         ports:
@@ -31,6 +36,11 @@ services:
             interval: 30s
             timeout: 10s
             retries: 3
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "3"
 
     engine:
         ports:
@@ -41,7 +51,7 @@ services:
         environment:
             - EMBED_HOST_API=embed:8080
             - OLLAMA_HOST=http://ftisu.ddns.net:9293/ollama/
-            - OLLAMA_MODEL=qwen2.5-coder:14b
+            - OLLAMA_MODEL=qwen2.5-coder:7b-instruct-q8_0
             - LLM_PROMPT=0 # 0 for traditional prompt, 1 for fine-tuned prompt
         networks:
             - slm
@@ -53,6 +63,11 @@ services:
         depends_on:
             embed:
                 condition: service_healthy
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "3"
 
     backend:
         ports:
@@ -80,6 +95,12 @@ services:
                 condition: service_healthy
             embed:
                 condition: service_healthy
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "3"
+
     ui:
         ports:
             - "4000:80"
@@ -95,6 +116,12 @@ services:
         depends_on:
             backend:
                 condition: service_healthy
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "3"
+
 networks:
     slm:
         driver: bridge

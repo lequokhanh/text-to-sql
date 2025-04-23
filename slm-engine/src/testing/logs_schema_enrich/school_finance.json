@@ -1,0 +1,349 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema consists of three tables: School, budget, and endowment. The School table contains details about schools including their unique identifiers, names, locations, mascots, enrollment numbers, and classifications for sports. The budget table tracks financial information related to each school over different years, detailing the budgeted amounts, investments, and percentages thereof. The endowment table records donations made to schools by donors, specifying the donation amount and linking back to the relevant school. Together, these tables provide a comprehensive view of school-related data, focusing on administrative details, financial management, and philanthropic support.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each school.",
+            "columnIdentifier": "School_id",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the school.",
+            "columnIdentifier": "School_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Physical location of the school.",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Mascot name associated with the school.",
+            "columnIdentifier": "Mascot",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of students enrolled in the school.",
+            "columnIdentifier": "Enrollment",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Classification for sports teams.",
+            "columnIdentifier": "IHSAA_Class",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Specific classification for football teams.",
+            "columnIdentifier": "IHSAA_Football_Class",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "County where the school is located.",
+            "columnIdentifier": "County",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Bremen, Bremen, Lions, 495, AA, AA, 50 Marshall",
+          "2, Culver Community, Culver, Cavaliers, 287, A, A, 71 St. Joseph",
+          "3, Glenn, Walkerton, Falcons, 605, AAA, AAA, 20 Elkhart"
+        ],
+        "tableDescription": "Contains details about schools including administrative information.",
+        "tableIdentifier": "School"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier linking to the School table.",
+            "columnIdentifier": "School_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "School",
+                "toColumn": "School_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Year for which the budget data is recorded.",
+            "columnIdentifier": "Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Amount budgeted for the school in the specified year.",
+            "columnIdentifier": "Budgeted",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of the total budget that was budgeted.",
+            "columnIdentifier": "total_budget_percent_budgeted",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Amount invested by the school in the specified year.",
+            "columnIdentifier": "Invested",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of the total budget that was invested.",
+            "columnIdentifier": "total_budget_percent_invested",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of the budget that was invested.",
+            "columnIdentifier": "Budget_invested_percent",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 2003, 4979, 2.0, 2134, 2.0, 42.9",
+          "2, 1999, 3666, 2.4, 5840, 2.2, 159.3",
+          "3, 2000, 6803, 1.3, 8335, 2.7, 122.5"
+        ],
+        "tableDescription": "Tracks financial information related to schools over different years.",
+        "tableIdentifier": "budget"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each donation record.",
+            "columnIdentifier": "endowment_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique identifier linking to the School table.",
+            "columnIdentifier": "School_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "School",
+                "toColumn": "School_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the donor who made the donation.",
+            "columnIdentifier": "donator_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Amount of the donation.",
+            "columnIdentifier": "amount",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, Monte Plata, 9.51",
+          "2, 2, San José de Ocoa, 9.83",
+          "3, 3, Distrito Nacional, 9.55"
+        ],
+        "tableDescription": "Records donations made to schools by donors.",
+        "tableIdentifier": "endowment"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "School_id",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "School_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Mascot",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Enrollment",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "IHSAA_Class",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "IHSAA_Football_Class",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "County",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "School"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "School_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "School",
+                "toColumn": "School_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Budgeted",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "total_budget_percent_budgeted",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Invested",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "total_budget_percent_invested",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Budget_invested_percent",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "budget"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "endowment_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "School_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "School",
+                "toColumn": "School_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "donator_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "amount",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "endowment"
+      }
+    ]
+  },
+  "message": "Success"
+}

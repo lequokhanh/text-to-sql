@@ -1,0 +1,335 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema consists of two tables: `basketball_match` and `university`. The `basketball_match` table records performance metrics for basketball teams, including their team ID, school ID, name, and various statistics such as ACC (Atlantic Coast Conference) records and overall game performance. The `university` table contains detailed information about universities, including their school ID, name, location, founding year, affiliation, enrollment, nickname, and primary conference. The relationship between these tables is established through the foreign key `School_ID` in the `basketball_match` table referencing the `School_ID` in the `university` table, allowing for the association of team performance data with specific universities. Overall, this database serves to track and provide insights into the basketball teams' performances while also maintaining comprehensive details about the universities they represent.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each basketball team.",
+            "columnIdentifier": "Team_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the university's School_ID, linking to the 'university' table.",
+            "columnIdentifier": "School_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "university",
+                "toColumn": "School_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the basketball team.",
+            "columnIdentifier": "Team_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Record of ACC games played in the regular season.",
+            "columnIdentifier": "ACC_Regular_Season",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Win percentage for ACC games.",
+            "columnIdentifier": "ACC_Percent",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Home game record in the ACC.",
+            "columnIdentifier": "ACC_Home",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Away game record in the ACC.",
+            "columnIdentifier": "ACC_Road",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Overall game record.",
+            "columnIdentifier": "All_Games",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Win percentage for all games.",
+            "columnIdentifier": "All_Games_Percent",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Home game record overall.",
+            "columnIdentifier": "All_Home",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Away game record overall.",
+            "columnIdentifier": "All_Road",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Neutral site game record overall.",
+            "columnIdentifier": "All_Neutral",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, North Carolina, 14–2, .875, 6–2, 8–0, 35–2, 0.946, 14–2, 13–0, 9–1",
+          "2, 2, Duke, 13–3, .813, 7–1, 6–2, 28–6, 0.824, 15–1, 8–2, 5–3",
+          "3, 4, Clemson, 10–6, .625, 6–2, 3–5, 24–10, 0.706, 14–3, 6–5, 4–3"
+        ],
+        "tableDescription": "Records performance metrics for basketball teams.",
+        "tableIdentifier": "basketball_match"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each university.",
+            "columnIdentifier": "School_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the university.",
+            "columnIdentifier": "School",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Geographic location of the university.",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Year when the university was founded.",
+            "columnIdentifier": "Founded",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of affiliation or ownership of the university (e.g., Public, Private).",
+            "columnIdentifier": "Affiliation",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of students enrolled at the university.",
+            "columnIdentifier": "Enrollment",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Informal nickname for the university.",
+            "columnIdentifier": "Nickname",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Main conference in which the university's sports teams participate.",
+            "columnIdentifier": "Primary_conference",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, University of Delaware, \"Newark, DE\", 1743.0, Public, 19067.0, Fightin' Blue Hens, Colonial Athletic Association ( D-I )",
+          "2, Lebanon Valley College, \"Annville, PA\", 1866.0, Private/Methodist, 2100.0, Flying Dutchmen, MAC Commonwealth Conference ( D-III )",
+          "3, University of Rhode Island, \"Kingston, RI\", 1892.0, Public, 19095.0, Rams, Atlantic 10 Conference ( D-I )"
+        ],
+        "tableDescription": "Contains detailed information about universities.",
+        "tableIdentifier": "university"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Team_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "School_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "university",
+                "toColumn": "School_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Team_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ACC_Regular_Season",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ACC_Percent",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ACC_Home",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ACC_Road",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "All_Games",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "All_Games_Percent",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "All_Home",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "All_Road",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "All_Neutral",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "basketball_match"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "School_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "School",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Founded",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Affiliation",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Enrollment",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Nickname",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Primary_conference",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "university"
+      }
+    ]
+  },
+  "message": "Success"
+}

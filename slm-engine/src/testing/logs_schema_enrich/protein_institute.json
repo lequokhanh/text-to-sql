@@ -1,0 +1,390 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database consists of three tables: `building`, `institution`, and `protein`. The `building` table stores information about buildings, including their name, address, height, and number of floors. The `institution` table contains details about institutions such as their name, location, founding year, type, enrollment, team, primary conference, and the building they are associated with through a foreign key relationship. The `protein` table holds data on proteins, including their common and scientific names, divergence from human lineage, accession number, sequence length, identity to human protein sequence, and the institution that studies them, linked by a foreign key to the `institution` table. Together, these tables facilitate tracking of institutional affiliations with buildings and research conducted on proteins within those institutions.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a building.",
+            "columnIdentifier": "building_id",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the building.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Street address of the building.",
+            "columnIdentifier": "Street_address",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Period during which the building was the tallest.",
+            "columnIdentifier": "Years_as_tallest",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Height of the building in feet.",
+            "columnIdentifier": "Height_feet",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of floors in the building.",
+            "columnIdentifier": "Floors",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "0, Citizens Bank Building, 701 North Franklin Street, 1913–1915, 145, 12",
+          "1, Tampa City Hall, 315 John F. Kennedy Boulevard, 1915–1926, 160, 10",
+          "2, Floridan Hotel, 905 Franklin Street, 1926–1966, 204, 17"
+        ],
+        "tableDescription": "Stores information about buildings.",
+        "tableIdentifier": "building"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Institution_id",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Institution",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Founded",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Enrollment",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Team",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Primary_Conference",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "building_id",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "building",
+                "toColumn": "building_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "0, Ave Maria University, \"Ave Maria, Florida\", 1998.0, Private, 1200, Gyrenes, The Sun, 1",
+          "1, Dakota State University, \"Madison, South Dakota\", 1881.0, Public, 3102, Trojans, none, 3",
+          "10, Edward Waters College, \"Jacksonville, Florida\", 1866.0, Tribal, 800, Tigers, Gulf Coast (GCAC), 5"
+        ],
+        "tableIdentifier": "Institution"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The common name of the protein.",
+            "columnIdentifier": "common_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The scientific name of the protein.",
+            "columnIdentifier": "protein_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The divergence from human lineage of the protein.",
+            "columnIdentifier": "divergence_from_human_lineage",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The accession number of the protein.",
+            "columnIdentifier": "accession_number",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The sequence length of the protein.",
+            "columnIdentifier": "sequence_length",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The identity to human protein sequence of the protein.",
+            "columnIdentifier": "sequence_identity_to_human_protein",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Institution_id",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Institution",
+                "toColumn": "Institution_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "Tropical Clawed Frog, uncharacterized protein C20orf117-like, 371.2, XP_002942331.1, 1584.0, 39%, 1",
+          "body louse, uncharacterized protein LOC578090, 742.9, XP_783370.2, 1587.0, 47%, 3",
+          "porkworm, \"Centromeric protein E, putative\", 782.7, XP_002429877.1, 2086.0, 30%, 5"
+        ],
+        "tableDescription": "Stores data on proteins.",
+        "tableIdentifier": "protein"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "building_id",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Street_address",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Years_as_tallest",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Height_feet",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Floors",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "building"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Institution_id",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Institution",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Founded",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Enrollment",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Team",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Primary_Conference",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "building_id",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "building",
+                "toColumn": "building_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Institution"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "common_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "protein_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "divergence_from_human_lineage",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "accession_number",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "sequence_length",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "sequence_identity_to_human_protein",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Institution_id",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Institution",
+                "toColumn": "Institution_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "protein"
+      }
+    ]
+  },
+  "message": "Success"
+}

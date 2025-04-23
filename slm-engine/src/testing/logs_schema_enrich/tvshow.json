@@ -1,0 +1,433 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage information about television channels, TV series, and cartoons. It includes details such as channel identifiers, series names, country of origin, language, content type, and technical specifications for TV series. The `TV_series` table links back to the `TV_Channel` table through a foreign key relationship, indicating which channel broadcasts each series. Similarly, the `Cartoon` table also references the `TV_Channel` table, establishing that cartoons are aired on specific channels as well. Overall, this database serves to catalog and organize television content by channel, providing insights into the types of programming available across various broadcasting platforms.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the TV channel.",
+            "columnIdentifier": "id",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the series or program broadcast by the channel.",
+            "columnIdentifier": "series_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the TV channel is based or broadcasts from.",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Primary language spoken in the content broadcast by the channel.",
+            "columnIdentifier": "Language",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of content or genre of the series broadcasted.",
+            "columnIdentifier": "Content",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Aspect ratio of the TV channel's output.",
+            "columnIdentifier": "Pixel_aspect_ratio_PAR",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Indicates if the channel broadcasts in high definition.",
+            "columnIdentifier": "Hight_definition_TV",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Indicates if the channel offers pay-per-view services.",
+            "columnIdentifier": "Pay_per_view_PPV",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Package options available for subscribing to the channel.",
+            "columnIdentifier": "Package_Option",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "700, Sky Radio, Italy, Italian, music, 4:3, no, no, Sky Famiglia",
+          "701, Sky Music, United Kingdom, English, music, 4:3 / 16:9, yes, no, no ( FTV )",
+          "703, Music Box Italia, Poland, Italian, music, 16:9, no, no, Sky Famiglia + Sky HD"
+        ],
+        "tableDescription": "Stores information about television channels, including details about the series broadcast, country of origin, language, content type, and technical specifications.",
+        "tableIdentifier": "TV_Channel"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each TV series episode.",
+            "columnIdentifier": "id",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Title of the TV series episode.",
+            "columnIdentifier": "Episode",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the episode aired.",
+            "columnIdentifier": "Air_Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Overall rating of the episode.",
+            "columnIdentifier": "Rating",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage share of total viewers for the episode.",
+            "columnIdentifier": "Share",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Rating share specifically for viewers aged 18-49.",
+            "columnIdentifier": "18_49_Rating_Share",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of viewers in millions for the episode.",
+            "columnIdentifier": "Viewers_m",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Ranking of the episode within its weekly broadcasts.",
+            "columnIdentifier": "Weekly_Rank",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the TV channel broadcasting the episode.",
+            "columnIdentifier": "Channel",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "TV_Channel",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1.0, A Love of a Lifetime, \"September 24, 2007\", 5.8, 9.0, 3.5/9, 9.16, 43.0, 700",
+          "2.0, Friendly Skies, \"October 1, 2007\", 5.3, 7.0, 3.2/8, 8.23, 50.0, 701",
+          "3.0, Game Three, \"October 8, 2007\", 4.4, 6.0, 2.9/7, 6.94, 61.0, 707"
+        ],
+        "tableDescription": "Stores information about TV series episodes, including air date, rating, viewership data, and channel details.",
+        "tableIdentifier": "TV_series"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each cartoon.",
+            "columnIdentifier": "id",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the cartoon series.",
+            "columnIdentifier": "Title",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The director of the cartoon.",
+            "columnIdentifier": "Directed_by",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The writer of the cartoon.",
+            "columnIdentifier": "Written_by",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the cartoon first aired.",
+            "columnIdentifier": "Original_air_date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "A unique code for the production of the cartoon.",
+            "columnIdentifier": "Production_code",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The identifier of the channel that broadcasts the cartoon, linked to TV_Channel.id.",
+            "columnIdentifier": "Channel",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "TV_Channel",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1.0, The Rise of the Blue Beetle!, Ben Jones, Michael Jelenic, \"November14,2008\", 101.0, 700",
+          "2.0, Terror on Dinosaur Island!, Brandon Vietti, Steven Melching, \"November21,2008\", 102.0, 701",
+          "3.0, Evil Under the Sea!, Michael Chang, Joseph Kuhr, \"December5,2008\", 103.0, 703"
+        ],
+        "tableDescription": "Stores information about cartoons, including details such as title, creators, air date, production code, and the channel on which it is aired.",
+        "tableIdentifier": "Cartoon"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "series_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Language",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Content",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pixel_aspect_ratio_PAR",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Hight_definition_TV",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pay_per_view_PPV",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Package_Option",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "TV_Channel"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Episode",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Air_Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Rating",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Share",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "18_49_Rating_Share",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Viewers_m",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Weekly_Rank",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Channel",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "TV_Channel",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "TV_series"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Title",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Directed_by",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Written_by",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Original_air_date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Production_code",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Channel",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "TV_Channel",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Cartoon"
+      }
+    ]
+  },
+  "message": "Success"
+}

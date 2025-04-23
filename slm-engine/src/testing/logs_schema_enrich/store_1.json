@@ -1,0 +1,1215 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema appears to manage a music store or digital media service, encompassing various entities such as artists, albums, tracks, customers, and employees. The tables are interconnected through foreign key relationships, illustrating complex associations like an artist having multiple albums, each album containing numerous tracks, and invoices detailing purchases by customers. Additionally, the database supports hierarchical employee structures and playlist management functionalities, providing a comprehensive framework for tracking music sales and customer interactions within the service.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each artist.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the artist.",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, AC/DC",
+          "2, Accept",
+          "3, Aerosmith"
+        ],
+        "tableDescription": "Stores information about music artists, including their names.",
+        "tableIdentifier": "artists"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each album.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Title of the album.",
+            "columnIdentifier": "title",
+            "columnType": "VARCHAR(160)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the artist who created the album.",
+            "columnIdentifier": "artist_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "artists",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, For Those About To Rock We Salute You, 1",
+          "4, Balls to the Wall, 2",
+          "2, Restless and Wild, 3"
+        ],
+        "tableDescription": "Stores information about music albums, including their titles and associated artists.",
+        "tableIdentifier": "albums"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each employee.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the employee.",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the employee.",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Job title of the employee.",
+            "columnIdentifier": "title",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the employee's manager.",
+            "columnIdentifier": "reports_to",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "employees",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date of birth of the employee.",
+            "columnIdentifier": "birth_date",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the employee was hired.",
+            "columnIdentifier": "hire_date",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Street address of the employee.",
+            "columnIdentifier": "address",
+            "columnType": "VARCHAR(70)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "City where the employee works.",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "State or province where the employee works.",
+            "columnIdentifier": "state",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the employee works.",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Postal code for the employee's address.",
+            "columnIdentifier": "postal_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Phone number of the employee.",
+            "columnIdentifier": "phone",
+            "columnType": "VARCHAR(24)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Fax number of the employee.",
+            "columnIdentifier": "fax",
+            "columnType": "VARCHAR(24)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Email address of the employee.",
+            "columnIdentifier": "email",
+            "columnType": "VARCHAR(60)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Adams, Andrew, General Manager, 1, 1962-02-18 00:00:00, 2002-08-14 00:00:00, 11120 Jasper Ave NW, Edmonton, AB, Canada, T5K 2N1, +1 (780) 428-9482, +1 (780) 428-3457, andrew@chinookcorp.com",
+          "2, Edwards, Nancy, Sales Manager, 2, 1958-12-08 00:00:00, 2002-05-01 00:00:00, 825 8 Ave SW, Calgary, AB, Canada, T2P 2T3, +1 (403) 262-3443, +1 (403) 262-3322, nancy@chinookcorp.com",
+          "6, Peacock, Jane, Sales Support Agent, 6, 1973-08-29 00:00:00, 2002-04-01 00:00:00, 1111 6 Ave SW, Lethbridge, AB, Canada, T2P 5M5, +1 (403) 263-4423, +1 (403) 262-6712, jane@chinookcorp.com"
+        ],
+        "tableDescription": "Stores information about employees who work in the music store or digital media service.",
+        "tableIdentifier": "employees"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each customer.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the customer.",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the customer.",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the company associated with the customer.",
+            "columnIdentifier": "company",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Street address of the customer.",
+            "columnIdentifier": "address",
+            "columnType": "VARCHAR(70)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "City where the customer resides.",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "State or province where the customer resides.",
+            "columnIdentifier": "state",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the customer resides.",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Postal code for the customer's address.",
+            "columnIdentifier": "postal_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Phone number of the customer.",
+            "columnIdentifier": "phone",
+            "columnType": "VARCHAR(24)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Fax number of the customer.",
+            "columnIdentifier": "fax",
+            "columnType": "VARCHAR(24)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Email address of the customer.",
+            "columnIdentifier": "email",
+            "columnType": "VARCHAR(60)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the employee assigned as the support representative for the customer.",
+            "columnIdentifier": "support_rep_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "employees",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, Luís, Gonçalves, Embraer - Empresa Brasileira de Aeronáutica S.A., \"Av. Brigadeiro Faria Lima, 2170\", São José dos Campos, SP, Brazil, 12227-000, +55 (12) 3923-5555, +55 (12) 3923-5566, luisg@embraer.com.br, 3",
+          "3, Leonie, Köhler, JetBrains s.r.o., Theodor-Heuss-Straße 34, Stuttgart, QC, Germany, 70174, +49 0711 2842222, +420 2 4172 5555, leonekohler@surfeu.de, 4",
+          "12, François, Tremblay, Woodstock Discos, 1498 rue Bélanger, Montréal, RJ, Canada, H2G 1A7, +1 (514) 721-4711, +55 (11) 3033-4564, ftremblay@gmail.com, 5"
+        ],
+        "tableDescription": "Stores information about customers who purchase music or digital media.",
+        "tableIdentifier": "customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each genre.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the genre.",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Rock",
+          "2, Jazz",
+          "3, Metal"
+        ],
+        "tableDescription": "Stores information about different music genres.",
+        "tableIdentifier": "genres"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each invoice.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the customers table, indicating which customer this invoice belongs to.",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "customers",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date when the invoice was generated.",
+            "columnIdentifier": "invoice_date",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The street address where the invoice should be billed.",
+            "columnIdentifier": "billing_address",
+            "columnType": "VARCHAR(70)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The city part of the billing address.",
+            "columnIdentifier": "billing_city",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The state or province part of the billing address.",
+            "columnIdentifier": "billing_state",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The country part of the billing address.",
+            "columnIdentifier": "billing_country",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The postal code for the billing address.",
+            "columnIdentifier": "billing_postal_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The total amount due for all items in this invoice.",
+            "columnIdentifier": "total",
+            "columnType": "NUMERIC(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "98, 1, 2007-01-01 00:00:00, Theodor-Heuss-Straße 34, Stuttgart, AB, Germany, 70174, 1.98",
+          "121, 2, 2007-01-02 00:00:00, Ullevålsveien 14, Oslo, MA, Norway, 0171, 3.96",
+          "143, 3, 2007-01-03 00:00:00, Grétrystraat 63, Brussels, Dublin, Belgium, 1000, 5.94"
+        ],
+        "tableDescription": "Contains billing information for each transaction, including customer details and total amount.",
+        "tableIdentifier": "invoices"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each media type.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the media type.",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, MPEG audio file",
+          "2, Protected AAC audio file",
+          "3, Protected MPEG-4 video file"
+        ],
+        "tableDescription": "Stores information about different media types used in tracks.",
+        "tableIdentifier": "media_types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each track.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the track.",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(200)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the album to which the track belongs.",
+            "columnIdentifier": "album_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "albums",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the media type used in the track.",
+            "columnIdentifier": "media_type_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "media_types",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the genre of the track.",
+            "columnIdentifier": "genre_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "genres",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the composer who created the track.",
+            "columnIdentifier": "composer",
+            "columnType": "VARCHAR(220)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Duration of the track in milliseconds.",
+            "columnIdentifier": "milliseconds",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Size of the track file in bytes.",
+            "columnIdentifier": "bytes",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Price per unit of the track.",
+            "columnIdentifier": "unit_price",
+            "columnType": "NUMERIC(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, For Those About To Rock (We Salute You), 1, 1, 1, \"Angus Young, Malcolm Young, Brian Johnson\", 343719, 11170334, 0.99",
+          "6, Balls to the Wall, 2, 2, 2, \"F. Baltes, S. Kaufman, U. Dirkscneider & W. Hoffman\", 342562, 5510424, 1.99",
+          "7, Fast As a Shark, 3, 3, 3, \"F. Baltes, R.A. Smith-Diesel, S. Kaufman, U. Dirkscneider & W. Hoffman\", 230619, 3990994, 0.99"
+        ],
+        "tableDescription": "Stores information about individual tracks in the music store or digital media service.",
+        "tableIdentifier": "tracks"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each line item.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the invoices table, indicating which invoice this line item belongs to.",
+            "columnIdentifier": "invoice_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "invoices",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the tracks table, identifying the specific track being sold.",
+            "columnIdentifier": "track_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "tracks",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The price of a single unit of the track.",
+            "columnIdentifier": "unit_price",
+            "columnType": "NUMERIC(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The number of units of the track included in this invoice line.",
+            "columnIdentifier": "quantity",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "579, 1, 1, 0.99, 1",
+          "1, 2, 2, 1.99, 1",
+          "1154, 3, 3, 0.99, 1"
+        ],
+        "tableDescription": "Stores details of individual items in an invoice, linking to specific tracks and their pricing.",
+        "tableIdentifier": "invoice_lines"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Primary key for the playlist.",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the playlist.",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Music",
+          "2, Movies",
+          "3, TV Shows"
+        ],
+        "tableDescription": "Stores information about playlists.",
+        "tableIdentifier": "playlists"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Foreign key referencing the playlist ID.",
+            "columnIdentifier": "playlist_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "playlists",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the track ID.",
+            "columnIdentifier": "track_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "tracks",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, 1",
+          "3, 2",
+          "5, 3"
+        ],
+        "tableDescription": "Associates tracks with playlists.",
+        "tableIdentifier": "playlist_tracks"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "artists"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "title",
+            "columnType": "VARCHAR(160)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "artist_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "artists",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "albums"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "title",
+            "columnType": "VARCHAR(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "reports_to",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "employees",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "birth_date",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "hire_date",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address",
+            "columnType": "VARCHAR(70)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "postal_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "phone",
+            "columnType": "VARCHAR(24)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fax",
+            "columnType": "VARCHAR(24)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "email",
+            "columnType": "VARCHAR(60)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "employees"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "company",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address",
+            "columnType": "VARCHAR(70)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "postal_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "phone",
+            "columnType": "VARCHAR(24)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fax",
+            "columnType": "VARCHAR(24)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "email",
+            "columnType": "VARCHAR(60)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "support_rep_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "employees",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "genres"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "customers",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "invoice_date",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "billing_address",
+            "columnType": "VARCHAR(70)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "billing_city",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "billing_state",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "billing_country",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "billing_postal_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "total",
+            "columnType": "NUMERIC(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "invoices"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "media_types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(200)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "album_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "albums",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "media_type_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "media_types",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "genre_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "genres",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "composer",
+            "columnType": "VARCHAR(220)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "milliseconds",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "bytes",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "unit_price",
+            "columnType": "NUMERIC(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "tracks"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "invoice_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "invoices",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "track_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "tracks",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "unit_price",
+            "columnType": "NUMERIC(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "quantity",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "invoice_lines"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "playlists"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "playlist_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "playlists",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "track_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "tracks",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "playlist_tracks"
+      }
+    ]
+  },
+  "message": "Success"
+}

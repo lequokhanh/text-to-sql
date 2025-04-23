@@ -1,0 +1,488 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database is designed to manage product information and their associated characteristics. It includes tables for reference data such as characteristic types, colors, and product categories, ensuring consistent definitions across entries. The Products table holds detailed product information, linking each product to its color and category through foreign keys. The Characteristics table defines various attributes that can be assigned to products, while the Product_Characteristics table establishes a many-to-many relationship between products and their characteristics, capturing specific values for each attribute. This structure allows for flexible and scalable management of product data with detailed specifications.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code for each characteristic type.",
+            "columnIdentifier": "characteristic_type_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description or explanation of the characteristic type.",
+            "columnIdentifier": "characteristic_type_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Grade, Grade",
+          "Purity, Purity"
+        ],
+        "tableDescription": "Reference table for characteristic types, providing descriptions for each type code.",
+        "tableIdentifier": "Ref_Characteristic_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each color.",
+            "columnIdentifier": "color_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the color.",
+            "columnIdentifier": "color_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, red",
+          "2, green",
+          "3, yellow"
+        ],
+        "tableDescription": "Stores reference data for color codes and their descriptions.",
+        "tableIdentifier": "Ref_Colors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a product category.",
+            "columnIdentifier": "product_category_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the product category.",
+            "columnIdentifier": "product_category_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unit of measure used for products in this category.",
+            "columnIdentifier": "unit_of_measure",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Herbs, Herbs, Handful             ",
+          "Seeds, Seeds, \"Weight - pound,kilo.\"",
+          "Spices, Spices, Handful             "
+        ],
+        "tableDescription": "Stores reference data for product categories, including their descriptions and unit of measures.",
+        "tableIdentifier": "Ref_Product_Categories"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each characteristic.",
+            "columnIdentifier": "characteristic_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the type of characteristic in the Ref_Characteristic_Types table.",
+            "columnIdentifier": "characteristic_type_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Characteristic_Types",
+                "toColumn": "characteristic_type_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Data type of the characteristic value.",
+            "columnIdentifier": "characteristic_data_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name or label of the characteristic.",
+            "columnIdentifier": "characteristic_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details or description about the characteristic.",
+            "columnIdentifier": "other_characteristic_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Grade, numquam, slow",
+          "2, Purity, doloribus, fast",
+          "3, Grade, rem, warm"
+        ],
+        "tableDescription": "Stores detailed information about various product characteristics.",
+        "tableIdentifier": "Characteristics"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each product.",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the product's color in the Ref_Colors table.",
+            "columnIdentifier": "color_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Colors",
+                "toColumn": "color_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key linking to the product's category in the Ref_Product_Categories table.",
+            "columnIdentifier": "product_category_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Product_Categories",
+                "toColumn": "product_category_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the product.",
+            "columnIdentifier": "product_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Typical buying price for the product.",
+            "columnIdentifier": "typical_buying_price",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Typical selling price for the product.",
+            "columnIdentifier": "typical_selling_price",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the product.",
+            "columnIdentifier": "product_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the product.",
+            "columnIdentifier": "other_product_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 4, Spices, cumin, , 2878.3, et",
+          "2, 2, Herbs, peper, 352447.2874677, 1892070.2803543, rerum",
+          "3, 9, Seeds, basil, 503.8431967, 0.1859512, officia"
+        ],
+        "tableDescription": "Stores detailed product information including color, category, pricing, and descriptions.",
+        "tableIdentifier": "Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a product, linking to the Products table.",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Products",
+                "toColumn": "product_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The unique identifier for a characteristic, linking to the Characteristics table.",
+            "columnIdentifier": "characteristic_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Characteristics",
+                "toColumn": "characteristic_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The specific value assigned to a product for a given characteristic.",
+            "columnIdentifier": "product_characteristic_value",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "13, 13, low",
+          "11, 2, medium",
+          "5, 15, high"
+        ],
+        "tableDescription": "Establishes a many-to-many relationship between products and their characteristics, capturing specific values for each attribute.",
+        "tableIdentifier": "Product_Characteristics"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "characteristic_type_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "characteristic_type_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Ref_Characteristic_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "color_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "color_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Ref_Colors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_category_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_category_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "unit_of_measure",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Ref_Product_Categories"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "characteristic_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "characteristic_type_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Characteristic_Types",
+                "toColumn": "characteristic_type_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "characteristic_data_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "characteristic_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_characteristic_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Characteristics"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "color_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Colors",
+                "toColumn": "color_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_category_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Product_Categories",
+                "toColumn": "product_category_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "typical_buying_price",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "typical_selling_price",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_product_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Products"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Products",
+                "toColumn": "product_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "characteristic_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Characteristics",
+                "toColumn": "characteristic_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "product_characteristic_value",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Product_Characteristics"
+      }
+    ]
+  },
+  "message": "Success"
+}

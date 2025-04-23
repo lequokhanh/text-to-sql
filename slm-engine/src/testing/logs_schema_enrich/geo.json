@@ -1,0 +1,573 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to store geographical and demographic information about various states within countries, along with details about cities, lakes, mountains, rivers, and bordering states. It includes tables for each entity type such as state, city, lake, mountain, and river, with relationships established through foreign keys linking them back to the state table. The schema allows for comprehensive queries on geographical features and their interconnections within a country's administrative divisions.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the state.",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "population",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "area",
+            "columnType": "double",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The capital city of the state.",
+            "columnIdentifier": "capital",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "density",
+            "columnType": "double",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores information about states within countries.",
+        "tableIdentifier": "state"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the city.",
+            "columnIdentifier": "city_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "population",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the state or province within which the city is situated.",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores information about cities, including their name, population, and administrative divisions.",
+        "tableIdentifier": "city"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the state.",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The name of the state that borders the given state.",
+            "columnIdentifier": "border",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores information about states that border each other within a country.",
+        "tableIdentifier": "border_info"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the state.",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The highest elevation point in the state.",
+            "columnIdentifier": "highest_elevation",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The lowest point in the state.",
+            "columnIdentifier": "lowest_point",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The highest geographical feature or mountain peak in the state.",
+            "columnIdentifier": "highest_point",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The lowest elevation point in the state.",
+            "columnIdentifier": "lowest_elevation",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores elevation and point data for states.",
+        "tableIdentifier": "highlow"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the lake.",
+            "columnIdentifier": "lake_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "area",
+            "columnType": "double",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the state within the country where the lake is located.",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores information about lakes, including their names, areas, and associated countries and states.",
+        "tableIdentifier": "lake"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the mountain.",
+            "columnIdentifier": "mountain_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "mountain_altitude",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the state within which the mountain is located, linked to the state table through a foreign key relationship.",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores information about mountains within countries, including their altitude and administrative location.",
+        "tableIdentifier": "mountain"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique name of the river.",
+            "columnIdentifier": "river_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "length",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Names of states that the river traverses, separated by a delimiter (e.g., comma).",
+            "columnIdentifier": "traverse",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores information about rivers, including their names, lengths, associated country, and states they traverse.",
+        "tableIdentifier": "river"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "population",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "area",
+            "columnType": "double",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "capital",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "density",
+            "columnType": "double",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "state"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "population",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "city"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "border",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "border_info"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "highest_elevation",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lowest_point",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "highest_point",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lowest_elevation",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "highlow"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lake_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "area",
+            "columnType": "double",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "lake"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "mountain_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "mountain_altitude",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "mountain"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "river_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "length",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "country_name",
+            "columnType": "varchar(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "traverse",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "state",
+                "toColumn": "state_name",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "river"
+      }
+    ]
+  },
+  "message": "Success"
+}

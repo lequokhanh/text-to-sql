@@ -1,0 +1,1749 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema appears to represent a comprehensive system for managing a video rental store. It includes tables for tracking actors, films, categories, customers, rentals, payments, and staff. The schema is designed with strong relationships between entities, such as the association of films with their actors and categories, and the linking of customer transactions through rentals and payments. Additionally, there are geographical elements like cities and countries to provide context for addresses. The database supports operations related to film inventory management, customer interactions, and staff activities within the store environment.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for an actor.",
+            "columnIdentifier": "actor_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the actor.",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the actor.",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, PENELOPE, GUINESS, 2006-02-15 04:34:33",
+          "2, NICK, WAHLBERG, 2006-02-15 04:34:33",
+          "3, ED, CHASE, 2006-02-15 04:34:33"
+        ],
+        "tableDescription": "Stores information about actors in the video rental store.",
+        "tableIdentifier": "actor"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for an address.",
+            "columnIdentifier": "address_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Primary address line.",
+            "columnIdentifier": "address",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "address2",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "District or neighborhood of the address.",
+            "columnIdentifier": "district",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the city where the address is located.",
+            "columnIdentifier": "city_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "city",
+                "toColumn": "city_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "postal_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Phone number for the address.",
+            "columnIdentifier": "phone",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 47 MySakila Drive, , Alberta, 300, , , 2006-02-15 04:45:30",
+          "2, 28 MySQL Boulevard, , QLD, 576, 35200, 14033335568, 2006-02-15 04:45:30",
+          "3, 23 Workhaven Lane, , Nagasaki, 463, 17886, 6172235589, 2006-02-15 04:45:30"
+        ],
+        "tableDescription": "Stores address details for various entities in the system.",
+        "tableIdentifier": "address"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each category.",
+            "columnIdentifier": "category_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the film category.",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Action, 2006-02-15 04:46:27",
+          "2, Animation, 2006-02-15 04:46:27",
+          "3, Children, 2006-02-15 04:46:27"
+        ],
+        "tableDescription": "Stores information about film categories.",
+        "tableIdentifier": "category"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a city.",
+            "columnIdentifier": "city_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the city.",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the country where the city is located.",
+            "columnIdentifier": "country_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "country",
+                "toColumn": "country_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, A Corua (La Corua), 87, 2006-02-15 04:45:25",
+          "2, Abha, 82, 2006-02-15 04:45:25",
+          "3, Abu Dhabi, 101, 2006-02-15 04:45:25"
+        ],
+        "tableDescription": "Stores city information linked to countries.",
+        "tableIdentifier": "city"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a country.",
+            "columnIdentifier": "country_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the country.",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Afghanistan, 2006-02-15 04:44:00",
+          "2, Algeria, 2006-02-15 04:44:00",
+          "3, American Samoa, 2006-02-15 04:44:00"
+        ],
+        "tableDescription": "Stores country information.",
+        "tableIdentifier": "country"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each customer.",
+            "columnIdentifier": "customer_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the store where the customer is associated.",
+            "columnIdentifier": "store_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "store",
+                "toColumn": "store_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "First name of the customer.",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the customer.",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "email",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the address associated with the customer.",
+            "columnIdentifier": "address_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "address",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "TRUE",
+            "columnIdentifier": "active",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date and time when the customer record was created.",
+            "columnIdentifier": "create_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, MARY, SMITH, MARY.SMITH@sakilacustomer.org, 5, 1, 2006-02-14 22:04:36, 2006-02-15 04:57:20",
+          "2, 2, PATRICIA, JOHNSON, PATRICIA.JOHNSON@sakilacustomer.org, 6, 0, 2006-02-14 22:04:37, 2006-02-15 04:57:20",
+          "3, 1, LINDA, WILLIAMS, LINDA.WILLIAMS@sakilacustomer.org, 7, 1, 2006-02-14 22:04:36, 2006-02-15 04:57:20"
+        ],
+        "tableDescription": "Stores information about customers of the video rental store.",
+        "tableIdentifier": "customer"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each film.",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Title of the film.",
+            "columnIdentifier": "title",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "description",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "release_year",
+            "columnType": "YEAR",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the language in which the film is primarily spoken.",
+            "columnIdentifier": "language_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "language",
+                "toColumn": "language_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "original_language_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "language",
+                "toColumn": "language_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "3",
+            "columnIdentifier": "rental_duration",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "4.99",
+            "columnIdentifier": "rental_rate",
+            "columnType": "DECIMAL(4,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "length",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "19.99",
+            "columnIdentifier": "replacement_cost",
+            "columnType": "DECIMAL(5,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'G'",
+            "columnIdentifier": "rating",
+            "columnType": "",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "special_features",
+            "columnType": "",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, ACADEMY DINOSAUR, A Epic Drama of a Feminist And a Mad Scientist who must Battle a Teacher in The Canadian Rockies, 2006, 1, 6, 0.99, 86, 20.99, PG, \"Deleted Scenes,Behind the Scenes\", 2006-02-15 05:03:42",
+          "2, ACE GOLDFINGER, A Astounding Epistle of a Database Administrator And a Explorer who must Find a Car in Ancient China, 2006, 1, 3, 4.99, 48, 12.99, G, \"Trailers,Deleted Scenes\", 2006-02-15 05:03:42",
+          "3, ADAPTATION HOLES, A Astounding Reflection of a Lumberjack And a Car who must Sink a Lumberjack in A Baloon Factory, 2006, 1, 7, 2.99, 50, 18.99, NC-17, \"Commentaries,Behind the Scenes\", 2006-02-15 05:03:42"
+        ],
+        "tableDescription": "Stores information about films.",
+        "tableIdentifier": "film"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Reference to the actor ID in the actor table.",
+            "columnIdentifier": "actor_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "actor",
+                "toColumn": "actor_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Reference to the film ID in the film table.",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "film",
+                "toColumn": "film_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 2006-02-15 05:05:03",
+          "2, 23, 2006-02-15 05:05:03",
+          "3, 25, 2006-02-15 05:05:03"
+        ],
+        "tableDescription": "Associates films with their respective actors.",
+        "tableIdentifier": "film_actor"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Identifier for the film.",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "film",
+                "toColumn": "film_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the category.",
+            "columnIdentifier": "category_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "category",
+                "toColumn": "category_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 6, 2006-02-15 05:07:09",
+          "2, 11, 2006-02-15 05:07:09",
+          "3, 8, 2006-02-15 05:07:09"
+        ],
+        "tableDescription": "Associates films with their categories.",
+        "tableIdentifier": "film_category"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each film.",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The title of the film.",
+            "columnIdentifier": "title",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "A textual description of the film.",
+            "columnIdentifier": "description",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores textual information about films, including their titles and descriptions.",
+        "tableIdentifier": "film_text"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each inventory item.",
+            "columnIdentifier": "inventory_id",
+            "columnType": "MEDIUMINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the inventory item to a specific film.",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "film",
+                "toColumn": "film_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking the inventory item to a specific store.",
+            "columnIdentifier": "store_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "store",
+                "toColumn": "store_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 1, 2006-02-15 05:09:17",
+          "2, 2, 2, 2006-02-15 05:09:17",
+          "3, 3, 1, 2006-02-15 05:09:17"
+        ],
+        "tableDescription": "Tracks the inventory of films available in different stores.",
+        "tableIdentifier": "inventory"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each language.",
+            "columnIdentifier": "language_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the language.",
+            "columnIdentifier": "name",
+            "columnType": "CHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores information about languages.",
+        "tableIdentifier": "language"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each payment.",
+            "columnIdentifier": "payment_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the payment to a specific customer.",
+            "columnIdentifier": "customer_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "customer",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking the payment to a staff member who processed it.",
+            "columnIdentifier": "staff_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "rental_id",
+            "columnType": "INT",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "rental",
+                "toColumn": "rental_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The amount of money paid for the rental.",
+            "columnIdentifier": "amount",
+            "columnType": "DECIMAL(5,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date and time when the payment was made.",
+            "columnIdentifier": "payment_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 1, 76, 2.99, 2005-05-25 11:30:37, 2006-02-15 22:12:30",
+          "2, 2, 2, 573, 0.99, 2005-05-28 10:35:23, 2006-02-15 22:12:31",
+          "3, 3, 1, 1185, 5.99, 2005-06-15 00:54:12, 2006-02-15 22:12:32"
+        ],
+        "tableDescription": "Stores information about payments made by customers for rentals.",
+        "tableIdentifier": "payment"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each rental transaction.",
+            "columnIdentifier": "rental_id",
+            "columnType": "INT",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date and time when the film was rented out.",
+            "columnIdentifier": "rental_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the rental to a specific inventory item.",
+            "columnIdentifier": "inventory_id",
+            "columnType": "MEDIUMINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "inventory",
+                "toColumn": "inventory_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking the rental to a specific customer.",
+            "columnIdentifier": "customer_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "customer",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "return_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the rental to the staff member who handled the transaction.",
+            "columnIdentifier": "staff_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 2005-05-24 22:53:30, 367, 130, 2005-05-26 22:04:30, 1, 2006-02-15 21:30:53",
+          "2, 2005-05-24 22:54:33, 1525, 459, 2005-05-28 19:40:33, 2, 2006-02-23 04:12:08",
+          "3, 2005-05-24 23:03:39, 1711, 408, 2005-06-01 22:12:39, 1, 2006-02-15 21:30:53"
+        ],
+        "tableDescription": "Records each rental transaction including details about the rental period and associated customer.",
+        "tableIdentifier": "rental"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each staff member.",
+            "columnIdentifier": "staff_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the staff member.",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the staff member.",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the staff member to their address.",
+            "columnIdentifier": "address_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "address",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "picture",
+            "columnType": "BLOB",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "email",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the staff member to a specific store.",
+            "columnIdentifier": "store_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "TRUE",
+            "columnIdentifier": "active",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Username for the staff member's account.",
+            "columnIdentifier": "username",
+            "columnType": "VARCHAR(16)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores information about staff members working at the video rental store.",
+        "tableIdentifier": "staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each store.",
+            "columnIdentifier": "store_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the staff member managing the store.",
+            "columnIdentifier": "manager_staff_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Link to the address table where the store is located.",
+            "columnIdentifier": "address_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "address",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Represents a video rental store location, including management and address details.",
+        "tableIdentifier": "store"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "actor_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "actor"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "address2",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "district",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "city",
+                "toColumn": "city_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "postal_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "phone",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "address"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "category_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(25)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "category"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "country_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "country",
+                "toColumn": "country_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "city"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "country_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "country",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "country"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "store_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "store",
+                "toColumn": "store_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "email",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "address",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "TRUE",
+            "columnIdentifier": "active",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "create_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "customer"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "title",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "description",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "release_year",
+            "columnType": "YEAR",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "language_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "language",
+                "toColumn": "language_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "original_language_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "language",
+                "toColumn": "language_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "3",
+            "columnIdentifier": "rental_duration",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "4.99",
+            "columnIdentifier": "rental_rate",
+            "columnType": "DECIMAL(4,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "length",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "19.99",
+            "columnIdentifier": "replacement_cost",
+            "columnType": "DECIMAL(5,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'G'",
+            "columnIdentifier": "rating",
+            "columnType": "",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "special_features",
+            "columnType": "",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "film"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "actor_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "actor",
+                "toColumn": "actor_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "film",
+                "toColumn": "film_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "film_actor"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "film",
+                "toColumn": "film_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "category_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "category",
+                "toColumn": "category_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "film_category"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "title",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "description",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "film_text"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "inventory_id",
+            "columnType": "MEDIUMINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "film_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "film",
+                "toColumn": "film_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "store_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "store",
+                "toColumn": "store_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "inventory"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "language_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "CHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "language"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "payment_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "customer",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "staff_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "rental_id",
+            "columnType": "INT",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "rental",
+                "toColumn": "rental_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "amount",
+            "columnType": "DECIMAL(5,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "payment_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "payment"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "rental_id",
+            "columnType": "INT",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "rental_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "inventory_id",
+            "columnType": "MEDIUMINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "inventory",
+                "toColumn": "inventory_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "customer_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "customer",
+                "toColumn": "customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "return_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "staff_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "rental"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "staff_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "address",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "picture",
+            "columnType": "BLOB",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "email",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "store_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "TRUE",
+            "columnIdentifier": "active",
+            "columnType": "BOOLEAN",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "username",
+            "columnType": "VARCHAR(16)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "store_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "manager_staff_id",
+            "columnType": "TINYINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_id",
+            "columnType": "SMALLINT UNSIGNED",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "address",
+                "toColumn": "address_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "last_update",
+            "columnType": "TIMESTAMP",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "store"
+      }
+    ]
+  },
+  "message": "Success"
+}

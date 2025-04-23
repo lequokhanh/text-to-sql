@@ -1,0 +1,251 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to track the attendance and performance details of members in various events. The `member` table stores information about each member, including their unique ID, name, nationality, and role. The `performance` table records details of each event, such as the date, host, location, and attendance count. The `member_attendance` table links members to specific performances, indicating how many pieces each member participated in during those events. Together, these tables allow for detailed tracking and analysis of member participation across different performances.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each member.",
+            "columnIdentifier": "Member_ID",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the member.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Nationality of the member.",
+            "columnIdentifier": "Nationality",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Role or position of the member.",
+            "columnIdentifier": "Role",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Wilfredo Ruiz, Uruguay, Prime Violin",
+          "10, Luis González, Argentina, Violin",
+          "11, Héctor Campana, United States, Viola"
+        ],
+        "tableDescription": "Stores information about each member, including their unique identifier, name, nationality, and role.",
+        "tableIdentifier": "member"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each performance.",
+            "columnIdentifier": "Performance_ID",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date of the performance.",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Host of the performance.",
+            "columnIdentifier": "Host",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Location where the performance took place.",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of attendees at the performance.",
+            "columnIdentifier": "Attendance",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1.0, February 2, Boston Bruins, TD Garden, 165",
+          "2.0, February 4, New York Rangers, Madison Square Garden, 1820",
+          "3.0, February 5, Atlanta Thrashers, Verizon Center, 1878"
+        ],
+        "tableDescription": "Records details of each event, including the date, host, location, and attendance count.",
+        "tableIdentifier": "performance"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the member.",
+            "columnIdentifier": "Member_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "member",
+                "toColumn": "Member_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the performance.",
+            "columnIdentifier": "Performance_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "performance",
+                "toColumn": "Performance_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Number of pieces the member participated in during the performance.",
+            "columnIdentifier": "Num_of_Pieces",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 4, 2",
+          "2, 1, 3",
+          "3, 3, 4"
+        ],
+        "tableDescription": "Links members to specific performances, indicating how many pieces each member participated in.",
+        "tableIdentifier": "member_attendance"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Member_ID",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Nationality",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Role",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "member"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Performance_ID",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Host",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Attendance",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "performance"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Member_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "member",
+                "toColumn": "Member_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Performance_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "performance",
+                "toColumn": "Performance_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Num_of_Pieces",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "member_attendance"
+      }
+    ]
+  },
+  "message": "Success"
+}

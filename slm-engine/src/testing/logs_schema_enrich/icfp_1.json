@@ -1,0 +1,279 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage academic publications and their associated authors and institutions. The `Inst` table holds information about institutions, including their unique IDs, names, and countries. The `Authors` table contains details about individual authors, identified by unique IDs along with their last and first names. The `Papers` table lists papers, each identified by a unique ID and having a title. The `Authorship` table links authors to the institutions they are affiliated with and the papers they have authored, also recording the order of authorship for each paper. Together, these tables facilitate tracking of academic contributions, affiliations, and publications.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each institution.",
+            "columnIdentifier": "instID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the institution.",
+            "columnIdentifier": "name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the institution is located.",
+            "columnIdentifier": "country",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1000, University of Oxford, UK",
+          "1010, Northeastern University, USA",
+          "1020, Indiana University, Japan"
+        ],
+        "tableDescription": "Holds information about institutions, including their unique IDs, names, and countries.",
+        "tableIdentifier": "Inst"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each author.",
+            "columnIdentifier": "authID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the author.",
+            "columnIdentifier": "lname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the author.",
+            "columnIdentifier": "fname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "50, Gibbons, Jeremy",
+          "51, Hinze, Ralf",
+          "52, James, Daniel W. H."
+        ],
+        "tableDescription": "Contains details about individual authors, identified by unique IDs along with their last and first names.",
+        "tableIdentifier": "Authors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each paper.",
+            "columnIdentifier": "paperID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Title of the paper.",
+            "columnIdentifier": "title",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "200, Just do it: Simple Monadic Equational Reasoning",
+          "201, Proving the Unique Fixed-Point Principle Correct: An Adventure with Category Theory",
+          "202, Functional Pearl: Modular Rollback through Control Logging"
+        ],
+        "tableDescription": "Lists papers, each identified by a unique ID and having a title.",
+        "tableIdentifier": "Papers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each author.",
+            "columnIdentifier": "authID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Authors",
+                "toColumn": "authID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the institution the author is affiliated with.",
+            "columnIdentifier": "instID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Inst",
+                "toColumn": "instID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the paper authored by the author.",
+            "columnIdentifier": "paperID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Papers",
+                "toColumn": "paperID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Order of authorship in the paper.",
+            "columnIdentifier": "authOrder",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "50, 1000, 200, 1",
+          "51, 1010, 201, 2",
+          "52, 1020, 202, 3"
+        ],
+        "tableDescription": "Links authors to the institutions they are affiliated with and the papers they have authored, also recording the order of authorship for each paper.",
+        "tableIdentifier": "Authorship"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "instID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "country",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Inst"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "authID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Authors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "paperID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "title",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Papers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "authID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Authors",
+                "toColumn": "authID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "instID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Inst",
+                "toColumn": "instID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "paperID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Papers",
+                "toColumn": "paperID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "authOrder",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Authorship"
+      }
+    ]
+  },
+  "message": "Success"
+}

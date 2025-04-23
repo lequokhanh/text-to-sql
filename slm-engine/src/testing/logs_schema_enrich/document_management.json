@@ -1,0 +1,672 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database is designed to manage and track various aspects of documents, including their structures, functional areas, sections, and associated images. It also maintains user information linked to different roles and tracks document access counts. The relationships between tables facilitate the organization and retrieval of document-related data efficiently.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code for each role.",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the role, detailing responsibilities and permissions.",
+            "columnIdentifier": "role_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "DBA, Database Administrator",
+          "PROJ-MGR, Project Manager"
+        ],
+        "tableDescription": "Stores information about different roles within the system.",
+        "tableIdentifier": "Roles"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each user.",
+            "columnIdentifier": "user_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code referencing the role of the user.",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Roles",
+                "toColumn": "role_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Full name of the user.",
+            "columnIdentifier": "user_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Login status of the user (0 for not logged in, 1 for logged in).",
+            "columnIdentifier": "user_login",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Hashed password for user authentication.",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, PROJ-MGR, dickens.elta, 0, e72b5a2d50b39a8760764a5f7a9d68ca2f076877",
+          "2, DBA, tremblay.raheem, 1, 9bc25a040d5647ced5ec32e1a455e90fafc10bcb",
+          "3, PROJ-MGR, lynn.haley, 0, 90db8f51449e6c39e2a01f0b649d5a92fe76bbbb"
+        ],
+        "tableDescription": "Stores information about users, including their roles and login details.",
+        "tableIdentifier": "Users"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each document structure.",
+            "columnIdentifier": "document_structure_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier of the parent document structure, establishing a hierarchical relationship.",
+            "columnIdentifier": "parent_document_structure_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description or name of the document structure element.",
+            "columnIdentifier": "document_structure_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, Header",
+          "5, 6, Main section",
+          "6, 8, Bib"
+        ],
+        "tableDescription": "Stores hierarchical information about document structures, including headers, sections, and subsections.",
+        "tableIdentifier": "Document_Structures"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a functional area.",
+            "columnIdentifier": "functional_area_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier of the parent functional area in the hierarchy.",
+            "columnIdentifier": "parent_functional_area_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description or name of the functional area.",
+            "columnIdentifier": "functional_area_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 8, Signature",
+          "8, 8, Acknowledgement",
+          "9, 8, Keep blank"
+        ],
+        "tableDescription": "Stores information about different functional areas, including their hierarchy and descriptions.",
+        "tableIdentifier": "Functional_Areas"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for an image.",
+            "columnIdentifier": "image_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Alternative text describing the image for accessibility purposes.",
+            "columnIdentifier": "image_alt_text",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the image file.",
+            "columnIdentifier": "image_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The URL where the image is located.",
+            "columnIdentifier": "image_url",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Lea, top1, http://www.rempelnader.com/1.jpg",
+          "2, Arden, top2, http://connellykertzmann.org/1.jpg",
+          "3, Mohamed, top3, http://www.bernierconnelly.com/1.jpg"
+        ],
+        "tableDescription": "This table stores information about images, including their alt text, name, and URL.",
+        "tableIdentifier": "Images"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each document.",
+            "columnIdentifier": "document_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the document to its structure in Document_Structures.",
+            "columnIdentifier": "document_structure_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Document_Structures",
+                "toColumn": "document_structure_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code indicating the type or category of the document.",
+            "columnIdentifier": "document_type_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of times the document has been accessed.",
+            "columnIdentifier": "access_count",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name or title of the document.",
+            "columnIdentifier": "document_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "217, 8, Book, 1864, Learning English",
+          "349, 1, Paper, 8208, Research about Art history",
+          "465, 5, Advertisement, 3769, Learning Database"
+        ],
+        "tableDescription": "Stores metadata and access information for individual documents.",
+        "tableIdentifier": "Documents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a document.",
+            "columnIdentifier": "document_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Documents",
+                "toColumn": "document_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking the document to a specific functional area.",
+            "columnIdentifier": "functional_area_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Functional_Areas",
+                "toColumn": "functional_area_code",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "675, 9",
+          "930, 1",
+          "217, 8"
+        ],
+        "tableDescription": "Maps documents to their respective functional areas.",
+        "tableIdentifier": "Document_Functional_Areas"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each section.",
+            "columnIdentifier": "section_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the section to a specific document.",
+            "columnIdentifier": "document_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Documents",
+                "toColumn": "document_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Order of the section within the document.",
+            "columnIdentifier": "section_sequence",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the section type or category.",
+            "columnIdentifier": "section_code",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Title or name of the section.",
+            "columnIdentifier": "section_title",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "12, 714, 6072, 70, after",
+          "15, 217, 4510, 14, before",
+          "19, 675, 7236, 90, after"
+        ],
+        "tableDescription": "Stores information about sections within documents, including their sequence and titles.",
+        "tableIdentifier": "Document_Sections"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a section within a document.",
+            "columnIdentifier": "section_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Document_Sections",
+                "toColumn": "section_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The unique identifier for an image associated with the section.",
+            "columnIdentifier": "image_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Images",
+                "toColumn": "image_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "12, 6",
+          "15, 2",
+          "19, 3"
+        ],
+        "tableDescription": "This table links document sections to their associated images.",
+        "tableIdentifier": "Document_Sections_Images"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "role_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Roles"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "user_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Roles",
+                "toColumn": "role_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "user_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "user_login",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Users"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_structure_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "parent_document_structure_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_structure_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Document_Structures"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "functional_area_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "parent_functional_area_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "functional_area_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Functional_Areas"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "image_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "image_alt_text",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "image_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "image_url",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Images"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_structure_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Document_Structures",
+                "toColumn": "document_structure_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_type_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "access_count",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Documents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Documents",
+                "toColumn": "document_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "functional_area_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Functional_Areas",
+                "toColumn": "functional_area_code",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Document_Functional_Areas"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "section_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "document_code",
+            "columnType": "VARCHAR(15)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Documents",
+                "toColumn": "document_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "section_sequence",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "section_code",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "section_title",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Document_Sections"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "section_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Document_Sections",
+                "toColumn": "section_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "image_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Images",
+                "toColumn": "image_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Document_Sections_Images"
+      }
+    ]
+  },
+  "message": "Success"
+}

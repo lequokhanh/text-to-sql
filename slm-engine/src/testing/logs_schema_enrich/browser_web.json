@@ -1,0 +1,237 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage information about web client accelerators, compatible browsers, and their market shares. It includes three tables: `Web_client_accelerator` stores details about each accelerator, such as its name, operating system, client type, and connection method; `browser` holds data on different browsers along with their market share percentages; and `accelerator_compatible_browser` establishes a relationship between accelerators and browsers, indicating since which year they have been compatible. The foreign key relationships ensure that each accelerator is linked to its compatible browsers, facilitating queries about browser compatibility for specific accelerators and analyzing market trends related to different web technologies.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the accelerator.",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the accelerator.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Operating system(s) supported by the accelerator.",
+            "columnIdentifier": "Operating_system",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of clients the accelerator is designed for.",
+            "columnIdentifier": "Client",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Connection methods supported by the accelerator.",
+            "columnIdentifier": "Connection",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, CACHEbox, Appliance (Linux), \"End user, ISP\", \"Broadband, Satellite, Wireless, Fiber, DSL\"",
+          "2, CProxy, Windows, user, up to 756kbit/s",
+          "3, Fasterfox, \"Windows, Mac, Linux and Mobile devices\", All, \"Dialup, Wireless, Broadband, DSL\""
+        ],
+        "tableDescription": "Stores details about web client accelerators including their name, operating system, client type, and connection method.",
+        "tableIdentifier": "Web_client_accelerator"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the browser.",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the browser.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Market share percentage of the browser in the market.",
+            "columnIdentifier": "market_share",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Internet Explorer, 28.96",
+          "2, Firefox, 18.11",
+          "3, Safari, 8.54"
+        ],
+        "tableDescription": "Holds data on different browsers along with their market share percentages.",
+        "tableIdentifier": "browser"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Foreign key referencing the accelerator's unique identifier.",
+            "columnIdentifier": "accelerator_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Web_client_accelerator",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the browser's unique identifier.",
+            "columnIdentifier": "browser_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "browser",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Year since which the accelerator is compatible with the browser.",
+            "columnIdentifier": "compatible_since_year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 1995",
+          "2, 2, 1996",
+          "3, 3, 2000"
+        ],
+        "tableDescription": "Establishes a relationship between accelerators and browsers, indicating since which year they have been compatible.",
+        "tableIdentifier": "accelerator_compatible_browser"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Operating_system",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Client",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Connection",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Web_client_accelerator"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "market_share",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "browser"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "accelerator_id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Web_client_accelerator",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "browser_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "browser",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "compatible_since_year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "accelerator_compatible_browser"
+      }
+    ]
+  },
+  "message": "Success"
+}

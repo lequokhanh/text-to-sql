@@ -1,0 +1,515 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema appears to manage records for various clubs involved in competitions. It includes tables for club information, player details, competition data, and results of those competitions. The relationships between these tables are established through foreign keys, allowing for comprehensive tracking of each club's performance, players' statistics, and their participation in different competitions over time.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each club.",
+            "columnIdentifier": "Club_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the club.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Geographic region where the club is located.",
+            "columnIdentifier": "Region",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Year when the club was established.",
+            "columnIdentifier": "Start_year",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, AIB, USA, 2009",
+          "2, BK Slide, UK, 1998",
+          "3, IFG, China, 2005"
+        ],
+        "tableDescription": "Stores information about various clubs involved in competitions.",
+        "tableIdentifier": "club"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The rank position of the club in the competition.",
+            "columnIdentifier": "Rank",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique identifier for each club, linked to the club table.",
+            "columnIdentifier": "Club_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "club",
+                "toColumn": "Club_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Number of gold medals won by the club.",
+            "columnIdentifier": "Gold",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of silver medals won by the club.",
+            "columnIdentifier": "Silver",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of bronze medals won by the club.",
+            "columnIdentifier": "Bronze",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Total number of medals (gold, silver, and bronze) won by the club.",
+            "columnIdentifier": "Total",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1.0, 2, 11.0, 11.0, 9.0, 31.0",
+          "2.0, 3, 8.0, 7.0, 6.0, 21.0",
+          "3.0, 1, 7.0, 4.0, 2.0, 13.0"
+        ],
+        "tableDescription": "Stores the ranking and medal count of clubs in competitions.",
+        "tableIdentifier": "club_rank"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each player.",
+            "columnIdentifier": "Player_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the player.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Playing position of the player.",
+            "columnIdentifier": "Position",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the club table, indicating which club the player is associated with.",
+            "columnIdentifier": "Club_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "club",
+                "toColumn": "Club_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Number of appearances made by the player in competitions.",
+            "columnIdentifier": "Apps",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of tries scored by the player.",
+            "columnIdentifier": "Tries",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Record of goals scored by the player, formatted as 'scored/total attempted'.",
+            "columnIdentifier": "Goals",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Total points accumulated by the player in competitions.",
+            "columnIdentifier": "Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Michael Platt, Full Back, 1, 20.0, 5.0, 0, 20.0",
+          "2, Dave Halley, Right Wing, 2, 23.0, 9.0, 50/60, 36.0",
+          "3, James Evans, Right Centre, 4, 30.0, 3.0, 90/106, 12.0"
+        ],
+        "tableDescription": "Stores details about players, including their statistics and associated club.",
+        "tableIdentifier": "player"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each competition.",
+            "columnIdentifier": "Competition_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The year in which the competition took place.",
+            "columnIdentifier": "Year",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of competition (e.g., Friendly, Tournament).",
+            "columnIdentifier": "Competition_type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the competition was held.",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 2006.0, Friendly, Italy",
+          "2, 2007.0, Tournament, Spain",
+          "3, 2006.0, Friendly, Australia"
+        ],
+        "tableDescription": "Stores information about competitions including their type, year, and country.",
+        "tableIdentifier": "competition"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the competition, linking to the 'competition' table.",
+            "columnIdentifier": "Competition_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "competition",
+                "toColumn": "Competition_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for one of the clubs participating in the competition.",
+            "columnIdentifier": "Club_ID_1",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "club",
+                "toColumn": "Club_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the other club participating in the competition.",
+            "columnIdentifier": "Club_ID_2",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "club",
+                "toColumn": "Club_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The score result of the competition, formatted as 'Club_ID_1:Club_ID_2'.",
+            "columnIdentifier": "Score",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 2, 11:10",
+          "2, 3, 4, 25:2",
+          "4, 4, 6, 13:10"
+        ],
+        "tableDescription": "Records results of competitions involving two clubs.",
+        "tableIdentifier": "competition_result"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Club_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Region",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Start_year",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "club"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Rank",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Club_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "club",
+                "toColumn": "Club_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Gold",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Silver",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Bronze",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Total",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "club_rank"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Player_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Position",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Club_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "club",
+                "toColumn": "Club_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Apps",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Tries",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Goals",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Points",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "player"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Competition_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Year",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Competition_type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "competition"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Competition_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "competition",
+                "toColumn": "Competition_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Club_ID_1",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "club",
+                "toColumn": "Club_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Club_ID_2",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "club",
+                "toColumn": "Club_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Score",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "competition_result"
+      }
+    ]
+  },
+  "message": "Success"
+}

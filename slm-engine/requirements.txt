@@ -14,3 +14,5 @@ weaviate-client
 Unidecode
 sqlparse
 python-dotenv
+networkx 
+python-louvain

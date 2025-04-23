@@ -1,0 +1,615 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage educational records and interactions within an academic institution. It includes tables for tracking course authors and tutors, students, subjects, courses, student enrollments in those courses, and test results taken by students. The relationships between these tables are established through foreign keys, ensuring data integrity and facilitating efficient querying of complex educational data.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each author or tutor.",
+            "columnIdentifier": "author_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the role of the individual (Author or Tutor).",
+            "columnIdentifier": "author_tutor_ATB",
+            "columnType": "VARCHAR(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Username used by the author or tutor for login purposes.",
+            "columnIdentifier": "login_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Password associated with the author's or tutor's login account.",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the author or tutor.",
+            "columnIdentifier": "personal_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Middle name of the author or tutor.",
+            "columnIdentifier": "middle_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the author or tutor.",
+            "columnIdentifier": "family_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Gender identifier for the author or tutor (0 for female, 1 for male).",
+            "columnIdentifier": "gender_mf",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Primary address line for the author or tutor.",
+            "columnIdentifier": "address_line_1",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 331, jmckenzie, c40fa148bdd0d2d45cd6e9ec1e685750fe07f81b, Cathrine, Ruthie, Grant, 0, \"756 Monahan Mews\nSpinkashire, NJ 64230-5098\"",
+          "2, 975, heidenreich.ara, 24b0ee84063c3b017ab1839e01b7280f47f7c7c2, Retha, Corene, Armstrong, 1, \"98623 Huels Manor\nJasttown, DE 31611\"",
+          "3, 349, clementina29, cdaf6c3483f19e2253659a40a3aab786a3390f78, Darius, Ethyl, Reichel, 0, \"99296 Keeling Courts\nNorth Audreanne, IL 28272\""
+        ],
+        "tableDescription": "Stores information about course authors and tutors within the academic institution.",
+        "tableIdentifier": "Course_Authors_and_Tutors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each student record.",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the student was registered in the system.",
+            "columnIdentifier": "date_of_registration",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The most recent date and time when the student logged into the system.",
+            "columnIdentifier": "date_of_latest_logon",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Username used by the student to log into the system.",
+            "columnIdentifier": "login_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Password used by the student to authenticate into the system.",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The first name or given name of the student.",
+            "columnIdentifier": "personal_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The middle name of the student, if applicable.",
+            "columnIdentifier": "middle_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The last name or surname of the student.",
+            "columnIdentifier": "family_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 2015-07-22 13:32:35, 2017-10-17 22:52:26, annamae.hoppe, db8765bb6f, Wilson, Aubrey, Ward",
+          "2, 2015-07-02 00:21:42, 2017-06-24 22:16:27, wmiller, 35faf8182a, Karson, Luella, Jaskolski",
+          "3, 2015-10-11 03:23:27, 2018-03-10 23:22:23, ahartmann, 8e064ec4e6, Mariela, Brandt, Legros"
+        ],
+        "tableDescription": "Stores information about students, including registration details and personal data.",
+        "tableIdentifier": "Students"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each subject.",
+            "columnIdentifier": "subject_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the subject category.",
+            "columnIdentifier": "subject_name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Computer Science",
+          "2, Arts",
+          "3, Language"
+        ],
+        "tableDescription": "Stores information about different subject categories within the academic institution.",
+        "tableIdentifier": "Subjects"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each course.",
+            "columnIdentifier": "course_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the author or tutor of the course.",
+            "columnIdentifier": "author_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Course_Authors_and_Tutors",
+                "toColumn": "author_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking to the subject category of the course.",
+            "columnIdentifier": "subject_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Subjects",
+                "toColumn": "subject_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the course.",
+            "columnIdentifier": "course_name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Brief description of the course content and objectives.",
+            "columnIdentifier": "course_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 8, 1, database, database",
+          "2, 6, 2, advanced database, advanced database",
+          "3, 15, 3, operating system, operating system"
+        ],
+        "tableDescription": "Stores information about courses offered by the academic institution.",
+        "tableIdentifier": "Courses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each student course enrollment record.",
+            "columnIdentifier": "registration_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the Students table to represent which student is enrolled.",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Students",
+                "toColumn": "student_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking to the Courses table to represent which course the student is enrolled in.",
+            "columnIdentifier": "course_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Courses",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date when the student was enrolled in the course.",
+            "columnIdentifier": "date_of_enrolment",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the student completed the course.",
+            "columnIdentifier": "date_of_completion",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 11, 2, 2017-10-09 07:09:02, 2018-02-26 07:48:52",
+          "2, 15, 4, 2017-11-13 12:49:33, 2018-03-04 01:24:56",
+          "3, 10, 8, 2017-10-17 13:50:40, 2018-03-22 02:53:01"
+        ],
+        "tableDescription": "Records student enrollments in courses, including dates of enrollment and completion.",
+        "tableIdentifier": "Student_Course_Enrolment"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a student's enrollment in a course.",
+            "columnIdentifier": "registration_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Student_Course_Enrolment",
+                "toColumn": "registration_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date and time when the test was taken by the student.",
+            "columnIdentifier": "date_test_taken",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Result of the test taken by the student, such as 'Pass' or 'Fail'.",
+            "columnIdentifier": "test_result",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "12, 2018-03-25 03:27:16, Fail",
+          "10, 2018-03-25 21:50:22, Pass",
+          "7, 2018-03-21 00:32:25, Fail"
+        ],
+        "tableDescription": "Records of tests taken by students, including the registration ID, date of the test, and the result.",
+        "tableIdentifier": "Student_Tests_Taken"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "author_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "author_tutor_ATB",
+            "columnType": "VARCHAR(3)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "login_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "personal_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "middle_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "family_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "gender_mf",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "address_line_1",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Course_Authors_and_Tutors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_of_registration",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_of_latest_logon",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "login_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "password",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "personal_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "middle_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "family_name",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Students"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "subject_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "subject_name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Subjects"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "author_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Course_Authors_and_Tutors",
+                "toColumn": "author_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "subject_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Subjects",
+                "toColumn": "subject_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_name",
+            "columnType": "VARCHAR(120)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Courses"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "registration_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "student_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Students",
+                "toColumn": "student_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "course_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Courses",
+                "toColumn": "course_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_of_enrolment",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_of_completion",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Student_Course_Enrolment"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "registration_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Student_Course_Enrolment",
+                "toColumn": "registration_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_test_taken",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "test_result",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Student_Tests_Taken"
+      }
+    ]
+  },
+  "message": "Success"
+}

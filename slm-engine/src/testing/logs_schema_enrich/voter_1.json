@@ -1,0 +1,209 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage voting data for a contest. The `CONTESTANTS` table stores information about each contestant, identified by a unique contestant number and name. The `AREA_CODE_STATE` table maps area codes to states, facilitating the association of votes with geographical locations. The `VOTES` table records individual votes, including a vote ID, phone number, state, contestant number, and timestamp of creation. Foreign key relationships ensure that each vote is linked to a valid state in `AREA_CODE_STATE` and a registered contestant in `CONTESTANTS`.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Area code associated with a state.",
+            "columnIdentifier": "area_code",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "State associated with the area code.",
+            "columnIdentifier": "state",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "201, NJ",
+          "202, DC",
+          "203, CT"
+        ],
+        "tableDescription": "Maps area codes to states.",
+        "tableIdentifier": "AREA_CODE_STATE"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each contestant.",
+            "columnIdentifier": "contestant_number",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the contestant.",
+            "columnIdentifier": "contestant_name",
+            "columnType": "varchar(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Edwina Burnam",
+          "2, Tabatha Gehling",
+          "3, Kelly Clauss"
+        ],
+        "tableDescription": "Stores information about each contestant.",
+        "tableIdentifier": "CONTESTANTS"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each vote.",
+            "columnIdentifier": "vote_id",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Phone number of the voter.",
+            "columnIdentifier": "phone_number",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "State where the vote was cast, linked to AREA_CODE_STATE.",
+            "columnIdentifier": "state",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "AREA_CODE_STATE",
+                "toColumn": "state",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Contestant number voted for, linked to CONTESTANTS.",
+            "columnIdentifier": "contestant_number",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CONTESTANTS",
+                "toColumn": "contestant_number",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "created",
+            "columnType": "timestamp",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "5, 5112677315, NY, 2, 2018-03-09 19:03:21",
+          "3, 6209222712, CA, 3, 2018-03-09 19:03:36",
+          "2, 7148407040, NJ\n, 5, 2018-03-09 19:03:39"
+        ],
+        "tableDescription": "Records individual votes.",
+        "tableIdentifier": "VOTES"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "area_code",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "AREA_CODE_STATE"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "contestant_number",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "contestant_name",
+            "columnType": "varchar(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "CONTESTANTS"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "vote_id",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "phone_number",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "AREA_CODE_STATE",
+                "toColumn": "state",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "contestant_number",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CONTESTANTS",
+                "toColumn": "contestant_number",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "CURRENT_TIMESTAMP",
+            "columnIdentifier": "created",
+            "columnType": "timestamp",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "VOTES"
+      }
+    ]
+  },
+  "message": "Success"
+}

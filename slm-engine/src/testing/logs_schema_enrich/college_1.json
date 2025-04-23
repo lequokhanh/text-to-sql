@@ -1,0 +1,833 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage academic records and relationships within an educational institution. It includes tables for courses (COURSE), classes (CLASS), professors (PROFESSOR), students (STUDENT), departments (DEPARTMENT), employees (EMPLOYEE), and enrollments (ENROLL). The COURSE table links to the CLASS table through CRS_CODE, indicating which class offerings are available for each course. Professors are linked to both courses and classes via EMP_NUM, while students are linked to classes via ENROLL. Departments manage professors and students through DEPT_CODE, providing a hierarchical structure that includes departmental employees and student information.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each class.",
+            "columnIdentifier": "CLASS_CODE",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code that identifies the course associated with the class.",
+            "columnIdentifier": "CRS_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "COURSE",
+                "toColumn": "CRS_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Section number of the class.",
+            "columnIdentifier": "CLASS_SECTION",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Scheduled time for the class meetings.",
+            "columnIdentifier": "CLASS_TIME",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Room where the class is held.",
+            "columnIdentifier": "CLASS_ROOM",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Employee number of the professor teaching the class.",
+            "columnIdentifier": "PROF_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "EMPLOYEE",
+                "toColumn": "EMP_NUM",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "10012, ACCT-211, 1, MWF 8:00-8:50 a.m., BUS311, 105",
+          "10013, ACCT-212, 2, MWF 9:00-9:50 a.m., BUS200, 342",
+          "10014, CIS-220, 3, TTh 2:30-3:45 p.m., BUS252, 301"
+        ],
+        "tableDescription": "Stores information about class offerings, including the course code, section, time, room, and professor number.",
+        "tableIdentifier": "CLASS"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each course.",
+            "columnIdentifier": "CRS_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code that identifies the department offering the course.",
+            "columnIdentifier": "DEPT_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "DEPARTMENT",
+                "toColumn": "DEPT_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Description of the course content.",
+            "columnIdentifier": "CRS_DESCRIPTION",
+            "columnType": "varchar(35)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of credit hours for the course.",
+            "columnIdentifier": "CRS_CREDIT",
+            "columnType": "float(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "ACCT-211, ACCT, Accounting I, 3.0",
+          "ACCT-212, CIS, Accounting II, 4.0",
+          "CIS-220, ACCT, Intro. to Microcomputing, 3.0"
+        ],
+        "tableDescription": "Contains details about courses, including the course code, department code, description, and credit hours.",
+        "tableIdentifier": "COURSE"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code identifying each department.",
+            "columnIdentifier": "DEPT_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the department.",
+            "columnIdentifier": "DEPT_NAME",
+            "columnType": "varchar(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the school to which the department belongs.",
+            "columnIdentifier": "SCHOOL_CODE",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Employee number of the head or managing professor of the department.",
+            "columnIdentifier": "EMP_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "EMPLOYEE",
+                "toColumn": "EMP_NUM",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Physical address of the department's office.",
+            "columnIdentifier": "DEPT_ADDRESS",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Office extension number for the department.",
+            "columnIdentifier": "DEPT_EXTENSION",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "ACCT, Accounting, BUS, 114, \"KLR 211, Box 52\", 3119",
+          "ART, Fine Arts, A&SCI, 435, \"BBG 185, Box 128\", 2278",
+          "BIOL, Biology, BUS, 387, \"AAK 230, Box 415\", 4117"
+        ],
+        "tableDescription": "Stores information about academic departments within the institution.",
+        "tableIdentifier": "DEPARTMENT"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each employee.",
+            "columnIdentifier": "EMP_NUM",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the employee.",
+            "columnIdentifier": "EMP_LNAME",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the employee.",
+            "columnIdentifier": "EMP_FNAME",
+            "columnType": "varchar(12)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Middle initial of the employee.",
+            "columnIdentifier": "EMP_INITIAL",
+            "columnType": "varchar(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the job title of the employee.",
+            "columnIdentifier": "EMP_JOBCODE",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the employee was hired.",
+            "columnIdentifier": "EMP_HIREDATE",
+            "columnType": "datetime",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date of birth of the employee.",
+            "columnIdentifier": "EMP_DOB",
+            "columnType": "datetime",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "100, Worley, James, F, CUST, 1978-2-23, 1950-6-12",
+          "101, Ramso, Henry, B, TECH, 1994-11-15, 1961-11-2",
+          "102, Edwards, Rosemary, D, PROF, 1990-7-23, 1953-7-3"
+        ],
+        "tableDescription": "Stores information about employees of the institution.",
+        "tableIdentifier": "EMPLOYEE"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a class.",
+            "columnIdentifier": "CLASS_CODE",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CLASS",
+                "toColumn": "CLASS_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for a student.",
+            "columnIdentifier": "STU_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "STUDENT",
+                "toColumn": "STU_NUM",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Grade received by the student in the class.",
+            "columnIdentifier": "ENROLL_GRADE",
+            "columnType": "varchar(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "10014, 321452, C",
+          "10018, 324257, B",
+          "10021, 321452, A"
+        ],
+        "tableDescription": "Stores enrollment information for students in classes.",
+        "tableIdentifier": "ENROLL"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each professor.",
+            "columnIdentifier": "EMP_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "EMPLOYEE",
+                "toColumn": "EMP_NUM",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the department to which the professor belongs.",
+            "columnIdentifier": "DEPT_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "DEPARTMENT",
+                "toColumn": "DEPT_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Office location of the professor.",
+            "columnIdentifier": "PROF_OFFICE",
+            "columnType": "varchar(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Phone extension number for the professor.",
+            "columnIdentifier": "PROF_EXTENSION",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Highest degree obtained by the professor.",
+            "columnIdentifier": "PROF_HIGH_DEGREE",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "103, HIST, DRE 156, 6783, Ph.D.",
+          "104, ENG, DRE 102, 5561, MA",
+          "105, ACCT, KLR 229D, 8665, DBA"
+        ],
+        "tableDescription": "Stores information about professors, including their department and office details.",
+        "tableIdentifier": "PROFESSOR"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a student.",
+            "columnIdentifier": "STU_NUM",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the student.",
+            "columnIdentifier": "STU_LNAME",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the student.",
+            "columnIdentifier": "STU_FNAME",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Middle initial of the student.",
+            "columnIdentifier": "STU_INIT",
+            "columnType": "varchar(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date of birth of the student.",
+            "columnIdentifier": "STU_DOB",
+            "columnType": "datetime",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Total number of hours completed by the student.",
+            "columnIdentifier": "STU_HRS",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Class standing of the student (e.g., So, Jr).",
+            "columnIdentifier": "STU_CLASS",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Grade Point Average of the student.",
+            "columnIdentifier": "STU_GPA",
+            "columnType": "float(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Indicates if the student is a transfer student.",
+            "columnIdentifier": "STU_TRANSFER",
+            "columnType": "numeric",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Department code to which the student belongs.",
+            "columnIdentifier": "DEPT_CODE",
+            "columnType": "varchar(18)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "DEPARTMENT",
+                "toColumn": "DEPT_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Phone number of the student.",
+            "columnIdentifier": "STU_PHONE",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique identifier for the professor assigned to the student.",
+            "columnIdentifier": "PROF_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "321452, Bowser, William, C, 1975-2-12, 42, So, 2.84, 0, BIOL, 2134, 205",
+          "324257, Smithson, Anne, K, 1981-11-15, 81, Jr, 3.27, 1, CIS, 2256, 222",
+          "324258, Brewer, Juliette, , 1969-8-23, 36, Sr, 2.26, 0, ACCT, 2114, 228"
+        ],
+        "tableDescription": "Stores information about students, including personal details and academic records.",
+        "tableIdentifier": "STUDENT"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CLASS_CODE",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CRS_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "COURSE",
+                "toColumn": "CRS_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CLASS_SECTION",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CLASS_TIME",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CLASS_ROOM",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "PROF_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "EMPLOYEE",
+                "toColumn": "EMP_NUM",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "CLASS"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CRS_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DEPT_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "DEPARTMENT",
+                "toColumn": "DEPT_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CRS_DESCRIPTION",
+            "columnType": "varchar(35)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CRS_CREDIT",
+            "columnType": "float(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "COURSE"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DEPT_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DEPT_NAME",
+            "columnType": "varchar(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "SCHOOL_CODE",
+            "columnType": "varchar(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMP_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "EMPLOYEE",
+                "toColumn": "EMP_NUM",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DEPT_ADDRESS",
+            "columnType": "varchar(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DEPT_EXTENSION",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "DEPARTMENT"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMP_NUM",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMP_LNAME",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMP_FNAME",
+            "columnType": "varchar(12)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMP_INITIAL",
+            "columnType": "varchar(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMP_JOBCODE",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMP_HIREDATE",
+            "columnType": "datetime",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMP_DOB",
+            "columnType": "datetime",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "EMPLOYEE"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CLASS_CODE",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CLASS",
+                "toColumn": "CLASS_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "STUDENT",
+                "toColumn": "STU_NUM",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ENROLL_GRADE",
+            "columnType": "varchar(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "ENROLL"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "EMP_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "EMPLOYEE",
+                "toColumn": "EMP_NUM",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DEPT_CODE",
+            "columnType": "varchar(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "DEPARTMENT",
+                "toColumn": "DEPT_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "PROF_OFFICE",
+            "columnType": "varchar(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "PROF_EXTENSION",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "PROF_HIGH_DEGREE",
+            "columnType": "varchar(5)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "PROFESSOR"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_NUM",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_LNAME",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_FNAME",
+            "columnType": "varchar(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_INIT",
+            "columnType": "varchar(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_DOB",
+            "columnType": "datetime",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_HRS",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_CLASS",
+            "columnType": "varchar(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_GPA",
+            "columnType": "float(8)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_TRANSFER",
+            "columnType": "numeric",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "DEPT_CODE",
+            "columnType": "varchar(18)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "DEPARTMENT",
+                "toColumn": "DEPT_CODE",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "STU_PHONE",
+            "columnType": "varchar(4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "PROF_NUM",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "STUDENT"
+      }
+    ]
+  },
+  "message": "Success"
+}

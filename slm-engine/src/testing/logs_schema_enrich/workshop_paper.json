@@ -1,0 +1,237 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database tracks workshop submissions and their acceptance statuses. The `workshop` table records details about each workshop, including its unique identifier, date, venue, and name. The `submission` table captures information about individual submissions, such as the submission ID, scores, author, and college affiliation. The `Acceptance` table links submissions to workshops and indicates whether they were accepted or not through a result field. Together, these tables facilitate the management and review of workshop submissions across different events.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the workshop.",
+            "columnIdentifier": "Workshop_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the workshop is scheduled to take place.",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The location where the workshop will be held.",
+            "columnIdentifier": "Venue",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the workshop.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, \"August 18, 2007\", London UK, ABC 2007",
+          "2, \"August 21, 2007\", New Jersey USA, Conference 2007",
+          "3, \"August 25, 2007\", New York USA, Workshop 2007"
+        ],
+        "tableDescription": "Records details about each workshop, including its unique identifier, date, venue, and name.",
+        "tableIdentifier": "workshop"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each submission.",
+            "columnIdentifier": "Submission_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The score associated with the submission.",
+            "columnIdentifier": "Scores",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the author who submitted the work.",
+            "columnIdentifier": "Author",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The college affiliation of the author.",
+            "columnIdentifier": "College",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 72.0, Steve Niehaus, Notre Dame",
+          "2, 79.0, Sammy Green, Florida",
+          "3, 78.0, Sherman Smith, Miami (OH)"
+        ],
+        "tableDescription": "Captures information about individual submissions, such as the submission ID, scores, author, and college affiliation.",
+        "tableIdentifier": "submission"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the submission, linking to the submission table.",
+            "columnIdentifier": "Submission_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "submission",
+                "toColumn": "Submission_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the workshop, linking to the workshop table.",
+            "columnIdentifier": "Workshop_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "workshop",
+                "toColumn": "Workshop_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The acceptance status of the submission (Accepted or Rejected).",
+            "columnIdentifier": "Result",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, Accepted",
+          "2, 3, Rejected",
+          "3, 5, Accepted"
+        ],
+        "tableDescription": "Links submissions to workshops and indicates whether they were accepted or not through a result field.",
+        "tableIdentifier": "Acceptance"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Workshop_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Venue",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "workshop"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Submission_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Scores",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Author",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "College",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "submission"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Submission_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "submission",
+                "toColumn": "Submission_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Workshop_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "workshop",
+                "toColumn": "Workshop_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Result",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Acceptance"
+      }
+    ]
+  },
+  "message": "Success"
+}

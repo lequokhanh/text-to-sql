@@ -1,0 +1,1731 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to capture detailed information about Formula One races, including circuit details, race outcomes, driver and constructor performances, and various other related metrics such as qualifying results, pit stops, and lap times. The tables are interconnected through foreign key relationships that link races to circuits, drivers to constructors, and performance metrics across different stages of the racing season. Overall, the database serves as a comprehensive repository for Formula One data, enabling analysis and insights into race history, driver and team performances, and competition dynamics over time.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each circuit.",
+            "columnIdentifier": "circuitId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Reference name for the circuit.",
+            "columnIdentifier": "circuitRef",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the circuit.",
+            "columnIdentifier": "name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Location of the circuit.",
+            "columnIdentifier": "location",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the circuit is located.",
+            "columnIdentifier": "country",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Latitude coordinate of the circuit's location.",
+            "columnIdentifier": "lat",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Longitude coordinate of the circuit's location.",
+            "columnIdentifier": "lng",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Altitude of the circuit.",
+            "columnIdentifier": "alt",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "URL to more information about the circuit on Wikipedia.",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, albert_park, Albert Park Grand Prix Circuit, Melbourne, Australia, -37.8497, 144.968, 10, http://en.wikipedia.org/wiki/Melbourne_Grand_Prix_Circuit",
+          "2, sepang, Sepang International Circuit, Kuala Lumpur, Malaysia, 2.76083, 101.738, , http://en.wikipedia.org/wiki/Sepang_International_Circuit",
+          "3, bahrain, Bahrain International Circuit, Sakhir, Bahrain, 26.0325, 50.5106, 10, http://en.wikipedia.org/wiki/Bahrain_International_Circuit"
+        ],
+        "tableDescription": "Stores information about Formula One circuits, including their location and physical characteristics.",
+        "tableIdentifier": "circuits"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each race.",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Year in which the race took place.",
+            "columnIdentifier": "year",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Round number of the race within the season.",
+            "columnIdentifier": "round",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the race to its circuit.",
+            "columnIdentifier": "circuitId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "circuits",
+                "toColumn": "circuitId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the race.",
+            "columnIdentifier": "name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date on which the race took place.",
+            "columnIdentifier": "date",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Time at which the race started.",
+            "columnIdentifier": "time",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "URL to more information about the race on Wikipedia.",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 2009, 1, 1, Australian Grand Prix, 2009-03-29, 06:00:00, http://en.wikipedia.org/wiki/2009_Australian_Grand_Prix",
+          "2, 2008, 2, 2, Malaysian Grand Prix, 2009-04-05, 09:00:00, http://en.wikipedia.org/wiki/2009_Malaysian_Grand_Prix",
+          "3, 2007, 3, 17, Chinese Grand Prix, 2009-04-19, 07:00:00, http://en.wikipedia.org/wiki/2009_Chinese_Grand_Prix"
+        ],
+        "tableDescription": "Stores details about Formula One races, including their date, location, and other relevant information.",
+        "tableIdentifier": "races"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the driver.",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Reference code for the driver.",
+            "columnIdentifier": "driverRef",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Racing number assigned to the driver.",
+            "columnIdentifier": "number",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Abbreviated code representing the driver.",
+            "columnIdentifier": "code",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the driver.",
+            "columnIdentifier": "forename",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the driver.",
+            "columnIdentifier": "surname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date of birth of the driver.",
+            "columnIdentifier": "dob",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Nationality of the driver.",
+            "columnIdentifier": "nationality",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "URL linking to more information about the driver on Wikipedia.",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, hamilton, 44, HAM, Lewis, Hamilton, 07/01/1985, British, http://en.wikipedia.org/wiki/Lewis_Hamilton",
+          "2, heidfeld, , HEI, Nick, Heidfeld, 10/05/1977, German, http://en.wikipedia.org/wiki/Nick_Heidfeld",
+          "3, rosberg, 6, ROS, Nico, Rosberg, 27/06/1985, Spanish, http://en.wikipedia.org/wiki/Nico_Rosberg"
+        ],
+        "tableDescription": "Stores detailed information about Formula One drivers, including personal and professional details.",
+        "tableIdentifier": "drivers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each status.",
+            "columnIdentifier": "statusId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the status outcome, such as 'Finished', 'Disqualified', or 'Accident'.",
+            "columnIdentifier": "status",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Finished",
+          "2, Disqualified",
+          "3, Accident"
+        ],
+        "tableDescription": "Stores different status outcomes for race participants.",
+        "tableIdentifier": "status"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The year of the Formula One season.",
+            "columnIdentifier": "year",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "A URL providing additional information about the Formula One season.",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1950, http://en.wikipedia.org/wiki/1950_Formula_One_season",
+          "1951, http://en.wikipedia.org/wiki/1951_Formula_One_season",
+          "1952, http://en.wikipedia.org/wiki/1952_Formula_One_season"
+        ],
+        "tableDescription": "Contains information about Formula One seasons, including the year and a URL for more details.",
+        "tableIdentifier": "seasons"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the constructor.",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Reference or short name of the constructor.",
+            "columnIdentifier": "constructorRef",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Full name of the constructor.",
+            "columnIdentifier": "name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Nationality of the constructor.",
+            "columnIdentifier": "nationality",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "URL to more information about the constructor.",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, mclaren, McLaren, British, http://en.wikipedia.org/wiki/McLaren",
+          "2, bmw_sauber, BMW Sauber, German, http://en.wikipedia.org/wiki/BMW_Sauber",
+          "3, williams, Williams, French, http://en.wikipedia.org/wiki/Williams_Grand_Prix_Engineering"
+        ],
+        "tableDescription": "Stores information about constructors, including their name, nationality, and reference.",
+        "tableIdentifier": "constructors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for constructor standing.",
+            "columnIdentifier": "constructorStandingsId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the race where the standings were determined.",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key linking to the constructor whose standings are recorded.",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "constructors",
+                "toColumn": "constructorId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Points scored by the constructor in the race contributing to their standing.",
+            "columnIdentifier": "points",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Numeric position of the constructor in the standings.",
+            "columnIdentifier": "position",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Text representation of the constructor's position in the standings.",
+            "columnIdentifier": "positionText",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of races won by the constructor.",
+            "columnIdentifier": "wins",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 18, 1, 14.0, 1, 1, 1",
+          "2, 19, 2, 8.0, 3, 3, 0",
+          "3, 20, 3, 9.0, 2, 2, 2"
+        ],
+        "tableDescription": "Stores standings of constructors based on their performance in races, including points, position, and number of wins.",
+        "tableIdentifier": "constructorStandings"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the race result.",
+            "columnIdentifier": "resultId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the specific race in the races table.",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking to the driver in the drivers table.",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking to the constructor in the constructors table.",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "constructors",
+                "toColumn": "constructorId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Car number of the driver.",
+            "columnIdentifier": "number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Starting position of the driver in the grid.",
+            "columnIdentifier": "grid",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Final position of the driver in the race.",
+            "columnIdentifier": "position",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Text representation of the final position.",
+            "columnIdentifier": "positionText",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Numerical order of the final position.",
+            "columnIdentifier": "positionOrder",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Points scored by the driver in the race.",
+            "columnIdentifier": "points",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of laps completed by the driver.",
+            "columnIdentifier": "laps",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Total time taken to complete the race.",
+            "columnIdentifier": "time",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Total time in milliseconds taken to complete the race.",
+            "columnIdentifier": "milliseconds",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Lap number of the fastest lap completed by the driver.",
+            "columnIdentifier": "fastestLap",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Rank of the fastest lap completed by the driver.",
+            "columnIdentifier": "rank",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Time taken for the fastest lap.",
+            "columnIdentifier": "fastestLapTime",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Speed achieved during the fastest lap.",
+            "columnIdentifier": "fastestLapSpeed",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the status of the driver at the end of the race.",
+            "columnIdentifier": "statusId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 18, 1, 1, 22, 1, 1, 1, 1, 10.0, 58, 34:50.6, 5690616, 39, 2, 01:27.5, 218.3, 1",
+          "2, 19, 2, 2, 3, 5, 2, 2, 2, 8.0, 57, 5.478, 5696094, 41, 3, 01:27.7, 217.586, 11",
+          "3, 20, 3, 3, 7, 7, 3, 3, 3, 6.0, 55, 8.163, 5698779, 58, 5, 01:28.1, 216.719, 5"
+        ],
+        "tableDescription": "Stores detailed results of Formula One races, including driver and constructor performances.",
+        "tableIdentifier": "results"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the driver standings record.",
+            "columnIdentifier": "driverStandingsId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to a specific race where the standing was recorded.",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking to the driver associated with these standings.",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Number of points the driver has accumulated in this race.",
+            "columnIdentifier": "points",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Numerical position of the driver in the standings.",
+            "columnIdentifier": "position",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Textual representation of the driver's position, often used for display purposes.",
+            "columnIdentifier": "positionText",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of wins the driver has achieved in this race.",
+            "columnIdentifier": "wins",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 18, 1, 10.0, 1, 1, 1",
+          "2, 19, 2, 8.0, 2, 2, 0",
+          "3, 20, 3, 6.0, 3, 3, 2"
+        ],
+        "tableDescription": "Stores information about driver standings in races, including points, positions, and wins.",
+        "tableIdentifier": "driverStandings"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for constructor result.",
+            "columnIdentifier": "constructorResultsId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the race where the result was achieved.",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key linking to the constructor that participated in the race.",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "constructors",
+                "toColumn": "constructorId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Points scored by the constructor in the race.",
+            "columnIdentifier": "points",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Status of the constructor's result (e.g., D for disqualified).",
+            "columnIdentifier": "status",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 18, 1, 14.0, NULL",
+          "2, 19, 2, 8.0, D",
+          "3, 20, 3, 9.0, NULL"
+        ],
+        "tableDescription": "Stores results of constructors in races, including points scored and status.",
+        "tableIdentifier": "constructorResults"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each qualifying session.",
+            "columnIdentifier": "qualifyId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the race in which the qualifying took place.",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key linking to the driver who participated in the qualifying.",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key linking to the constructor of the driver.",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "constructors",
+                "toColumn": "constructorId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The grid position number for the driver in the qualifying session.",
+            "columnIdentifier": "number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Final qualifying position of the driver.",
+            "columnIdentifier": "position",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Time taken by the driver to complete the first lap in Q1.",
+            "columnIdentifier": "q1",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Time taken by the driver to complete the fastest lap in Q2.",
+            "columnIdentifier": "q2",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Time taken by the driver to complete the fastest lap in Q3.",
+            "columnIdentifier": "q3",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 18, 1, 1, 22, 1, 1:26.572, 1:25.187, 1:26.714",
+          "2, 19, 9, 2, 4, 2, 1:26.103, 1:25.315, 1:26.869",
+          "3, 20, 5, 6, 23, 3, 1:25.664, 1:25.452, 1:27.079"
+        ],
+        "tableDescription": "Stores qualifying results for Formula One races.",
+        "tableIdentifier": "qualifying"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the race.",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the driver.",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Sequential number of the pit stop during the race.",
+            "columnIdentifier": "stop",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Lap number when the pit stop occurred.",
+            "columnIdentifier": "lap",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Time at which the pit stop was made (in lap time format).",
+            "columnIdentifier": "time",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Duration of the pit stop (in time format).",
+            "columnIdentifier": "duration",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Duration of the pit stop in milliseconds.",
+            "columnIdentifier": "milliseconds",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores information about pit stops during Formula One races.",
+        "tableIdentifier": "pitStops"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the race, linking to the races table.",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the driver, linking to the drivers table.",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The lap number in the race.",
+            "columnIdentifier": "lap",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The position of the driver at the end of the lap.",
+            "columnIdentifier": "position",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The time taken to complete the lap, formatted as text.",
+            "columnIdentifier": "time",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The time taken to complete the lap in milliseconds.",
+            "columnIdentifier": "milliseconds",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [],
+        "tableDescription": "Stores detailed lap time information for each driver in a race.",
+        "tableIdentifier": "lapTimes"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "circuitId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "circuitRef",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "location",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "country",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lat",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lng",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "alt",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "circuits"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "year",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "round",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "circuitId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "circuits",
+                "toColumn": "circuitId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "time",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "races"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "driverRef",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "number",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "code",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "forename",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "surname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "dob",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "nationality",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "drivers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "statusId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "status",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "status"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "year",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "seasons"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "constructorRef",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "nationality",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "url",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "constructors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "constructorStandingsId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "constructors",
+                "toColumn": "constructorId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "points",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "position",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "positionText",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "wins",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "constructorStandings"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "resultId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "constructors",
+                "toColumn": "constructorId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "grid",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "position",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "positionText",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "positionOrder",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "points",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "laps",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "time",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "milliseconds",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fastestLap",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "rank",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fastestLapTime",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fastestLapSpeed",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "statusId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "results"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "driverStandingsId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "points",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "position",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "positionText",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "wins",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "driverStandings"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "constructorResultsId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "constructors",
+                "toColumn": "constructorId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "points",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "status",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "constructorResults"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "qualifyId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "constructorId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "constructors",
+                "toColumn": "constructorId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "number",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "position",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "q1",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "q2",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "q3",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "qualifying"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "stop",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lap",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "time",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "duration",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "milliseconds",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "pitStops"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "raceId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "races",
+                "toColumn": "raceId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "driverId",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "drivers",
+                "toColumn": "driverId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lap",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "position",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "time",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "milliseconds",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "lapTimes"
+      }
+    ]
+  },
+  "message": "Success"
+}

@@ -1,0 +1,460 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database appears to manage customer information across various systems and services related to local governance and financial records. It consists of a central table, Customer_Master_Index, which holds primary customer details linked through foreign keys in CMI_Cross_References to other tables such as Council_Tax, Business_Rates, Benefits_Overpayments, Parking_Fines, Rent_Arrears, and Electoral_Register. These tables store specific records related to council tax payments, business rates, benefits overpayments, parking fines, rent arrears, and electoral register entries, all interconnected through a common customer reference. This structure enables comprehensive tracking and management of financial and administrative data for each customer across different local services.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a customer.",
+            "columnIdentifier": "master_customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Customer details such as name or organization name.",
+            "columnIdentifier": "cmi_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Schmitt-Lang",
+          "2, \"Volkman, Mills and Ferry\"",
+          "3, Gusikowski PLC"
+        ],
+        "tableDescription": "Central table holding primary customer details.",
+        "tableIdentifier": "Customer_Master_Index"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for cross-references.",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to Customer_Master_Index.",
+            "columnIdentifier": "master_customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customer_Master_Index",
+                "toColumn": "master_customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code identifying the source system (e.g., Rent, Parking).",
+            "columnIdentifier": "source_system_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "2, 4, Rent",
+          "4, 5, Parking",
+          "8, 1, Benefits"
+        ],
+        "tableDescription": "Table linking customers to various service-specific records.",
+        "tableIdentifier": "CMI_Cross_References"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the council tax record.",
+            "columnIdentifier": "council_tax_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the CMI_Cross_References table.",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, 101",
+          "2, 103",
+          "3, 104"
+        ],
+        "tableDescription": "Table storing records of council tax payments.",
+        "tableIdentifier": "Council_Tax"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the business rates record.",
+            "columnIdentifier": "business_rates_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the CMI_Cross_References table.",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "2, 99",
+          "5, 49",
+          "8, 95"
+        ],
+        "tableDescription": "Table storing records of business rates payments.",
+        "tableIdentifier": "Business_Rates"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a specific council tax record.",
+            "columnIdentifier": "council_tax_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the CMI_Cross_References table.",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "3, 65",
+          "6, 41",
+          "7, 83"
+        ],
+        "tableDescription": "Table storing records of benefits overpayments.",
+        "tableIdentifier": "Benefits_Overpayments"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each parking fine record.",
+            "columnIdentifier": "council_tax_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the CMI_Cross_References table.",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "9, 4",
+          "10, 81"
+        ],
+        "tableDescription": "Table storing records of parking fines.",
+        "tableIdentifier": "Parking_Fines"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the rent arrear record.",
+            "columnIdentifier": "council_tax_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the CMI_Cross_References table.",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, 100",
+          "2, 8",
+          "6, 59"
+        ],
+        "tableDescription": "Table storing records of rent arrears.",
+        "tableIdentifier": "Rent_Arrears"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each electoral register entry.",
+            "columnIdentifier": "electoral_register_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the Customer_Master_Index table through CMI_Cross_References.",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "2, 83",
+          "3, 65",
+          "4, 100"
+        ],
+        "tableDescription": "Table storing records from the electoral register.",
+        "tableIdentifier": "Electoral_Register"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "master_customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cmi_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Customer_Master_Index"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "master_customer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customer_Master_Index",
+                "toColumn": "master_customer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "source_system_code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "CMI_Cross_References"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "council_tax_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Council_Tax"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "business_rates_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Business_Rates"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "council_tax_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Benefits_Overpayments"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "council_tax_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Parking_Fines"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "council_tax_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Rent_Arrears"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "electoral_register_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cmi_cross_ref_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "CMI_Cross_References",
+                "toColumn": "cmi_cross_ref_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Electoral_Register"
+      }
+    ]
+  },
+  "message": "Success"
+}

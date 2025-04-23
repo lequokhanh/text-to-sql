@@ -1,0 +1,349 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage and store information related to elections and their associated counties and political parties. The `county` table contains demographic data such as county names, population sizes, and zip codes. The `party` table records details about political parties, including the year they were established, party name, and key government positions held by individuals from that party. The `election` table links elections to specific counties and parties, detailing the district represented, delegates, and other relevant committee information. This structure allows for tracking electoral data tied to geographic and political entities.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the county.",
+            "columnIdentifier": "County_Id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the county.",
+            "columnIdentifier": "County_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Population size of the county.",
+            "columnIdentifier": "Population",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Postal code associated with the county.",
+            "columnIdentifier": "Zip_code",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Howard, 21000.0, D21",
+          "2, Baltimore County, 90000.0, D08",
+          "3, Colony, 79000.0, D02"
+        ],
+        "tableDescription": "Stores demographic information about counties.",
+        "tableIdentifier": "county"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the political party.",
+            "columnIdentifier": "Party_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Year the party was established.",
+            "columnIdentifier": "Year",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the political party.",
+            "columnIdentifier": "Party",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Governor held by an individual from the party.",
+            "columnIdentifier": "Governor",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Lieutenant Governor held by an individual from the party.",
+            "columnIdentifier": "Lieutenant_Governor",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Comptroller held by an individual from the party.",
+            "columnIdentifier": "Comptroller",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Attorney General held by an individual from the party.",
+            "columnIdentifier": "Attorney_General",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "U.S. Senator held by an individual from the party.",
+            "columnIdentifier": "US_Senate",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1998.0, Democratic, Peter Vallone, Sandra Frankel, Carl McCall, Eliot Spitzer, Charles Schumer",
+          "2, 2002.0, Liberal, Betsy McCaughey Ross, Jonathan Reiter, Alan Hevesi, Andrew Cuomo, (no election)",
+          "3, 2006.0, Independence, Carl McCall, Dennis Mehiel, John Faso, Jeanine Pirro, Hillary Rodham Clinton"
+        ],
+        "tableDescription": "Records details about political parties.",
+        "tableIdentifier": "party"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the election.",
+            "columnIdentifier": "Election_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "County identifiers represented in the election.",
+            "columnIdentifier": "Counties_Represented",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "District number associated with the election.",
+            "columnIdentifier": "District",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "county",
+                "toColumn": "County_Id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the delegate representing the party and county.",
+            "columnIdentifier": "Delegate",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Reference to the political party ID.",
+            "columnIdentifier": "Party",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "party",
+                "toColumn": "Party_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Year when the delegate was first elected.",
+            "columnIdentifier": "First_Elected",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Committee name or role of the delegate.",
+            "columnIdentifier": "Committee",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 09.1 9A, 1, \"Bates, Gail H. Gail H. Bates\", 1, 2002.0, Appropriations",
+          "2, 12.1 12A, 2, \"Miller, Warren E. Warren E. Miller\", 2, 2003.0, Economic Matters",
+          "3, 12.2 12B, 3, \"DeBoy, Steven J. Sr. Steven J. DeBoy, Sr.\", 3, 1994.0, Environmental Matters (Vice-Chair)"
+        ],
+        "tableDescription": "Links elections to specific counties and parties, detailing relevant committee information.",
+        "tableIdentifier": "election"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "County_Id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "County_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Population",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Zip_code",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "county"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Party_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Year",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Party",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Governor",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Lieutenant_Governor",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Comptroller",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Attorney_General",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "US_Senate",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "party"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Election_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Counties_Represented",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "District",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "county",
+                "toColumn": "County_Id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Delegate",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Party",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "party",
+                "toColumn": "Party_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "First_Elected",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Committee",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "election"
+      }
+    ]
+  },
+  "message": "Success"
+}

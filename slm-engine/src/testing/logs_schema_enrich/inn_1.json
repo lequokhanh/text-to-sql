@@ -1,0 +1,279 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database manages hotel room reservations and tracks room availability. The Rooms table stores details about each room, including its capacity, bed type, decor, and base price, while the Reservations table records booking information such as guest names, check-in and check-out dates, and rates. The foreign key relationship between RoomId in the Rooms table and Room in the Reservations table links reservations to specific rooms, facilitating efficient management of room bookings and occupancy tracking.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each room.",
+            "columnIdentifier": "RoomId",
+            "columnType": "TEXT",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name or title of the room.",
+            "columnIdentifier": "roomName",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of beds in the room.",
+            "columnIdentifier": "beds",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of bed(s) available in the room (e.g., King, Queen, Double).",
+            "columnIdentifier": "bedType",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Maximum number of occupants the room can accommodate.",
+            "columnIdentifier": "maxOccupancy",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Base price of the room per night.",
+            "columnIdentifier": "basePrice",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Decor style or theme of the room.",
+            "columnIdentifier": "decor",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "AOB, Recluse and defiance, 1, King, 2, 150, modern",
+          "CAS, Interim but salutary, 2, Queen, 4, 175, traditional",
+          "FNA, Abscond or bolster, 1, Double, 2, 125, rustic"
+        ],
+        "tableDescription": "Stores details about each hotel room, including capacity, type of beds, decor, and base price.",
+        "tableIdentifier": "Rooms"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each reservation.",
+            "columnIdentifier": "Code",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the reservation to a specific room in the Rooms table.",
+            "columnIdentifier": "Room",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Rooms",
+                "toColumn": "RoomId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date when the guest is scheduled to check into the room.",
+            "columnIdentifier": "CheckIn",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the guest is scheduled to check out of the room.",
+            "columnIdentifier": "CheckOut",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Total cost for the reservation, including all applicable rates and taxes.",
+            "columnIdentifier": "Rate",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the guest making the reservation.",
+            "columnIdentifier": "LastName",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the guest making the reservation.",
+            "columnIdentifier": "FirstName",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of adult guests staying in the room.",
+            "columnIdentifier": "Adults",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of child guests staying in the room.",
+            "columnIdentifier": "Kids",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "10105, HBB, 23-OCT-10, 25-OCT-10, 100.0, SELBIG, CONRAD, 1, 0",
+          "10183, IBD, 19-SEP-10, 20-SEP-10, 150.0, GABLER, DOLLIE, 2, 1",
+          "10449, RND, 30-SEP-10, 01-OCT-10, 218.75, KLESS, NELSON, 4, 3"
+        ],
+        "tableDescription": "Records booking information for hotel rooms, including guest details and reservation dates.",
+        "tableIdentifier": "Reservations"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "RoomId",
+            "columnType": "TEXT",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "roomName",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "beds",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "bedType",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "maxOccupancy",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "basePrice",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "decor",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Rooms"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Code",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Room",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Rooms",
+                "toColumn": "RoomId",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CheckIn",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "CheckOut",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Rate",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "LastName",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "FirstName",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Adults",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Kids",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Reservations"
+      }
+    ]
+  },
+  "message": "Success"
+}

@@ -1,0 +1,614 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to manage insurance claims and related processes. It includes tables for customers and staff, policies they are associated with, claim headers detailing each claim's status and type, documents related to these claims, stages of processing, and the outcomes of those processes. The relationships between tables are established through foreign keys, ensuring data integrity and facilitating efficient query operations across various insurance-related transactions.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each customer.",
+            "columnIdentifier": "Customer_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Details of the customer, such as name or contact information.",
+            "columnIdentifier": "Customer_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "252, America Jaskolski",
+          "263, Ellsworth Paucek",
+          "334, Mrs. Hanna Willms"
+        ],
+        "tableDescription": "Stores information about customers.",
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a staff member.",
+            "columnIdentifier": "Staff_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Details or name of the staff member.",
+            "columnIdentifier": "Staff_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "406, Clifton",
+          "427, Cathryn",
+          "510, Kaci"
+        ],
+        "tableDescription": "Stores details about staff members involved in insurance processes.",
+        "tableIdentifier": "Staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each policy.",
+            "columnIdentifier": "Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the policy to a specific customer.",
+            "columnIdentifier": "Customer_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "Customer_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the type of insurance policy.",
+            "columnIdentifier": "Policy_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the policy becomes effective.",
+            "columnIdentifier": "Start_Date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the policy expires.",
+            "columnIdentifier": "End_Date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "125, 808, Deputy, 2018-02-10 08:56:30, 2018-03-18 09:17:26",
+          "151, 380, Jurisdiction, 2017-12-20 06:02:31, 2017-09-16 22:04:13",
+          "287, 334, Uniformed, 2017-03-16 18:16:52, 2017-11-24 06:36:51"
+        ],
+        "tableDescription": "Stores information about insurance policies associated with customers.",
+        "tableIdentifier": "Policies"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each claim header.",
+            "columnIdentifier": "Claim_Header_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Status of the claim (e.g., Settled, Disputed).",
+            "columnIdentifier": "Claim_Status_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of the claim (e.g., Handphone Subsidy, Child Birth).",
+            "columnIdentifier": "Claim_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the policy associated with the claim.",
+            "columnIdentifier": "Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Policies",
+                "toColumn": "Policy_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date when the claim was filed.",
+            "columnIdentifier": "Date_of_Claim",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the claim was settled.",
+            "columnIdentifier": "Date_of_Settlement",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Total amount claimed by the insured.",
+            "columnIdentifier": "Amount_Claimed",
+            "columnType": "DECIMAL(20,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Amount actually paid to the insured after settlement.",
+            "columnIdentifier": "Amount_Piad",
+            "columnType": "DECIMAL(20,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "15, Settled, Handphone Subsidy, 518, 2016-05-31 06:07:11, 2018-02-23 03:46:38, 349.15, 582.03",
+          "24, Disputed, Child Birth, 287, 2016-12-30 21:43:21, 2017-10-08 21:43:14, 318.16, 309.2",
+          "27, In Progress, Overtime Meal Subsidy, 507, 2017-05-01 13:34:43, 2017-11-16 04:06:05, 362.71, 132.97"
+        ],
+        "tableDescription": "Stores information about insurance claims, including status and amounts.",
+        "tableIdentifier": "Claim_Headers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a claim.",
+            "columnIdentifier": "Claim_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Claim_Headers",
+                "toColumn": "Claim_Header_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the type of document.",
+            "columnIdentifier": "Document_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the staff member who created the document.",
+            "columnIdentifier": "Created_by_Staff_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff",
+                "toColumn": "Staff_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date when the document was created.",
+            "columnIdentifier": "Created_Date",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "24, Document, 718, 8",
+          "27, Medical, 986, 6",
+          "39, Photo, 427, 2"
+        ],
+        "tableDescription": "Stores information about documents associated with insurance claims.",
+        "tableIdentifier": "Claims_Documents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each claim stage.",
+            "columnIdentifier": "Claim_Stage_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the next stage in the claim processing sequence.",
+            "columnIdentifier": "Next_Claim_Stage_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the claim status at this stage.",
+            "columnIdentifier": "Claim_Status_Name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of what occurs at this claim status stage.",
+            "columnIdentifier": "Claim_Status_Description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, Open, Open a new claim",
+          "3, 1, Close, Close a claim"
+        ],
+        "tableDescription": "Stores information about different stages and statuses of insurance claims processing.",
+        "tableIdentifier": "Claims_Processing_Stages"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each claim processing record.",
+            "columnIdentifier": "Claim_Processing_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the specific claim being processed.",
+            "columnIdentifier": "Claim_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Claim_Headers",
+                "toColumn": "Claim_Header_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the outcome of the claim processing.",
+            "columnIdentifier": "Claim_Outcome_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the current stage in the claim's processing workflow.",
+            "columnIdentifier": "Claim_Stage_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the staff member handling the claim processing.",
+            "columnIdentifier": "Staff_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff",
+                "toColumn": "Staff_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "118, 28, In progress, 1, 771",
+          "145, 62, Disputed, 3, 589",
+          "213, 27, Settled, 1, 427"
+        ],
+        "tableDescription": "Records the processing details of insurance claims, including outcomes and stages.",
+        "tableIdentifier": "Claims_Processing"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Staff_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Staff_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "Customer_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Policy_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Start_Date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "End_Date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Policies"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_Header_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_Status_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Policies",
+                "toColumn": "Policy_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_of_Claim",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_of_Settlement",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Amount_Claimed",
+            "columnType": "DECIMAL(20,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Amount_Piad",
+            "columnType": "DECIMAL(20,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Claim_Headers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Claim_Headers",
+                "toColumn": "Claim_Header_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Document_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Created_by_Staff_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff",
+                "toColumn": "Staff_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Created_Date",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Claims_Documents"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_Stage_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Next_Claim_Stage_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_Status_Name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_Status_Description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Claims_Processing_Stages"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_Processing_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Claim_Headers",
+                "toColumn": "Claim_Header_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_Outcome_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_Stage_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Staff_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff",
+                "toColumn": "Staff_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Claims_Processing"
+      }
+    ]
+  },
+  "message": "Success"
+}

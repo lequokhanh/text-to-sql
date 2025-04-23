@@ -3,9 +3,9 @@ import atexit
 import socket
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from core.workflow import SQLAgentWorkflow
+from core.workflow import SQLAgentWorkflow, SchemaEnrichmentWorkflow
 from core.templates import text2sql_prompt_routing, TABLE_RETRIEVAL_TMPL
-from core.services import get_schema
+from core.services import get_schema, get_sample_data
 from llama_index.llms.ollama import Ollama
 from llama_index.llms.openai_like import OpenAILike
 from core.services import validate_connection_payload
@@ -41,11 +41,13 @@ logger.info("Error handlers registered")
 
 # Load configuration with better error handling
 OLLAMA_HOST = os.getenv("OLLAMA_HOST")
+# OLLAMA_HOST = "https://prepared-anemone-routinely.ngrok-free.app/"
 if not OLLAMA_HOST:
     logger.warning("OLLAMA_HOST not found in environment, using default")
     OLLAMA_HOST = "http://ftisu.ddns.net:9293/ollama/"
 
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
+OLLAMA_MODEL = "qwen2.5-coder:14b"
 if not OLLAMA_MODEL:
     logger.warning("OLLAMA_MODEL not found in environment, using default")
     OLLAMA_MODEL = "llama3.1:8b-instruct-q8_0"
@@ -69,10 +71,10 @@ logger.info("Initializing LLM client...")
 llm = Ollama(
     model=OLLAMA_MODEL,
     base_url=OLLAMA_HOST,
-    request_timeout=120.0,
+    request_timeout=300.0,
     keep_alive=30*60,
     additional_kwargs={
-        "num_predict": 4096,
+        "num_predict": 8192,
         "temperature": 0.7,
     }
 )
@@ -91,7 +93,33 @@ workflow = SQLAgentWorkflow(
 )
 logger.info("SQL Agent Workflow initialized successfully")
 
+schema_workflow = SchemaEnrichmentWorkflow(
+    llm=llm,
+    verbose=True
+)
+logger.info("Schema Enrichment Workflow initialized successfully")
+
 SERVICE_PORT = 5000
+
+def print_banner(banner_file='banner.txt'):
+    """Print a banner from a file when the application starts if it exists"""
+    try:
+        # Check if the banner file exists
+        if os.path.exists(banner_file):
+            # Read the banner from the file
+            with open(banner_file, 'r') as f:
+                banner = f.read()
+            logger.info("\n" + banner)
+    except Exception:
+        # Silently ignore any errors reading the banner file
+        pass
+        
+    # Always log server started message
+    logger.info("Server started successfully!")
+
+@app.route('/')
+def home():
+    return "SLM Engine is running!"
 
 @app.route('/query', methods=['POST'])
 async def query():
@@ -113,7 +141,55 @@ async def query():
             return jsonify({"error": error_message}), 400
 
         logger.info("Retrieving schema from database")
+
         table_details = get_schema(connection_payload)
+        for table in table_details:
+                table["sample_data"] = get_sample_data(
+                    connection_payload=connection_payload, 
+                    table_details=table
+                )
+                print("Sample data: ", table["sample_data"])
+        
+        if "schema_enrich_info" in connection_payload and connection_payload["schema_enrich_info"] is not None:
+            logger.info(f"Retrieved schema with {len(table_details)} tables and enrichment information")
+            
+            # Tạo mapping từ tableIdentifier đến enriched table để tìm kiếm nhanh hơn
+            enriched_tables_map = {
+                table["tableIdentifier"]: table 
+                for table in connection_payload["schema_enrich_info"]["enriched_schema"]
+            }
+            
+            for table in table_details:
+                table_id = table["tableIdentifier"]
+                
+                # Kiểm tra xem bảng có trong mapping không
+                if table_id in enriched_tables_map:
+                    enriched_table = enriched_tables_map[table_id]
+                    
+                    # Cập nhật mô tả bảng
+                    table["tableDescription"] = enriched_table["tableDescription"]
+                    
+                    # Tạo mapping từ columnIdentifier đến enriched column
+                    enriched_columns_map = {
+                        col["columnIdentifier"]: col 
+                        for col in enriched_table["columns"]
+                    }
+                    
+                    # Cập nhật mô tả cột
+                    for column in table["columns"]:
+                        column_id = column["columnIdentifier"]
+                        
+                        # Kiểm tra điều kiện cập nhật và xem cột có trong mapping không
+                        is_empty_description = (
+                            column.get("columnDescription") in ["", "NULL", "''"] or
+                            column.get("columnDescription") is None or
+                            len(str(column.get("columnDescription", ""))) <= 1
+                        )
+                        
+                        if is_empty_description and column_id in enriched_columns_map:
+                            enriched_column = enriched_columns_map[column_id]
+                            column["columnDescription"] = enriched_column["columnDescription"]
+                
         logger.info(f"Retrieved schema with {len(table_details)} tables")
 
         logger.info("Executing workflow")
@@ -129,6 +205,41 @@ async def query():
     except Exception as e:
         logger.error(f"Error processing query: {str(e)}", exc_info=True)
         raise AppException(str(e), 500)
+
+@app.route('/schema-enrichment', methods=['POST'])
+async def schema_enrichment():
+    """Handle schema enrichment endpoint"""
+    logger.info("Received request to /schema-enrichment endpoint")
+    try:
+        data = request.json
+        connection_payload = data.get("connection_payload")     
+
+        if not connection_payload:
+            logger.warning("Missing required parameters in request")
+            return jsonify({"error": "Missing 'connection_payload' or 'database_schema'"}), 400
+        
+        is_valid, error_message = validate_connection_payload(connection_payload)
+        if not is_valid:
+            logger.warning(f"Invalid connection payload: {error_message}")
+            return jsonify({"error": error_message}), 400
+
+        logger.info("Retrieving database schema...")
+        table_details = get_schema(connection_payload)
+           
+        logger.info(f"Retrieved schema with {len(table_details)} tables")
+
+        logger.info("Executing workflow")
+        response = await schema_workflow.run(
+            connection_payload=connection_payload,
+            database_schema=table_details
+        )
+        logger.info("Workflow completed successfully")
+        response["original_schema"] = get_schema(connection_payload)
+        return ResponseWrapper.success(response)
+
+    except Exception as e:
+        logger.error(f"Error processing schema enrichment: {str(e)}", exc_info=True)
+        raise AppException(str(e), 500) 
     
 @app.route('/query-with-schema', methods=['POST'])
 async def query_with_schema():
@@ -176,5 +287,6 @@ def health_check():
     return jsonify({"status": "ok"})
 
 if __name__ == '__main__':
+    print_banner()
     logger.info(f"Starting Flask application on port {SERVICE_PORT}")
     app.run(host='0.0.0.0', port=SERVICE_PORT, debug=True)

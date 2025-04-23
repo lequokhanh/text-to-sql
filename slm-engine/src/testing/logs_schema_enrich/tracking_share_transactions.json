@@ -1,0 +1,486 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to manage investment-related transactions and their associated details. It includes tables for storing information about investors, the lots they own, transaction types, individual transactions, sales, purchases, and the relationship between transactions and lots. The relationships are established through foreign keys that link investors to their respective lots and transactions, as well as linking transactions to specific types and detailed records of sales and purchases. Overall, the database serves as a comprehensive system for tracking investment activities, maintaining accurate records of financial transactions, and managing lot ownership details.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each investor.",
+            "columnIdentifier": "investor_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Details or attributes of the investor.",
+            "columnIdentifier": "Investor_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, z",
+          "2, d",
+          "3, b"
+        ],
+        "tableDescription": "Stores information about investors.",
+        "tableIdentifier": "Investors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each lot.",
+            "columnIdentifier": "lot_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the investor who owns the lot.",
+            "columnIdentifier": "investor_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Investors",
+                "toColumn": "investor_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Details or description of the lot.",
+            "columnIdentifier": "lot_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 13, r",
+          "2, 16, z",
+          "3, 10, s"
+        ],
+        "tableDescription": "Stores information about investment lots, including their details and ownership.",
+        "tableIdentifier": "Lots"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code representing a transaction type.",
+            "columnIdentifier": "transaction_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the transaction type associated with the code.",
+            "columnIdentifier": "transaction_type_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "PUR, Sale",
+          "SALE, Purchase"
+        ],
+        "tableDescription": "Stores transaction type codes and their descriptions.",
+        "tableIdentifier": "Ref_Transaction_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a transaction.",
+            "columnIdentifier": "transaction_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the transaction to an investor.",
+            "columnIdentifier": "investor_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Investors",
+                "toColumn": "investor_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the type of transaction (e.g., SALE, PUR).",
+            "columnIdentifier": "transaction_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Transaction_Types",
+                "toColumn": "transaction_type_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date and time when the transaction occurred.",
+            "columnIdentifier": "date_of_transaction",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Amount involved in the transaction.",
+            "columnIdentifier": "amount_of_transaction",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of shares involved in the transaction.",
+            "columnIdentifier": "share_count",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details or notes about the transaction.",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 6, SALE, 1988-09-16 19:02:51, 302507.6996, 8718572",
+          "2, 18, PUR, 1982-06-06 17:19:00, 27.257, 9",
+          "3, 2, SALE, 1979-04-27 06:03:59, 48777.969, 8580"
+        ],
+        "tableDescription": "Records all investment transactions including sales and purchases.",
+        "tableIdentifier": "Transactions"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a sales transaction.",
+            "columnIdentifier": "sales_transaction_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Transactions",
+                "toColumn": "transaction_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Additional information or notes about the sale.",
+            "columnIdentifier": "sales_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, x",
+          "2, o",
+          "3, a"
+        ],
+        "tableDescription": "Stores details of sales transactions.",
+        "tableIdentifier": "Sales"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each purchase transaction.",
+            "columnIdentifier": "purchase_transaction_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Transactions",
+                "toColumn": "transaction_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Details or description of the purchase transaction.",
+            "columnIdentifier": "purchase_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, c",
+          "2, y",
+          "3, i"
+        ],
+        "tableDescription": "Stores details of purchase transactions made by investors.",
+        "tableIdentifier": "Purchases"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Identifier for the transaction.",
+            "columnIdentifier": "transaction_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Transactions",
+                "toColumn": "transaction_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the lot involved in the transaction.",
+            "columnIdentifier": "lot_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Lots",
+                "toColumn": "lot_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "3, 11",
+          "2, 8",
+          "12, 14"
+        ],
+        "tableDescription": "Links transactions to the lots involved in those transactions.",
+        "tableIdentifier": "Transactions_Lots"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "investor_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Investor_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Investors"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lot_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "investor_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Investors",
+                "toColumn": "investor_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lot_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Lots"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "transaction_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "transaction_type_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Ref_Transaction_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "transaction_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "investor_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Investors",
+                "toColumn": "investor_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "transaction_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Ref_Transaction_Types",
+                "toColumn": "transaction_type_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_of_transaction",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "amount_of_transaction",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "share_count",
+            "columnType": "VARCHAR(40)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Transactions"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "sales_transaction_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "Transactions",
+                "toColumn": "transaction_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "sales_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Sales"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "purchase_transaction_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Transactions",
+                "toColumn": "transaction_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "purchase_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Purchases"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "transaction_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Transactions",
+                "toColumn": "transaction_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "lot_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Lots",
+                "toColumn": "lot_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Transactions_Lots"
+      }
+    ]
+  },
+  "message": "Success"
+}

@@ -1,0 +1,307 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database is designed to catalog information about mountains and the photos taken of them using various camera lenses. The `mountain` table stores details such as the mountain's name, height, prominence, range, and country. The `camera_lens` table provides specifications for different camera lenses, including brand, model name, focal length, and maximum aperture. The `photos` table links these two entities by storing information about each photo, including the associated camera lens and mountain, as well as the photo's color and name. This structure allows for efficient querying and management of data related to mountains and their photographic documentation.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each mountain.",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the mountain.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Elevation of the mountain in meters.",
+            "columnIdentifier": "Height",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Vertical distance from the summit to the lowest contour line encircling it but not encompassing any higher peak.",
+            "columnIdentifier": "Prominence",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Mountain range or massif where the mountain is located.",
+            "columnIdentifier": "Range",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country where the mountain is situated.",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Abune Yosef / Guliba Amba, 4260.0, 1909.0, Lasta Massif, Ethiopia",
+          "2, Ioll / Yoll, 4220.0, 350.0, Kollo Massif, Morocco",
+          "3, Bada, 4195.0, 1605.0, Arsi Mountains, Rwanda Uganda"
+        ],
+        "tableDescription": "Stores information about mountains.",
+        "tableIdentifier": "mountain"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each camera lens.",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Brand of the camera lens.",
+            "columnIdentifier": "brand",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Model name of the camera lens.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Focal length of the camera lens in millimeters.",
+            "columnIdentifier": "focal_length_mm",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Maximum aperture (smallest f-number) of the camera lens.",
+            "columnIdentifier": "max_aperture",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Olympus, Olympus 15mm f/8.0 Body Cap, 15.0, 8.0",
+          "2, Panasonic, Olympus M.Zuiko Digital ED 45mm f/1.8, 45.0, 1.8",
+          "3, Schneider Kreuznach, Olympus M.Zuiko Digital ED 75mm f/1.8, 75.0, 1.4"
+        ],
+        "tableDescription": "Stores specifications for different camera lenses.",
+        "tableIdentifier": "camera_lens"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each photo.",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key referencing the camera lens used to take the photo.",
+            "columnIdentifier": "camera_lens_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "camera_lens",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key referencing the mountain in the photo.",
+            "columnIdentifier": "mountain_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "mountain",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Color mode of the photo (e.g., RGB, Black/White).",
+            "columnIdentifier": "color",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name or title of the photo.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 20, RBG, monkey",
+          "2, 10, 2, Black/White, rabbits",
+          "3, 5, 1, RBG, deers"
+        ],
+        "tableDescription": "Stores information about photos taken of mountains using various camera lenses.",
+        "tableIdentifier": "photos"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Height",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Prominence",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Range",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "mountain"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "brand",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "focal_length_mm",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "max_aperture",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "camera_lens"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "camera_lens_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "camera_lens",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "mountain_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "mountain",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "color",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "photos"
+      }
+    ]
+  },
+  "message": "Success"
+}

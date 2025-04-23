@@ -1,0 +1,363 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database tracks sports-related data, primarily focusing on stadiums and their performance during games. It records information such as stadium capacity, attendance details, and game outcomes. Additionally, it logs injury incidents that occur during games, linking these events back to specific matches played in various stadiums. The schema is designed to provide insights into the operational efficiency of stadiums and the health status of players involved in the competitions.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each stadium.",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the stadium.",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of home games played in the stadium.",
+            "columnIdentifier": "Home_Games",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Average number of people attending games at the stadium.",
+            "columnIdentifier": "Average_Attendance",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Total attendance for all games held in the stadium.",
+            "columnIdentifier": "Total_Attendance",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Percentage of the stadium's capacity that is typically utilized during games.",
+            "columnIdentifier": "Capacity_Percentage",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Cowboys Stadium, 8, 87047.0, 696377.0, 108.8",
+          "2, FedExField, 8, 83172.0, 665380.0, 90.7",
+          "3, New Meadowlands Stadium, 8, 79019.0, 632156.0, 95.8"
+        ],
+        "tableDescription": "Stores information about stadiums, including their capacity and performance metrics during games.",
+        "tableIdentifier": "stadium"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Foreign key linking to the stadium where the game was played.",
+            "columnIdentifier": "stadium_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "stadium",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Primary key uniquely identifying each game record.",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The season in which the game was played.",
+            "columnIdentifier": "Season",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the game took place.",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the team playing at home in the game.",
+            "columnIdentifier": "Home_team",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the team visiting for the game.",
+            "columnIdentifier": "Away_team",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The final score of the game.",
+            "columnIdentifier": "Score",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The type of competition in which the game was played (e.g., League, Cup).",
+            "columnIdentifier": "Competition",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, 2007, 18 May 2007, Quruvchi, Pakhtakor, 1–1, League",
+          "2, 2, 2008, 22 September 2007, Pakhtakor, Quruvchi, 0–0, Cup",
+          "3, 3, 2009, 9 December 2007, Bunyodkor, Bunyodkor, 0–0 (7:6), Supercup"
+        ],
+        "tableDescription": "Records information about individual games played in stadiums.",
+        "tableIdentifier": "game"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the game in which the injury occurred.",
+            "columnIdentifier": "game_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "game",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Primary key for the injury accident record, uniquely identifying each incident.",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the player who suffered the injury.",
+            "columnIdentifier": "Player",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the injury sustained by the player.",
+            "columnIdentifier": "Injury",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of matches the player has played before sustaining the injury.",
+            "columnIdentifier": "Number_of_matches",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Source of information about the injury incident.",
+            "columnIdentifier": "Source",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, Davide Santon, Clean-up surgery on his right knee, 12, inter.it",
+          "2, 2, Maicon, Knee problem, 2, inter.it",
+          "3, 3, Dejan Stanković, Hamstring muscle strain in his left thigh, 1, inter.it"
+        ],
+        "tableDescription": "Records injury incidents that occur during games, linking these events to specific matches and players.",
+        "tableIdentifier": "injury_accident"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Home_Games",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Average_Attendance",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Total_Attendance",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Capacity_Percentage",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "stadium"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "stadium_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "stadium",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Season",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Home_team",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Away_team",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Score",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Competition",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "game"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "game_id",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "game",
+                "toColumn": "id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "id",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Player",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Injury",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Number_of_matches",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Source",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "injury_accident"
+      }
+    ]
+  },
+  "message": "Success"
+}

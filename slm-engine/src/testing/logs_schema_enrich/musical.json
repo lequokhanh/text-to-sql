@@ -1,0 +1,237 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database is designed to store information about musicals and their associated actors. The `musical` table contains details such as the musical's name, year of release, award information, category, nominee, and result. The `actor` table includes data on actors, linking each actor to a specific musical through the `Musical_ID`, along with details about the character played, performance duration, and age. The relationship between the two tables is established by the foreign key in the `actor` table that references the primary key of the `musical` table, allowing for tracking which actors performed in which musicals.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each musical.",
+            "columnIdentifier": "Musical_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Title of the musical.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The year the musical was released.",
+            "columnIdentifier": "Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The award associated with the musical.",
+            "columnIdentifier": "Award",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Category of the award won by the musical.",
+            "columnIdentifier": "Category",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the nominee for the award.",
+            "columnIdentifier": "Nominee",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Outcome of the nomination (e.g., won, lost).",
+            "columnIdentifier": "Result",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, The Phantom of the Opera, 1986, Tony Award, Best Book of a Musical, Bob Fosse, Nominated",
+          "2, Les Misérables, 1986, Drama Desk Award, Best Performance by a Leading Actor in a Musical, Cleavant Derricks, Won",
+          "3, Wicked, 1986, Tony Award, Best Direction of a Musical, Bob Fosse, Nominated"
+        ],
+        "tableDescription": "Stores information about musicals, including details such as name, release year, award information, and category.",
+        "tableIdentifier": "musical"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each actor.",
+            "columnIdentifier": "Actor_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Full name of the actor.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the actor to a specific musical.",
+            "columnIdentifier": "Musical_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "actor",
+                "toColumn": "Actor_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the character played by the actor in the musical.",
+            "columnIdentifier": "Character",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Time period during which the actor performed in the role.",
+            "columnIdentifier": "Duration",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "age",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Ray Meagher, 1, Alf Stewart, 1988—, 26",
+          "2, Tom Oliver, 2, Lou Carpenter, \"1988, 1992—\", 22",
+          "3, Lynne McGranger, 4, Irene Roberts, 1993—, 21"
+        ],
+        "tableDescription": "Stores information about actors who performed in musicals, including details such as the character played, performance duration, and age.",
+        "tableIdentifier": "actor"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Musical_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Year",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Award",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Category",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Nominee",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Result",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "musical"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Actor_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Musical_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "actor",
+                "toColumn": "Actor_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Character",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Duration",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "age",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "actor"
+      }
+    ]
+  },
+  "message": "Success"
+}

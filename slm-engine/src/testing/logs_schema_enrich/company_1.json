@@ -1,0 +1,499 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema consists of tables that manage employee records, project assignments, department details, and dependent information. The `employee` table stores basic employee data, while the `works_on` table links employees to projects they are assigned to, specifying hours worked. The `department` table contains information about departments managed by a supervisor, and the `project` table details projects associated with specific departments. The `dependent` table records dependents of employees, and the `dept_locations` table lists locations where each department operates. These tables collectively manage employee data, their work assignments, family relationships, and departmental structures within an organization.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Social Security number of the employee.",
+            "columnIdentifier": "Essn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Project number on which the employee is working.",
+            "columnIdentifier": "Pno",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of hours the employee works on the project.",
+            "columnIdentifier": "Hours",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "123456789, 1, 32.5",
+          "333445555, 2, 7.5",
+          "453453453, 3, 40.0"
+        ],
+        "tableDescription": "Links employees to projects they are assigned to, specifying hours worked.",
+        "tableIdentifier": "works_on"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "First name of the employee.",
+            "columnIdentifier": "Fname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Middle initial of the employee.",
+            "columnIdentifier": "Minit",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the employee.",
+            "columnIdentifier": "Lname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Social Security number, primary key for the employee table.",
+            "columnIdentifier": "Ssn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Birth date of the employee.",
+            "columnIdentifier": "Bdate",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Home address of the employee.",
+            "columnIdentifier": "Address",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Gender of the employee.",
+            "columnIdentifier": "Sex",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Annual salary of the employee.",
+            "columnIdentifier": "Salary",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Social Security number of the employee's supervisor.",
+            "columnIdentifier": "Super_ssn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Department number where the employee works.",
+            "columnIdentifier": "Dno",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Jonh, B, Smith, 123456789, 1965-01-09, \"731 Fondren, Houston, TX\", M, 30000, 333445555, 5",
+          "Franklin, T, Wong, 333445555, 1955-12-08, \"638 Voss, Houston, TX\", F, 40000, 888665555, 1",
+          "Joyce, A, English, 453453453, 1972-07-31, \"5631 Rice, Houston, TX\", M, 25000, 987654321, 4"
+        ],
+        "tableDescription": "Stores basic employee data including personal and employment information.",
+        "tableIdentifier": "employee"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the department.",
+            "columnIdentifier": "Dname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The unique identifier for the department.",
+            "columnIdentifier": "Dnumber",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The social security number of the manager responsible for the department.",
+            "columnIdentifier": "Mgr_ssn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the current manager started managing the department.",
+            "columnIdentifier": "Mgr_start_date",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "Headquarters, 1, 888665555, 1981-06-19",
+          "Administration, 4, 987654321, 1995-01-01",
+          "Research, 5, 333445555, 1988-05-22"
+        ],
+        "tableDescription": "Contains information about departments managed by a supervisor.",
+        "tableIdentifier": "department"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The name of the project.",
+            "columnIdentifier": "Pname",
+            "columnType": "Text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "A unique identifier for the project.",
+            "columnIdentifier": "Pnumber",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The location where the project is carried out.",
+            "columnIdentifier": "Plocation",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The number of the department that the project belongs to.",
+            "columnIdentifier": "Dnum",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "ProductX, 1, Bellaire, 5",
+          "ProductY, 2, Sugarland, 4",
+          "ProductZ, 3, Houston, 1"
+        ],
+        "tableDescription": "Details projects associated with specific departments.",
+        "tableIdentifier": "project"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Employee Social Security Number, primary key.",
+            "columnIdentifier": "Essn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the dependent.",
+            "columnIdentifier": "Dependent_name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Gender of the dependent.",
+            "columnIdentifier": "Sex",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Birth date of the dependent.",
+            "columnIdentifier": "Bdate",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Relationship between the employee and the dependent.",
+            "columnIdentifier": "Relationship",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "123456789, Alice, F, 1986-04-05, Daughter",
+          "333445555, Elizabeth, M, 1983-10-25, Son",
+          "987654321, Michael, F, 1958-05-03, Spouse"
+        ],
+        "tableDescription": "Records dependents of employees.",
+        "tableIdentifier": "dependent"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The primary key representing the department number.",
+            "columnIdentifier": "Dnumber",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The location of the department.",
+            "columnIdentifier": "Dlocation",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Houston",
+          "4, Stafford",
+          "5, Bellaire"
+        ],
+        "tableDescription": "Lists locations where each department operates.",
+        "tableIdentifier": "dept_locations"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Essn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pno",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Hours",
+            "columnType": "REAL",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "works_on"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Fname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Minit",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Lname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Ssn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Bdate",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Address",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Sex",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Salary",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Super_ssn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Dno",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "employee"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Dname",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Dnumber",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Mgr_ssn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Mgr_start_date",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "department"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pname",
+            "columnType": "Text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pnumber",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Plocation",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Dnum",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "project"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Essn",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Dependent_name",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Sex",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Bdate",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Relationship",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "dependent"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Dnumber",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Dlocation",
+            "columnType": "TEXT",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "dept_locations"
+      }
+    ]
+  },
+  "message": "Success"
+}

@@ -1,0 +1,405 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database is designed to manage information related to concerts and the singers participating in them. The `stadium` table holds details about various venues where concerts are held, including their location, name, capacity, and climate statistics (highest, lowest, average temperatures). The `singer` table contains information about performers, such as their ID, name, country of origin, song details, age, and gender. The `concert` table records concert events with attributes like the concert's name, theme, associated stadium, and year. Lastly, the `singer_in_concert` table links singers to the concerts they perform in, establishing a many-to-many relationship between singers and concerts.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each stadium.",
+            "columnIdentifier": "Stadium_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Geographical location of the stadium.",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the stadium.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Seating capacity of the stadium.",
+            "columnIdentifier": "Capacity",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Highest recorded temperature at the stadium.",
+            "columnIdentifier": "Highest",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Lowest recorded temperature at the stadium.",
+            "columnIdentifier": "Lowest",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Average temperature at the stadium.",
+            "columnIdentifier": "Average",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Raith Rovers, Stark's Park, 10104, 4812, 1294, 2106",
+          "2, Ayr United, Somerset Park, 11998, 2363, 1057, 1477",
+          "3, East Fife, Bayview Stadium, 2000, 1980, 533, 864"
+        ],
+        "tableDescription": "Stores information about stadiums where concerts are held.",
+        "tableIdentifier": "stadium"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the singer.",
+            "columnIdentifier": "Singer_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the singer.",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Country of origin of the singer.",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the song performed by the singer.",
+            "columnIdentifier": "Song_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Year when the song was released.",
+            "columnIdentifier": "Song_release_year",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Age of the singer.",
+            "columnIdentifier": "Age",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Boolean indicating whether the singer is male.",
+            "columnIdentifier": "Is_male",
+            "columnType": "bool",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Joe Sharp, Netherlands, You, 1992, 52, F",
+          "2, Timbaland, United States, Dangerous, 2008, 32, T",
+          "3, Justin Brown, France, Hey Oh, 2013, 29, F"
+        ],
+        "tableDescription": "Contains information about performers, including their details and song information.",
+        "tableIdentifier": "singer"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the concert.",
+            "columnIdentifier": "concert_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the concert.",
+            "columnIdentifier": "concert_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Theme or genre of the concert.",
+            "columnIdentifier": "Theme",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the concert to its venue.",
+            "columnIdentifier": "Stadium_ID",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "stadium",
+                "toColumn": "Stadium_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Year in which the concert took place.",
+            "columnIdentifier": "Year",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Auditions, Free choice, 1, 2014",
+          "2, Super bootcamp, Free choice 2, 2, 2015",
+          "3, Home Visits, Bleeding Love, 10, 2014"
+        ],
+        "tableDescription": "Stores information about concert events.",
+        "tableIdentifier": "concert"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Identifier for the concert.",
+            "columnIdentifier": "concert_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "concert",
+                "toColumn": "concert_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for the singer.",
+            "columnIdentifier": "Singer_ID",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "singer",
+                "toColumn": "Singer_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, 2",
+          "2, 3",
+          "3, 5"
+        ],
+        "tableDescription": "Establishes a many-to-many relationship between singers and concerts.",
+        "tableIdentifier": "singer_in_concert"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Stadium_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Location",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Capacity",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Highest",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Lowest",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Average",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "stadium"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Singer_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Country",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Song_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Song_release_year",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Age",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Is_male",
+            "columnType": "bool",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "singer"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "concert_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "concert_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Theme",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Stadium_ID",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "stadium",
+                "toColumn": "Stadium_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Year",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "concert"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "concert_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "concert",
+                "toColumn": "concert_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Singer_ID",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "singer",
+                "toColumn": "Singer_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "singer_in_concert"
+      }
+    ]
+  },
+  "message": "Success"
+}

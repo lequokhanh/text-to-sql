@@ -1,0 +1,419 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to store information about cities and countries, including their geographical, demographic, and economic data. The `city` table contains details such as city names, population, and associated country codes linking to the `country` table. The `country` table holds comprehensive information about countries, including name, continent, region, population, life expectancy, and economic indicators like GNP. Additionally, the `countrylanguage` table provides insights into the languages spoken in each country, indicating whether a language is official and its percentage of the population that speaks it. Together, these tables facilitate queries related to geographical relationships, demographic data, and linguistic diversity across countries and cities.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique city identifier (primary key).",
+            "columnIdentifier": "ID",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Name",
+            "columnType": "char(35)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "CountryCode",
+            "columnType": "char(3)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "country",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "District",
+            "columnType": "char(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "Population",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "129, Kabul, ABW, Kabol, 1780000",
+          "1, Qandahar, AFG, Qandahar, 237500",
+          "2, Herat, AGO, Herat, 186800"
+        ],
+        "tableDescription": "Stores information about cities including their names, population, and associated country codes.",
+        "tableIdentifier": "city"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Code",
+            "columnType": "char(3)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Name",
+            "columnType": "char(52)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'Asia'",
+            "columnIdentifier": "Continent",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Region",
+            "columnType": "char(26)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'0.00'",
+            "columnIdentifier": "SurfaceArea",
+            "columnType": "float(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "IndepYear",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "Population",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "LifeExpectancy",
+            "columnType": "float(3,1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "GNP",
+            "columnType": "float(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "GNPOld",
+            "columnType": "float(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "LocalName",
+            "columnType": "char(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "GovernmentForm",
+            "columnType": "char(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "HeadOfState",
+            "columnType": "char(60)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "Capital",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Code2",
+            "columnType": "char(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "ABW, Aruba, North America, Caribbean, 193.0, 1919, 103000, 78.4, 828.0, 793.0, Aruba, Nonmetropolitan Territory of The Netherlands, Beatrix, 129, AW",
+          "AFG, Afghanistan, Asia, Southern and Central Asia, 652090.0, 1975, 22720000, 45.9, 5976.0, 7984.0, Afganistan/Afqanestan, Islamic Emirate, Mohammad Omar, 1, AF",
+          "AGO, Angola, Africa, Central Africa, 1246700.0, 1912, 12878000, 38.3, 6648.0, 2500.0, Angola, Republic, José Eduardo dos Santos, 56, AO"
+        ],
+        "tableDescription": "Stores comprehensive information about countries including geographical, demographic, and economic data.",
+        "tableIdentifier": "country"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "CountryCode",
+            "columnType": "char(3)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "country",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Language",
+            "columnType": "char(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'F'",
+            "columnIdentifier": "IsOfficial",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'0.0'",
+            "columnIdentifier": "Percentage",
+            "columnType": "float(4,1)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "ABW, Dutch, T, 5.3",
+          "AFG, English, F, 9.5",
+          "AGO, Papiamento, T, 76.7"
+        ],
+        "tableDescription": "Provides insights into the languages spoken in each country, including whether a language is official and its percentage of the population that speaks it.",
+        "tableIdentifier": "countrylanguage"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ID",
+            "columnType": "integer",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Name",
+            "columnType": "char(35)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "CountryCode",
+            "columnType": "char(3)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "country",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "District",
+            "columnType": "char(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "Population",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "city"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Code",
+            "columnType": "char(3)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Name",
+            "columnType": "char(52)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'Asia'",
+            "columnIdentifier": "Continent",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Region",
+            "columnType": "char(26)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'0.00'",
+            "columnIdentifier": "SurfaceArea",
+            "columnType": "float(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "IndepYear",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'0'",
+            "columnIdentifier": "Population",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "LifeExpectancy",
+            "columnType": "float(3,1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "GNP",
+            "columnType": "float(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "GNPOld",
+            "columnType": "float(10,2)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "LocalName",
+            "columnType": "char(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "GovernmentForm",
+            "columnType": "char(45)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "HeadOfState",
+            "columnType": "char(60)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "NULL",
+            "columnIdentifier": "Capital",
+            "columnType": "integer",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Code2",
+            "columnType": "char(2)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "country"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "CountryCode",
+            "columnType": "char(3)",
+            "isPrimaryKey": true,
+            "relations": [
+              {
+                "tableIdentifier": "country",
+                "toColumn": "Code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "''",
+            "columnIdentifier": "Language",
+            "columnType": "char(30)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'F'",
+            "columnIdentifier": "IsOfficial",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "'0.0'",
+            "columnIdentifier": "Percentage",
+            "columnType": "float(4,1)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "countrylanguage"
+      }
+    ]
+  },
+  "message": "Success"
+}

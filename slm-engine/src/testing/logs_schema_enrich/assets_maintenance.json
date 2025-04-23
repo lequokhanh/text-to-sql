@@ -1,0 +1,1347 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database is designed to manage and track maintenance contracts, assets, parts, engineers, and faults in an organizational setting. It includes tables for storing information about third-party companies involved in maintenance activities, details of maintenance contracts, parts and their chargeability, skills required by staff, asset management, engineer skills, fault logs, engineer visits, part faults, and the relationships between these entities through foreign key constraints. The overall purpose is to provide a comprehensive system for maintaining records and facilitating the management of assets and related maintenance tasks efficiently.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each third-party company.",
+            "columnIdentifier": "company_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of the third-party company (e.g., Maintenance Contractor, Supplier).",
+            "columnIdentifier": "company_type",
+            "columnType": "VARCHAR(5)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the third-party company.",
+            "columnIdentifier": "company_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Address of the third-party company.",
+            "columnIdentifier": "company_address",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Other relevant details about the third-party company.",
+            "columnIdentifier": "other_company_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Maintenance Contractor, Langworth-Funk, 615 Jacobs Mews, Uganda",
+          "2, Supplier, McDermott Group, 873 Conrad Creek Apt. 286, China",
+          "3, Maintenance Contractor, Schuppe-Carroll, 066 Bechtelar Ridge, United Arab Emirates"
+        ],
+        "tableDescription": "Stores information about third-party companies involved in maintenance activities, including their type and contact details.",
+        "tableIdentifier": "Third_Party_Companies"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each maintenance contract.",
+            "columnIdentifier": "maintenance_contract_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the third-party company that manages the maintenance contract.",
+            "columnIdentifier": "maintenance_contract_company_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Third_Party_Companies",
+                "toColumn": "company_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Start date of the maintenance contract.",
+            "columnIdentifier": "contract_start_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "End date of the maintenance contract.",
+            "columnIdentifier": "contract_end_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the maintenance contract.",
+            "columnIdentifier": "other_contract_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 15, 2017-09-13 11:51:29, 2018-03-16 21:21:50",
+          "2, 9, 2017-12-18 11:43:16, 2018-03-22 06:00:37",
+          "3, 11, 2017-05-06 02:32:19, 2018-03-20 14:02:54"
+        ],
+        "tableDescription": "Stores information about maintenance contracts including their start and end dates, and other contract details.",
+        "tableIdentifier": "Maintenance_Contracts"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a part.",
+            "columnIdentifier": "part_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The name of the part.",
+            "columnIdentifier": "part_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Indicates whether the part is chargeable (0 = No, 1 = Yes).",
+            "columnIdentifier": "chargeable_yn",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The amount charged for the part.",
+            "columnIdentifier": "chargeable_amount",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the part.",
+            "columnIdentifier": "other_part_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, top, 0, 4",
+          "2, middle, 1, 9",
+          "3, package, 0, 4"
+        ],
+        "tableDescription": "Stores information about parts, including chargeability.",
+        "tableIdentifier": "Parts"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each skill.",
+            "columnIdentifier": "skill_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the skill.",
+            "columnIdentifier": "skill_code",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Detailed description of the skill.",
+            "columnIdentifier": "skill_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, ELEC, Electrical",
+          "2, MECH, Mechanical",
+          "3, TV, \"TV, Video\""
+        ],
+        "tableDescription": "Stores information about different skills required for maintenance tasks.",
+        "tableIdentifier": "Skills"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the staff member.",
+            "columnIdentifier": "staff_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the staff member.",
+            "columnIdentifier": "staff_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Gender of the staff member (1 for male, 0 for female).",
+            "columnIdentifier": "gender",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the staff member.",
+            "columnIdentifier": "other_staff_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Audreanne, 1, Manager",
+          "2, Berneice, 0, Woker",
+          "3, Helena, 1, Manager"
+        ],
+        "tableDescription": "Stores information about staff members.",
+        "tableIdentifier": "Staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each asset.",
+            "columnIdentifier": "asset_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key linking to the maintenance contract associated with the asset.",
+            "columnIdentifier": "maintenance_contract_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Maintenance_Contracts",
+                "toColumn": "maintenance_contract_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Foreign key linking to the supplier company that provided the asset.",
+            "columnIdentifier": "supplier_company_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Third_Party_Companies",
+                "toColumn": "company_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Additional details about the asset.",
+            "columnIdentifier": "asset_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Make or brand of the asset.",
+            "columnIdentifier": "asset_make",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Model of the asset.",
+            "columnIdentifier": "asset_model",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the asset was acquired.",
+            "columnIdentifier": "asset_acquired_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the asset was disposed of.",
+            "columnIdentifier": "asset_disposed_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Other relevant details about the asset's condition or status.",
+            "columnIdentifier": "other_asset_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 2, 2, dell laptop1, PT, 58 ub, 2017-12-25 00:31:27, 2018-03-14 10:50:00, Bad condition",
+          "2, 14, 1, dell laptop2, IN, 35 xt, 2018-01-27 00:59:46, 2018-03-20 04:24:09, Bad condition",
+          "3, 7, 5, dell laptop3, IT, 63 ok, 2017-09-07 08:13:15, 2018-03-08 20:50:40, Bad condition"
+        ],
+        "tableDescription": "Stores information about assets including their maintenance contract, supplier company, and details.",
+        "tableIdentifier": "Assets"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for an asset.",
+            "columnIdentifier": "asset_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Assets",
+                "toColumn": "asset_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The unique identifier for a part associated with the asset.",
+            "columnIdentifier": "part_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Parts",
+                "toColumn": "part_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "5, 3",
+          "3, 1",
+          "10, 2"
+        ],
+        "tableDescription": "Stores the relationship between assets and parts.",
+        "tableIdentifier": "Asset_Parts"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Primary key; unique identifier for an engineer.",
+            "columnIdentifier": "engineer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Foreign key; unique identifier for the company associated with the engineer.",
+            "columnIdentifier": "company_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Third_Party_Companies",
+                "toColumn": "company_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "First name of the engineer.",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the engineer.",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the engineer.",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 14, Etha, Reinger, Skilled",
+          "2, 2, Clemens, Orn, Skilled",
+          "3, 6, Samanta, Hauck, Skilled"
+        ],
+        "tableDescription": "Stores information about maintenance engineers, including their company affiliation and personal details.",
+        "tableIdentifier": "Maintenance_Engineers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for an engineer.",
+            "columnIdentifier": "engineer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Maintenance_Engineers",
+                "toColumn": "engineer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Unique identifier for a skill.",
+            "columnIdentifier": "skill_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Skills",
+                "toColumn": "skill_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "10, 2",
+          "15, 1",
+          "6, 3"
+        ],
+        "tableDescription": "Stores skills associated with each engineer.",
+        "tableIdentifier": "Engineer_Skills"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the fault log entry.",
+            "columnIdentifier": "fault_log_entry_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the asset where the fault occurred.",
+            "columnIdentifier": "asset_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Assets",
+                "toColumn": "asset_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the staff member who recorded the fault.",
+            "columnIdentifier": "recorded_by_staff_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Datetime when the fault was logged.",
+            "columnIdentifier": "fault_log_entry_datetime",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the fault.",
+            "columnIdentifier": "fault_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the fault.",
+            "columnIdentifier": "other_fault_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 3, 14, 2018-03-21 04:25:00, system error",
+          "2, 7, 4, 2018-03-13 09:43:05, failed parts",
+          "3, 6, 9, 2018-02-24 09:28:20, system error"
+        ],
+        "tableDescription": "Logs faults recorded for assets.",
+        "tableIdentifier": "Fault_Log"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the engineer visit.",
+            "columnIdentifier": "engineer_visit_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the staff member who contacted the engineer.",
+            "columnIdentifier": "contact_staff_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the engineer involved in the visit.",
+            "columnIdentifier": "engineer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Maintenance_Engineers",
+                "toColumn": "engineer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the fault log entry associated with this visit.",
+            "columnIdentifier": "fault_log_entry_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Fault_Log",
+                "toColumn": "fault_log_entry_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Status of the fault (e.g., Waiting, Return, Fixed).",
+            "columnIdentifier": "fault_status",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Start datetime of the engineer's visit.",
+            "columnIdentifier": "visit_start_datetime",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "End datetime of the engineer's visit.",
+            "columnIdentifier": "visit_end_datetime",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the visit.",
+            "columnIdentifier": "other_visit_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 8, 8, 13, Waiting, 1978-10-12 23:14:40, 1988-01-07 06:41:51",
+          "2, 7, 15, 4, Return, 1980-05-02 23:31:18, 1990-08-30 22:44:16",
+          "3, 12, 12, 12, Fixed, 2010-02-23 18:16:23, 1982-05-13 02:08:41"
+        ],
+        "tableDescription": "Records visits by engineers to assets for fault resolution.",
+        "tableIdentifier": "Engineer_Visits"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a part fault.",
+            "columnIdentifier": "part_fault_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "The unique identifier for the part experiencing the fault.",
+            "columnIdentifier": "part_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Parts",
+                "toColumn": "part_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "A short name or code for the fault.",
+            "columnIdentifier": "fault_short_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "A detailed description of the fault.",
+            "columnIdentifier": "fault_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Additional details about the fault.",
+            "columnIdentifier": "other_fault_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 1, PW, Package Wrong",
+          "2, 3, TW, Top Parts Wrong",
+          "3, 2, MW, Medium Scale Wrong"
+        ],
+        "tableDescription": "Stores details about faults associated with parts.",
+        "tableIdentifier": "Part_Faults"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "The unique identifier for a fault log entry.",
+            "columnIdentifier": "fault_log_entry_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Fault_Log",
+                "toColumn": "fault_log_entry_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The unique identifier for a part fault.",
+            "columnIdentifier": "part_fault_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Part_Faults",
+                "toColumn": "part_fault_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The current status of the fault (e.g., Reported, Return, Fixed).",
+            "columnIdentifier": "fault_status",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "12, 3, Reported",
+          "7, 4, Return",
+          "1, 9, Fixed"
+        ],
+        "tableDescription": "Logs the status of fault entries related to parts.",
+        "tableIdentifier": "Fault_Log_Parts"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Identifier for the part fault.",
+            "columnIdentifier": "part_fault_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Part_Faults",
+                "toColumn": "part_fault_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier for the skill required to fix the part fault.",
+            "columnIdentifier": "skill_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Skills",
+                "toColumn": "skill_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "3, 2",
+          "12, 3",
+          "6, 1"
+        ],
+        "tableDescription": "Links part faults to the skills required to fix them.",
+        "tableIdentifier": "Skills_Required_To_Fix"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "company_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "company_type",
+            "columnType": "VARCHAR(5)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "company_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "company_address",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_company_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Third_Party_Companies"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "maintenance_contract_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "maintenance_contract_company_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Third_Party_Companies",
+                "toColumn": "company_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "contract_start_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "contract_end_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_contract_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Maintenance_Contracts"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "part_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "part_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "chargeable_yn",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "chargeable_amount",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_part_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Parts"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "skill_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "skill_code",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "skill_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Skills"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "staff_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "staff_name",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "gender",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_staff_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Staff"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "asset_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "maintenance_contract_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Maintenance_Contracts",
+                "toColumn": "maintenance_contract_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "supplier_company_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Third_Party_Companies",
+                "toColumn": "company_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "asset_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "asset_make",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "asset_model",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "asset_acquired_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "asset_disposed_date",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_asset_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Assets"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "asset_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Assets",
+                "toColumn": "asset_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "part_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Parts",
+                "toColumn": "part_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Asset_Parts"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "engineer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "company_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Third_Party_Companies",
+                "toColumn": "company_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Maintenance_Engineers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "engineer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Maintenance_Engineers",
+                "toColumn": "engineer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "skill_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Skills",
+                "toColumn": "skill_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Engineer_Skills"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fault_log_entry_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "asset_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Assets",
+                "toColumn": "asset_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "recorded_by_staff_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fault_log_entry_datetime",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fault_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_fault_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Fault_Log"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "engineer_visit_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "contact_staff_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Staff",
+                "toColumn": "staff_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "engineer_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Maintenance_Engineers",
+                "toColumn": "engineer_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fault_log_entry_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Fault_Log",
+                "toColumn": "fault_log_entry_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fault_status",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "visit_start_datetime",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "visit_end_datetime",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_visit_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Engineer_Visits"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "part_fault_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "part_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Parts",
+                "toColumn": "part_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fault_short_name",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fault_description",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "other_fault_details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Part_Faults"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fault_log_entry_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Fault_Log",
+                "toColumn": "fault_log_entry_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "part_fault_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Part_Faults",
+                "toColumn": "part_fault_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "fault_status",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Fault_Log_Parts"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "part_fault_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Part_Faults",
+                "toColumn": "part_fault_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "skill_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Skills",
+                "toColumn": "skill_id",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "Skills_Required_To_Fix"
+      }
+    ]
+  },
+  "message": "Success"
+}

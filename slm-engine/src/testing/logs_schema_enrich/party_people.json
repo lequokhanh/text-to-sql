@@ -1,0 +1,403 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "The database schema is designed to manage information about political parties, their members, and associated events within different regions. The `region` table stores details about various regions, including identifiers, names, dates, labels, formats, and catalogues. The `party` table contains information about political parties, such as party IDs, ministers, tenure in office, region IDs, and party names, linking to the `region` table through Region_ID. The `member` table holds details of individual members, including their IDs, names, associated party IDs (linking back to the `party` table), and whether they are currently in office. Lastly, the `party_events` table records events related to parties, including event IDs, names, associated party IDs, and member IDs responsible for the events (linking to the `member` table). This schema effectively tracks political structures, memberships, and activities across different regions.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a region.",
+            "columnIdentifier": "Region_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the region.",
+            "columnIdentifier": "Region_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date associated with the region.",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Label or tag for the region.",
+            "columnIdentifier": "Label",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Format or structure related to the region.",
+            "columnIdentifier": "Format",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Catalogue information about the region.",
+            "columnIdentifier": "Catalogue",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, United Kingdom, 1 July 2002, Parlophone, CD, 540 3622",
+          "2, Japan, 3 July 2002, Toshiba-EMI, 2× LP, 539 9821",
+          "3, United States, 16 July 2002, Astralwerks, CD digipak, TOCP-66045"
+        ],
+        "tableDescription": "Stores details about various regions including identifiers, names, dates, labels, formats, and catalogues.",
+        "tableIdentifier": "region"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a party.",
+            "columnIdentifier": "Party_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the minister associated with the party.",
+            "columnIdentifier": "Minister",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the party took office.",
+            "columnIdentifier": "Took_office",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the party left office.",
+            "columnIdentifier": "Left_office",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the region where the party operates.",
+            "columnIdentifier": "Region_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "region",
+                "toColumn": "Region_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the political party.",
+            "columnIdentifier": "Party_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Dr. Kwame Nkrumah (MP), 1957, 1958, 1, Convention Peoples Party",
+          "2, Kojo Botsio (MP), 1958, 1959, 2, Progress Party",
+          "3, Ebenezer Ako-Adjei (MP), 1959, 1960, 3, 3"
+        ],
+        "tableDescription": "Contains information about political parties, such as party IDs, ministers, tenure in office, region IDs, and party names.",
+        "tableIdentifier": "party"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for a member.",
+            "columnIdentifier": "Member_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the member.",
+            "columnIdentifier": "Member_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the party the member belongs to.",
+            "columnIdentifier": "Party_ID",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "party",
+                "toColumn": "Party_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Indicates whether the member is currently in office.",
+            "columnIdentifier": "In_office",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Hon Tony Abbott, 3, 1994–present",
+          "2, Hon Dick Adams, 2, 1993–2013",
+          "3, Anthony Albanese, 1, 1996–present"
+        ],
+        "tableDescription": "Holds details of individual members, including their IDs, names, associated party IDs, and whether they are currently in office.",
+        "tableIdentifier": "member"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for an event.",
+            "columnIdentifier": "Event_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the event.",
+            "columnIdentifier": "Event_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking to the party associated with the event.",
+            "columnIdentifier": "Party_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "party",
+                "toColumn": "Party_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking to the member responsible for the event.",
+            "columnIdentifier": "Member_in_charge_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "member",
+                "toColumn": "Member_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "1, Annaual Meeting, 1, 4",
+          "2, Conference, 2, 12",
+          "3, Budget Meeting, 3, 2"
+        ],
+        "tableDescription": "Records events related to parties, including event IDs, names, associated party IDs, and member IDs responsible for the events.",
+        "tableIdentifier": "party_events"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Region_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Region_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Label",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Format",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Catalogue",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "region"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Party_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Minister",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Took_office",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Left_office",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Region_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "region",
+                "toColumn": "Region_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Party_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "party"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Member_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Member_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Party_ID",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "party",
+                "toColumn": "Party_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "In_office",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "member"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Event_ID",
+            "columnType": "int",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Event_Name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Party_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "party",
+                "toColumn": "Party_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Member_in_charge_ID",
+            "columnType": "int",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "member",
+                "toColumn": "Member_ID",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "party_events"
+      }
+    ]
+  },
+  "message": "Success"
+}

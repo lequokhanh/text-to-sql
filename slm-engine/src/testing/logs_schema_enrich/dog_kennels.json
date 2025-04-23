@@ -1,0 +1,907 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database is designed to manage information related to dogs and their treatments within an animal shelter or veterinary clinic. It includes tables for dog details such as breed, size, and owner information, as well as professional staff roles. The database tracks treatment types, individual treatment records, and charges associated with these treatments. It facilitates the management of adoption processes by recording when dogs are adopted and departed from the facility.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code for each breed.",
+            "columnIdentifier": "breed_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Name of the breed.",
+            "columnIdentifier": "breed_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "BUL, Eskimo",
+          "ESK, Husky",
+          "HUS, Bulldog"
+        ],
+        "tableDescription": "Stores information about different dog breeds.",
+        "tableIdentifier": "Breeds"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each charge type.",
+            "columnIdentifier": "charge_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of charge, such as Daily Accommodation, Drugs, or Health Check.",
+            "columnIdentifier": "charge_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Amount charged for the specific type of treatment.",
+            "columnIdentifier": "charge_amount",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Daily Accommodation, 98",
+          "2, Drugs, 322",
+          "3, Health Check, 640"
+        ],
+        "tableDescription": "Stores information about different types of charges associated with treatments for dogs.",
+        "tableIdentifier": "Charges"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code representing the size of a dog.",
+            "columnIdentifier": "size_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the size category for a dog.",
+            "columnIdentifier": "size_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "LGE, Small",
+          "MED, Medium",
+          "SML, Large"
+        ],
+        "tableDescription": "Stores size codes and their descriptions for dogs.",
+        "tableIdentifier": "Sizes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique code for each type of treatment.",
+            "columnIdentifier": "treatment_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Description of the treatment type.",
+            "columnIdentifier": "treatment_type_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "EXAM, Physical examination",
+          "VAC, Vaccination",
+          "WALK, Take for a Walk"
+        ],
+        "tableDescription": "Stores information about different types of treatments that can be performed on dogs.",
+        "tableIdentifier": "Treatment_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each owner.",
+            "columnIdentifier": "owner_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the owner.",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the owner.",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Street address of the owner.",
+            "columnIdentifier": "street",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "City where the owner resides.",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "State where the owner resides.",
+            "columnIdentifier": "state",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Zip code of the owner's location.",
+            "columnIdentifier": "zip_code",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Email address of the owner.",
+            "columnIdentifier": "email_address",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Home phone number of the owner.",
+            "columnIdentifier": "home_phone",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Cell phone number of the owner.",
+            "columnIdentifier": "cell_number",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Nora, Haley, 0647 Hintz Village Apt. 024, Lake Tia, Wisconsin, 93165, lynn81@example.org, 1-682-845-0116x63235, 478.978.0729",
+          "2, Melisa, DuBuque, 1204 Mae Highway Apt. 107, Port Reannamouth, Virginia, 45244, ykris@example.com, (799)563-0260x454, (722)768-5439x484",
+          "3, Jaclyn, Stoltenberg, 2635 Caitlyn Plains, Barrettburgh, Vermont, 02647, hudson.favian@example.com, 916.976.9480x13851, 481-483-9083x37986"
+        ],
+        "tableDescription": "Stores information about dog owners, including contact details and addresses.",
+        "tableIdentifier": "Owners"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each dog.",
+            "columnIdentifier": "dog_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier for the owner of the dog.",
+            "columnIdentifier": "owner_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Owners",
+                "toColumn": "owner_id",
+                "type": "OTM"
+              },
+              {
+                "tableIdentifier": "Owners",
+                "toColumn": "owner_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Indicates whether the dog was abandoned (1) or not (0).",
+            "columnIdentifier": "abandoned_yn",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the breed of the dog.",
+            "columnIdentifier": "breed_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Breeds",
+                "toColumn": "breed_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the size of the dog.",
+            "columnIdentifier": "size_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Sizes",
+                "toColumn": "size_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Name of the dog.",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Age of the dog.",
+            "columnIdentifier": "age",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the dog was born.",
+            "columnIdentifier": "date_of_birth",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Gender of the dog (1 for male, 0 for female).",
+            "columnIdentifier": "gender",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Weight of the dog.",
+            "columnIdentifier": "weight",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the dog arrived at the facility.",
+            "columnIdentifier": "date_arrived",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the dog was adopted.",
+            "columnIdentifier": "date_adopted",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the dog left the facility.",
+            "columnIdentifier": "date_departed",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 3, 1, ESK, LGE, Kacey, 6, 2012-01-27 05:11:53, 1, 7.57, 2017-09-08 20:10:13, 2018-03-06 16:32:11, 2018-03-25 06:58:44",
+          "2, 11, 0, BUL, MED, Hipolito, 9, 2013-02-13 05:15:21, 0, 1.72, 2017-12-22 05:02:02, 2018-03-25 08:12:51, 2018-03-25 02:11:32",
+          "3, 1, 1, HUS, SML, Mavis, 8, 2008-05-19 15:54:49, 1, 8.04, 2017-06-25 10:14:05, 2018-03-07 21:45:43, 2018-03-25 10:25:46"
+        ],
+        "tableDescription": "Stores information about dogs in the shelter or veterinary clinic.",
+        "tableIdentifier": "Dogs"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each professional.",
+            "columnIdentifier": "professional_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Code representing the role of the professional within the organization.",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "First name of the professional.",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Street address where the professional resides.",
+            "columnIdentifier": "street",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "City where the professional resides.",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "State where the professional resides.",
+            "columnIdentifier": "state",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Zip code for the professional's residence.",
+            "columnIdentifier": "zip_code",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Last name of the professional.",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Email address of the professional.",
+            "columnIdentifier": "email_address",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Home phone number of the professional.",
+            "columnIdentifier": "home_phone",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Cell phone number of the professional.",
+            "columnIdentifier": "cell_number",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, Employee, Taryn, \"6915 Oberbrunner Point Suite 491\nGleasonville, LA \", West Heidi, Indiana, 06646, Braun, deanna.schuster@example.com, +71(6)2898266914, (275)939-2435x80863",
+          "2, Veterenarian, Jayson, \"88665 Terence Lodge Apt. 904\nCorneliusfort, NC 194\", North Odellfurt, Connecticut, 43129, Ullrich, lucile.shanahan@example.org, +02(1)0259033559, 889-940-2676",
+          "3, Employee, Olaf, \"68589 Bradly Manor\nNew Audrey, IN 91497\", Jaceton, Wisconsin, 77129, Watsica, uboehm@example.org, 325-155-0801x7005, (369)908-7311x065"
+        ],
+        "tableDescription": "Stores information about professionals working at the animal shelter or veterinary clinic, including their roles and contact details.",
+        "tableIdentifier": "Professionals"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each treatment record.",
+            "columnIdentifier": "treatment_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the treatment to a specific dog.",
+            "columnIdentifier": "dog_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Dogs",
+                "toColumn": "dog_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Identifier linking the treatment to a specific professional.",
+            "columnIdentifier": "professional_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Professionals",
+                "toColumn": "professional_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the type of treatment given.",
+            "columnIdentifier": "treatment_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Treatment_Types",
+                "toColumn": "treatment_type_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Date and time when the treatment was administered.",
+            "columnIdentifier": "date_of_treatment",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Cost associated with the treatment.",
+            "columnIdentifier": "cost_of_treatment",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, 14, 9, WALK, 2018-03-19 04:39:54, 567",
+          "2, 4, 10, VAC, 2018-03-15 20:25:34, 147",
+          "3, 2, 4, EXAM, 2018-03-08 05:26:23, 429"
+        ],
+        "tableDescription": "Stores records of treatments given to dogs, including details about the professional providing the treatment and the cost.",
+        "tableIdentifier": "Treatments"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "breed_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "breed_name",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Breeds"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "charge_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "charge_type",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "charge_amount",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Charges"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "size_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "size_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Sizes"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "treatment_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "treatment_type_description",
+            "columnType": "VARCHAR(80)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Treatment_Types"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "owner_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "street",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "zip_code",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "email_address",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "home_phone",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cell_number",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Owners"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "dog_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "owner_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Owners",
+                "toColumn": "owner_id",
+                "type": "OTM"
+              },
+              {
+                "tableIdentifier": "Owners",
+                "toColumn": "owner_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "abandoned_yn",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "breed_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Breeds",
+                "toColumn": "breed_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "size_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Sizes",
+                "toColumn": "size_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "age",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_of_birth",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "gender",
+            "columnType": "VARCHAR(1)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "weight",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_arrived",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_adopted",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_departed",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Dogs"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "professional_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "role_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "first_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "street",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "city",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "state",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "zip_code",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "last_name",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "email_address",
+            "columnType": "VARCHAR(50)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "home_phone",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cell_number",
+            "columnType": "VARCHAR(20)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Professionals"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "treatment_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "dog_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Dogs",
+                "toColumn": "dog_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "professional_id",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Professionals",
+                "toColumn": "professional_id",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "treatment_type_code",
+            "columnType": "VARCHAR(10)",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Treatment_Types",
+                "toColumn": "treatment_type_code",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "date_of_treatment",
+            "columnType": "DATETIME",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "cost_of_treatment",
+            "columnType": "DECIMAL(19,4)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Treatments"
+      }
+    ]
+  },
+  "message": "Success"
+}

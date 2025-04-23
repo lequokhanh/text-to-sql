@@ -1,0 +1,489 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database manages insurance claims and payments for customers. It includes tables for customer details, policies they hold, claims made under those policies, settlements of those claims, and the payments related to those settlements. The relationships between these entities are established through foreign keys, ensuring a structured and organized data management system for tracking insurance transactions from policy inception to final payment settlement.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each customer.",
+            "columnIdentifier": "Customer_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Detailed information about the customer, such as name or contact details.",
+            "columnIdentifier": "Customer_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "1, America Jaskolski",
+          "2, Ellsworth Paucek",
+          "3, Mrs. Hanna Willms"
+        ],
+        "tableDescription": "Contains details about each customer, including their name or other identifying information.",
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each policy.",
+            "columnIdentifier": "Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the policy to a specific customer.",
+            "columnIdentifier": "Customer_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "Customer_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the type of insurance policy (e.g., Car, Life, Property).",
+            "columnIdentifier": "Policy_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The start date of the policy coverage.",
+            "columnIdentifier": "Start_Date",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The end date of the policy coverage.",
+            "columnIdentifier": "End_Date",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "119, 1, Car, 2018-01-21, 2017-12-15",
+          "141, 2, Life, 2017-08-21, 2017-09-29",
+          "143, 3, Property, 2017-06-16, 2017-12-09"
+        ],
+        "tableDescription": "Stores information about policies held by customers, including policy type and dates.",
+        "tableIdentifier": "Customer_Policies"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each claim.",
+            "columnIdentifier": "Claim_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the claim to a specific policy.",
+            "columnIdentifier": "Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customer_Policies",
+                "toColumn": "Policy_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date when the claim was made.",
+            "columnIdentifier": "Date_Claim_Made",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date when the claim was settled.",
+            "columnIdentifier": "Date_Claim_Settled",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The total amount claimed by the customer.",
+            "columnIdentifier": "Amount_Claimed",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The final amount paid out for the claim after settlement.",
+            "columnIdentifier": "Amount_Settled",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "143, 744, 2017-03-11, 2017-11-03, 43884, 1085",
+          "423, 552, 2016-08-12, 2018-01-27, 79134, 1724",
+          "442, 473, 2017-02-24, 2018-01-21, 70088, 1189"
+        ],
+        "tableDescription": "Stores information about insurance claims made by customers.",
+        "tableIdentifier": "Claims"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each settlement.",
+            "columnIdentifier": "Settlement_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the settlement to a specific claim.",
+            "columnIdentifier": "Claim_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Claims",
+                "toColumn": "Claim_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "The date on which the insurance claim was made.",
+            "columnIdentifier": "Date_Claim_Made",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date on which the insurance claim was settled.",
+            "columnIdentifier": "Date_Claim_Settled",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The initial amount claimed by the customer.",
+            "columnIdentifier": "Amount_Claimed",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The final amount that was settled with the customer.",
+            "columnIdentifier": "Amount_Settled",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the settlement to a specific policy held by a customer.",
+            "columnIdentifier": "Customer_Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "357, 486, 2018-08-07, 2018-01-16, 38543, 1181, 515",
+          "412, 621, 2017-08-27, 2018-02-04, 57669, 1427, 617",
+          "476, 801, 2016-09-05, 2018-03-02, 30954, 1805, 943"
+        ],
+        "tableDescription": "Records information about the settlement of insurance claims, including the claim details and the final settled amount.",
+        "tableIdentifier": "Settlements"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for each payment.",
+            "columnIdentifier": "Payment_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Identifier linking the payment to a specific settlement.",
+            "columnIdentifier": "Settlement_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Settlements",
+                "toColumn": "Settlement_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Code representing the method used for the payment (e.g., credit card type).",
+            "columnIdentifier": "Payment_Method_Code",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The date on which the payment was made.",
+            "columnIdentifier": "Date_Payment_Made",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "The amount of money paid in this transaction.",
+            "columnIdentifier": "Amount_Payment",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "384, 516, MasterCard, 2018-02-16, 241730",
+          "435, 476, Discover Card, 2017-05-28, 448613",
+          "484, 682, Visa, 2017-06-24, 456098"
+        ],
+        "tableDescription": "Stores details of payments made for insurance claim settlements.",
+        "tableIdentifier": "Payments"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_Details",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Customers"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customers",
+                "toColumn": "Customer_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Policy_Type_Code",
+            "columnType": "CHAR(15)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Start_Date",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "End_Date",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Customer_Policies"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Customer_Policies",
+                "toColumn": "Policy_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_Claim_Made",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_Claim_Settled",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Amount_Claimed",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Amount_Settled",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Claims"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Settlement_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Claim_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Claims",
+                "toColumn": "Claim_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_Claim_Made",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_Claim_Settled",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Amount_Claimed",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Amount_Settled",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Customer_Policy_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Settlements"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Payment_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Settlement_ID",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "Settlements",
+                "toColumn": "Settlement_ID",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Payment_Method_Code",
+            "columnType": "VARCHAR(255)",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date_Payment_Made",
+            "columnType": "DATE",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Amount_Payment",
+            "columnType": "INTEGER",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "Payments"
+      }
+    ]
+  },
+  "message": "Success"
+}

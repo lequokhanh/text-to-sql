@@ -1,0 +1,377 @@
+{
+  "code": 0,
+  "data": {
+    "database_description": "This database schema is designed to manage and store information about mobile phones, focusing on their hardware specifications and accreditation details. It consists of three tables: `chip_model` captures the technical specifications of the phone's processor, including memory and connectivity features; `screen_mode` details various screen-related parameters such as resolution and color depth; and `phone` integrates these components with additional information like the manufacturer, model name, and certification status. The relationships between the tables are established through foreign keys, linking each phone record to its corresponding chip model and screen mode, thus providing a comprehensive view of phone hardware configurations and certifications.",
+    "enriched_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the chip model.",
+            "columnIdentifier": "Model_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Launch_year",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "RAM_MiB",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ROM_MiB",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Slots",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "WiFi",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Bluetooth",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "X3 Advanced, 2002.0, 32.0, 32.0, \"1CFII,1SD\", No, No",
+          "X3 Basic, 2003.0, 64.0, 48.0, 1SD, 802.11b, 1.1",
+          "X30 high-end, 2004.0, 32.0, 64.0, \"1CFII,1SD\", No, Yes"
+        ],
+        "tableDescription": "Stores technical specifications of phone processors, including memory and connectivity features.",
+        "tableIdentifier": "chip_model"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Unique identifier for the screen mode.",
+            "columnIdentifier": "Graphics_mode",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Character cell dimensions.",
+            "columnIdentifier": "Char_cells",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Screen pixel resolution.",
+            "columnIdentifier": "Pixels",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Number of colors supported by hardware.",
+            "columnIdentifier": "Hardware_colours",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Memory usage in kilobytes.",
+            "columnIdentifier": "used_kb",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Memory map range.",
+            "columnIdentifier": "map",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of screen mode, e.g., Graphics or Text.",
+            "columnIdentifier": "Type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "sample_data": [
+          "0.0, 80 × 32, 640 × 256, 2.0, 20.0, 3000–7FFF, Graphics",
+          "1.0, 40 × 32, 320 × 256, 4.0, 16.0, 4000–7FFF, Text",
+          "2.0, 20 × 32, 160 × 256, 8.0, 10.0, 5800–7FFF, Graphics"
+        ],
+        "tableDescription": "Details various screen-related parameters such as resolution and color depth.",
+        "tableIdentifier": "screen_mode"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "Name of the company that manufactures the phone.",
+            "columnIdentifier": "Company_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Unique identifier for the hardware model of the phone.",
+            "columnIdentifier": "Hardware_Model_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "Type of accreditation received by the phone.",
+            "columnIdentifier": "Accreditation_type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Level of accreditation received by the phone.",
+            "columnIdentifier": "Accreditation_level",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Date when the accreditation was awarded to the phone.",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "Reference to the chip model used in the phone, linking to the chip_model table.",
+            "columnIdentifier": "chip_model",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "chip_model",
+                "toColumn": "Model_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "Reference to the screen mode of the phone, linking to the screen_mode table.",
+            "columnIdentifier": "screen_mode",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "screen_mode",
+                "toColumn": "Graphics_mode",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "sample_data": [
+          "Sony Mobile Communications, GT-I9100, Full, joyn Hot Fixes, Approved (awarded 15.11.12), X5, 1",
+          "LG Electronics, GT-I9300, Provisional, joyn, Approved (awarded 19.11.12), X51v, 3",
+          "Nokia Corporation, LG-P760, Full, joyn Hot Fixes, Approved (awarded 05.12.12), X30 low-end, 4"
+        ],
+        "tableDescription": "Integrates hardware components with additional information like the manufacturer, model name, and certification status.",
+        "tableIdentifier": "phone"
+      }
+    ],
+    "original_schema": [
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Model_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Launch_year",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "RAM_MiB",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "ROM_MiB",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Slots",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "WiFi",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Bluetooth",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "chip_model"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Graphics_mode",
+            "columnType": "real",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Char_cells",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Pixels",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Hardware_colours",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "used_kb",
+            "columnType": "real",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "map",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          }
+        ],
+        "tableIdentifier": "screen_mode"
+      },
+      {
+        "columns": [
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Company_name",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Hardware_Model_name",
+            "columnType": "text",
+            "isPrimaryKey": true,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Accreditation_type",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Accreditation_level",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "Date",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": []
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "chip_model",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "chip_model",
+                "toColumn": "Model_name",
+                "type": "OTM"
+              }
+            ]
+          },
+          {
+            "columnDescription": "",
+            "columnIdentifier": "screen_mode",
+            "columnType": "text",
+            "isPrimaryKey": false,
+            "relations": [
+              {
+                "tableIdentifier": "screen_mode",
+                "toColumn": "Graphics_mode",
+                "type": "OTM"
+              }
+            ]
+          }
+        ],
+        "tableIdentifier": "phone"
+      }
+    ]
+  },
+  "message": "Success"
+}
