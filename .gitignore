@@ -1,10 +1,10 @@
 /devops/data/
 /.idea/
+/.idx/
+/.vscode/
 
 /slm-engine/spider_data/
 /slm-engine/archive/
 
 **/target/
 slm-backend/target/
-/.idx
-/.vscode
