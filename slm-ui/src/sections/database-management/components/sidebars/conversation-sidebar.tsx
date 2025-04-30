@@ -19,7 +19,7 @@ import {
 import Iconify from 'src/components/iconify';
 import SearchNotFound from 'src/components/search-not-found';
 
-import { Conversation } from '../../types';
+import { Conversation } from 'src/types/conversation';
 import { ScrollableContent } from '../layout/database-layout';
 
 const ConversationButton = styled(Button)(({ theme }) => ({

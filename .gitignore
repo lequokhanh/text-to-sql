@@ -6,3 +6,5 @@
 
 **/target/
 slm-backend/target/
+/.idx
+/.vscode
