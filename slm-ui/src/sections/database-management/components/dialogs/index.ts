@@ -1,2 +1,2 @@
 // File: src/sections/database-management/components/management/index.ts
-export { default as DatabaseCreateDialog } from './DatabaseCreateDialog';
+export { default as DatabaseCreateDialog } from './database-create-dialog';

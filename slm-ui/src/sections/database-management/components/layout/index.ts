@@ -1,2 +1,2 @@
-export * from './DatabaseLayout';
-export * from './TabHeader';
+export * from './database-layout';
+export * from './tab-header';

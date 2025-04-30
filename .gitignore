@@ -3,3 +3,6 @@
 
 /slm-engine/spider_data/
 /slm-engine/archive/
+
+**/target/
+slm-backend/target/
