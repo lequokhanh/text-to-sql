@@ -51,8 +51,12 @@ services:
         environment:
             - EMBED_HOST_API=embed:8080
             - OLLAMA_HOST=http://ftisu.ddns.net:9293/ollama/
-            - OLLAMA_MODEL=qwen2.5-coder:7b-instruct-q8_0
-            - LLM_PROMPT=0 # 0 for traditional prompt, 1 for fine-tuned prompt
+            - OLLAMA_MODEL=qwen2.5-coder:14b
+            - LLM_PROMPT=1 # 0 for traditional prompt, 1 for fine-tuned prompt
+            # qwen2.5-coder:14b
+            # gemma3:12b
+            # phi4
+            # llama3.1:8b-instruct-q8_0
         networks:
             - slm
         healthcheck:

@@ -130,6 +130,7 @@ DATABASE_DESCRIPTION_TMPL = PromptTemplate(DATABASE_DESCRIPTION_PROMPT)
 TEXT_TO_SQL_PROMPT = (
     "You are a {dialect} SQL expert. Generate a SQL query based on the user's question. Only return the SQL query, no explanations.\n"
     "User question: {user_question}\n"
+    "Database description: {database_description}\n"
     "Available tables and their schema:\n"
     "{table_schemas}\n"
     "Requirements:\n"
@@ -145,6 +146,7 @@ TEXT_TO_SQL_PROMPT = (
 )
 
 TEXT_TO_SQL_PROMPT_FINETUNED = (
+    "-- Database description: {database_description}\n"
     "{table_schemas}\n"
     "-- Using valid {dialect} SQL, answer the following questions for the tables provided above.\n"
     "Question: {user_question}\n"
@@ -164,6 +166,7 @@ def text2sql_prompt_routing(prompt_type: int) -> PromptTemplate:
 TABLE_RETRIEVAL_PROMPT = (
     "Return ONLY the names of SQL tables that MIGHT be relevant to the user question.\n"
     "The question is: {query_str}\n"
+    "The database description is: {database_description}\n"
     "The tables are as following format - [table_name (table_description)]:\n\n"
     "{table_names}\n\n"
     "Instructions:\n"
@@ -192,11 +195,12 @@ TABLE_EXTRACTION_PROMPT = (
 TABLE_EXTRACTION_TMPL = PromptTemplate(TABLE_EXTRACTION_PROMPT)
 
 SQL_ERROR_REFLECTION_PROMPT = (
-    "You are a {dialect} SQL expert. Reflect on the given SQL query and error message to determine the cause of the error and suggest a possible solution.\n"
-    "\n* User query: {user_query}\n"
-    "* Database schema: {database_schema}\n"
-    "* Original SQL query: {sql_query}\n"
-    "* Error message: {error_message}\n\n"
+    "You are a {dialect} SQL expert. Reflect on the given SQL query and error message to determine the cause of the error and suggest a possible solution.\n\n"
+    "# User query: {user_query}\n"
+    "# Database description: {database_description}\n"
+    "# Database schema: {database_schema}\n"
+    "# Original SQL query: {sql_query}\n"
+    "# Error message: {error_message}\n\n"
     "Requirements:\n"
     "1. Analyze the error and determine the cause\n"
     "2. Fix the SQL query to resolve the error\n"

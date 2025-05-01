@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 API_HOST = f"http://{os.getenv('EMBED_HOST_API')}"
-API_HOST = "http://localhost:8181"
+# API_HOST = "http://localhost:8181"
 logger.info("EMBED_HOST_API: " + API_HOST)
 
 _endpoints = {
@@ -215,7 +215,6 @@ def get_sample_data(connection_payload, table_details, limit=3):
                         WHERE {quoted_col} IS NOT NULL
                         LIMIT {limit}
                     """
-                print("Query: ", query)
                 # Thực thi truy vấn
                 result = execute_sql(connection_payload, query)
                 
@@ -238,7 +237,6 @@ def get_sample_data(connection_payload, table_details, limit=3):
                             LIMIT {limit}
                         """
                         result = execute_sql(connection_payload, no_quote_query)
-                print("Result: ", result)
                 # Lấy giá trị mẫu từ kết quả
                 sample_values = []
                 if not result.get("error") and result.get("data"):

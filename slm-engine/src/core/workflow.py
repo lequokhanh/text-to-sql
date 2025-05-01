@@ -84,7 +84,7 @@ class  SQLAgentWorkflow(Workflow):
         self.num_tables_threshold = 3
         self.max_sql_retries = 3
         self.llm = llm
-        self._timeout = 30.0
+        self._timeout = 300.0
 
     @step
     async def Start_workflow(self, context: Context, ev: StartEvent) -> TableRetrieveEvent | TextToSQLEvent:
@@ -93,6 +93,7 @@ class  SQLAgentWorkflow(Workflow):
         start_time = datetime.now()
         await context.set("table_details", ev.table_details)
         await context.set("connection_payload", ev.connection_payload)
+        await context.set("database_description", ev.database_description)
         await context.set("user_query", ev.query)
 
         logger.info(f"\033[93m[START] User query: \"{ev.query}\"\033[0m")
@@ -142,8 +143,10 @@ class  SQLAgentWorkflow(Workflow):
                 formatted_table = f"- {table['tableDescription']}"
             tables.append(formatted_table)
 
+        database_description = await context.get("database_description")
 
         fmt_messages = self.table_retrieval_prompt.format_messages(
+            database_description=database_description,
             query_str=ev.query,
             table_names="\n".join(tables)
         )
@@ -180,6 +183,7 @@ class  SQLAgentWorkflow(Workflow):
         
         table_details = await context.get("table_details")
         connection_payload = await context.get("connection_payload")
+        database_description = await context.get("database_description")
         dialect = connection_payload.get("dbType", "").upper()
         logger.info(f"\033[93m[GENERATE] DB dialect: {dialect}\033[0m")
         
@@ -198,6 +202,7 @@ class  SQLAgentWorkflow(Workflow):
         fmt_messages = self.text2sql_prompt.format_messages(
             user_question=ev.query,
             table_schemas=table_schemas,
+            database_description=database_description,
             dialect=dialect
         )
     
@@ -324,7 +329,8 @@ class  SQLAgentWorkflow(Workflow):
         connection_payload = await context.get("connection_payload")
         user_query = await context.get("user_query")
         table_details = await context.get("table_details")
-        
+        database_description = await context.get("database_description")
+
         # Safely get relevant tables
         try:
             relevant_tables = await context.get("relevant_tables")
@@ -346,6 +352,7 @@ class  SQLAgentWorkflow(Workflow):
         
         fmt_messages = SQL_ERROR_REFLECTION_TMPL.format_messages(
             database_schema=table_schemas,
+            database_description=database_description,
             sql_query=sql_query,
             error_message=error,
             dialect=connection_payload.get("dbType", "").upper(),
@@ -394,57 +401,175 @@ class SchemaEnrichmentWorkflow(Workflow):
         # self.schema_enrichment_prompt = schema_enrichment_prompt
         self.llm = llm
         self._timeout = 3000.0
+        # Initialize workflow logging metrics
+        self.workflow_logs = {
+            "start_time": None,
+            "end_time": None,
+            "total_tables": 0,
+            "total_columns": 0,
+            "enriched_tables": 0,
+            "enriched_columns": 0,
+            "failed_tables": 0,
+            "failed_columns": 0,
+            "clusters": [],
+            "processing_times": {
+                "total": 0,
+                "database_description": 0,
+                "schema_enrichment": 0
+            },
+            "errors": [],
+            "warnings": []
+        }
 
     @step
     async def Start_workflow(self, context: Context, ev: StartEvent) -> SchemaEnrichmentEvent:
+        import time
+        # Start timing the workflow
+        self.workflow_logs["start_time"] = time.time()
+        
+        # Log the start of the workflow
+        logger.info("\033[94m[WORKFLOW] Starting Schema Enrichment Workflow\033[0m")
+        
         await context.set("connection_payload", ev.connection_payload)
         await context.set("database_schema", ev.database_schema)
 
-        # Get all table names
-        brief_schema_presentation = schema_parser(ev.database_schema, "Simple")
-        fmt_messages = DATABASE_DESCRIPTION_TMPL.format_messages(
-            schema=brief_schema_presentation
-        )
-        log_prompt(fmt_messages, "GENERATE")
-        chat_response = self.llm.chat(fmt_messages)
-        database_description = chat_response.message.content
-        logger.info(f"\033[92m[GENERATE] Database description: {database_description}\033[0m")
+        # Count tables and columns for metrics
+        total_tables = len(ev.database_schema)
+        total_columns = sum(len(table.get('columns', [])) for table in ev.database_schema)
+        self.workflow_logs["total_tables"] = total_tables
+        self.workflow_logs["total_columns"] = total_columns
+        
+        logger.info(f"\033[94m[WORKFLOW] Found {total_tables} tables with {total_columns} columns to enrich\033[0m")
+
+        # Generate database description
+        desc_start_time = time.time()
+        try:
+            # Get all table names
+            brief_schema_presentation = schema_parser(ev.database_schema, "Simple")
+            fmt_messages = DATABASE_DESCRIPTION_TMPL.format_messages(
+                schema=brief_schema_presentation
+            )
+            log_prompt(fmt_messages, "GENERATE")
+            chat_response = self.llm.chat(fmt_messages)
+            database_description = chat_response.message.content
+            logger.info(f"\033[92m[GENERATE] Database description: {database_description}\033[0m")
+            self.workflow_logs["processing_times"]["database_description"] = time.time() - desc_start_time
+        except Exception as e:
+            error_msg = f"Failed to generate database description: {str(e)}"
+            logger.error(f"\033[91m[ERROR] {error_msg}\033[0m")
+            self.workflow_logs["errors"].append(error_msg)
+            database_description = "No description available due to error"
 
         # Cluster schema
-        clusters = schema_clustering(ev.database_schema, resolution_value=2.5)
-        for cluster in clusters:
-            for table in cluster:
-                table["sample_data"] = get_sample_data(
-                    connection_payload=ev.connection_payload, 
-                    table_details=table
-                )
+        cluster_start_time = time.time()
+        try:
+            clusters = schema_clustering(ev.database_schema, resolution_value=2.5)
+            
+            # Log cluster information
+            for i, cluster in enumerate(clusters):
+                cluster_info = {
+                    "cluster_id": i,
+                    "tables": [table.get('tableIdentifier', 'unknown') for table in cluster],
+                    "table_count": len(cluster),
+                    "column_count": sum(len(table.get('columns', [])) for table in cluster),
+                    "status": "pending"
+                }
+                self.workflow_logs["clusters"].append(cluster_info)
+                
+            logger.info(f"\033[94m[WORKFLOW] Created {len(clusters)} clusters of related tables\033[0m")
+            
+            # Add sample data to each table in clusters
+            for cluster_idx, cluster in enumerate(clusters):
+                for table in cluster:
+                    try:
+                        table["sample_data"] = get_sample_data(
+                            connection_payload=ev.connection_payload, 
+                            table_details=table
+                        )
+                    except Exception as e:
+                        warning_msg = f"Failed to get sample data for table {table.get('tableIdentifier', 'unknown')}: {str(e)}"
+                        logger.warning(f"\033[93m[WARNING] {warning_msg}\033[0m")
+                        self.workflow_logs["warnings"].append(warning_msg)
+                        table["sample_data"] = []
+            
+            await context.set("num_tables", total_tables)
+            await context.set("num_clusters", len(clusters))
+            await context.set("num_tables_in_clusters", [len(c) for c in clusters])
+            
+        except Exception as e:
+            error_msg = f"Failed to cluster schema: {str(e)}"
+            logger.error(f"\033[91m[ERROR] {error_msg}\033[0m")
+            self.workflow_logs["errors"].append(error_msg)
+            clusters = [[table] for table in ev.database_schema]  # Fallback: each table in its own cluster
+            
         return SchemaEnrichmentEvent(database_description=database_description, clusters=clusters)
 
 
     @step
     async def Schema_Enrichment(self, context: Context, ev: SchemaEnrichmentEvent) -> StopEvent:
         """Generate database description and cluster schema."""
+        import time
+        
+        enrichment_start_time = time.time()
         cluster_infos = []
+        
+        # Parse cluster schema
         for cluster in ev.clusters:
             prompt = schema_parser(cluster, "Simple", include_sample_data=True)
             cluster_infos.append(prompt)
             print(prompt)
 
+        # Process each cluster
         cluster_enriched = []
-        for c in cluster_infos:
-            fmt_messages = SCHEMA_ENRICHMENT_TMPL.format_messages(
-                cluster_info=c,
-                db_info=ev.database_description
-            )
-            log_prompt(fmt_messages, "GENERATE")
-            chat_response = self.llm.chat(fmt_messages)
-            cluster_enriched.append(parse_schema_enrichment(chat_response))
+        for cluster_idx, cluster_info in enumerate(cluster_infos):
+            cluster_start_time = time.time()
+            logger.info(f"\033[94m[WORKFLOW] Processing cluster {cluster_idx+1}/{len(cluster_infos)}\033[0m")
             
-        # Lấy database_schema từ context
-        database_schema = await context.get("database_schema")
+            try:
+                fmt_messages = SCHEMA_ENRICHMENT_TMPL.format_messages(
+                    cluster_info=cluster_info,
+                    db_info=ev.database_description
+                )
+                log_prompt(fmt_messages, "GENERATE")
 
+                retries = 3
+                enriched_data = []
+                for i in range(retries):
+                    chat_response = self.llm.chat(fmt_messages)
+                    enriched_data = parse_schema_enrichment(chat_response)
+
+                    if len(enriched_data) > 0:
+                        break
+                    else:
+                        logger.warning(f"\033[93m[WARNING] Failed to enrich cluster {cluster_idx+1} after {i+1}/{retries} retries\033[0m")
+                        time.sleep(1)
+                        continue
+                cluster_enriched.append(enriched_data)
+                
+                # Update cluster status in logs
+                if cluster_idx < len(self.workflow_logs["clusters"]):
+                    self.workflow_logs["clusters"][cluster_idx]["status"] = "enriched"
+                    self.workflow_logs["clusters"][cluster_idx]["processing_time"] = time.time() - cluster_start_time
+                    self.workflow_logs["clusters"][cluster_idx]["enriched_tables"] = len(enriched_data)
+                    
+                logger.info(f"\033[92m[SUCCESS] Enriched cluster {cluster_idx+1} with {len(enriched_data)} tables\033[0m")
+                
+            except Exception as e:
+                error_msg = f"Failed to enrich cluster {cluster_idx+1}: {str(e)}"
+                logger.error(f"\033[91m[ERROR] {error_msg}\033[0m")
+                self.workflow_logs["errors"].append(error_msg)
+                cluster_enriched.append([])  # Add empty list as fallback
+                
+                # Update cluster status in logs
+                if cluster_idx < len(self.workflow_logs["clusters"]):
+                    self.workflow_logs["clusters"][cluster_idx]["status"] = "failed"
+                    self.workflow_logs["clusters"][cluster_idx]["processing_time"] = time.time() - cluster_start_time
+                    self.workflow_logs["clusters"][cluster_idx]["error"] = str(e)
+            
+        # Get database_schema from context
+        database_schema = await context.get("database_schema")
         
-        # Tạo mapping từ table_name đến mô tả của bảng và cột
+        # Create mapping from table_name to descriptions
         enrichment_map = {}
         for cluster_data in cluster_enriched:
             for table_info in cluster_data:
@@ -452,44 +577,104 @@ class SchemaEnrichmentWorkflow(Workflow):
                 if not table_name:
                     continue
                     
-                # Tạo mapping cho bảng
+                # Create mapping for table
                 if table_name not in enrichment_map:
                     enrichment_map[table_name] = {
                         'table_description': table_info.get('description', ''),
                         'columns': {}
                     }
                 
-                # Tạo mapping cho các cột
+                # Create mapping for columns
                 for column_info in table_info.get('columns', []):
                     column_name = column_info.get('column_name')
                     if column_name:
                         enrichment_map[table_name]['columns'][column_name] = column_info.get('description', '')
-        logger.info(f"\033[92m[GENERATE] Database schema enrichment map: {enrichment_map}\033[0m")
-        # Cập nhật mô tả cho các bảng và cột trong database_schema
-        # Cập nhật mô tả cho các bảng và cột trong database_schema
+        
+        logger.info(f"\033[92m[GENERATE] Database schema enrichment map created for {len(enrichment_map)} tables\033[0m")
+        
+        # Track success and failure counts
+        enriched_tables_count = 0
+        enriched_columns_count = 0
+        failed_tables = []
+        failed_columns = []
+        
+        # Update descriptions for tables and columns in database_schema
         for table in database_schema:
             table_name = table.get('tableIdentifier')
+            table_enriched = False
+            
             if table_name in enrichment_map:
-                # Chỉ cập nhật mô tả bảng nếu trường hiện tại trống
+                # Update table description if current field is empty
                 table_description = table.get('tableDescription', '')
                 if not table_description and enrichment_map[table_name]['table_description']:
                     table['tableDescription'] = enrichment_map[table_name]['table_description']
+                    table_enriched = True
+                    enriched_tables_count += 1
                 
-                # Cập nhật mô tả cột
+                # Update column descriptions
+                columns_enriched = 0
+                columns_empty = 0
+                
                 for column in table.get('columns', []):
                     column_name = column.get('columnIdentifier')
+                    column_enriched = False
+                    
                     if column_name in enrichment_map[table_name]['columns']:
-                        # Chỉ cập nhật mô tả cột nếu trường hiện tại trống
+                        # Update column description if current field is empty
+                        if (column.get("columnDescription", "") in ["", "NULL", "''"] or 
+                            column.get("columnDescription") is None or 
+                            len(str(column.get("columnDescription", ""))) < 10):
+                            column["columnDescription"] = enrichment_map[table_name]['columns'][column_name]
+                            column_enriched = True
+                            columns_enriched += 1
+                            enriched_columns_count += 1
+                        else:
+                            # Column already had a description
+                            pass
+                    else:
+                        # Column not found in enrichment map
                         if (column.get("columnDescription", "") in ["", "NULL", "''"] or 
                             column.get("columnDescription") is None or 
                             len(str(column.get("columnDescription", ""))) <= 1):
-                            column["columnDescription"] = enrichment_map[table_name]['columns'][column_name]
+                            columns_empty += 1
+                            failed_columns.append(f"{table_name}.{column_name}")
+                
+                logger.info(f"\033[94m[WORKFLOW] Table '{table_name}': Enriched {columns_enriched} columns, {columns_empty} columns without enrichment\033[0m")
+                
+            else:
+                # Table not found in enrichment map
+                failed_tables.append(table_name)
+                logger.warning(f"\033[93m[WARNING] Table '{table_name}' not found in enrichment map\033[0m")
+        
+        # Update workflow logs with final counts
+        self.workflow_logs["enriched_tables"] = enriched_tables_count
+        self.workflow_logs["enriched_columns"] = enriched_columns_count
+        self.workflow_logs["failed_tables"] = len(failed_tables)
+        self.workflow_logs["failed_columns"] = len(failed_columns)
+        self.workflow_logs["processing_times"]["schema_enrichment"] = time.time() - enrichment_start_time
+        
+        # Calculate overall workflow stats
+        self.workflow_logs["end_time"] = time.time()
+        self.workflow_logs["processing_times"]["total"] = self.workflow_logs["end_time"] - self.workflow_logs["start_time"]
+        
+        # Create summary logs
+        success_rate_tables = (enriched_tables_count / self.workflow_logs["total_tables"]) * 100 if self.workflow_logs["total_tables"] > 0 else 0
+        success_rate_columns = (enriched_columns_count / self.workflow_logs["total_columns"]) * 100 if self.workflow_logs["total_columns"] > 0 else 0
+        
+        logger.info("\033[94m" + "="*50 + "\033[0m")
+        logger.info(f"\033[94m[WORKFLOW SUMMARY] Schema Enrichment Complete\033[0m")
+        logger.info(f"\033[94m[WORKFLOW SUMMARY] Total runtime: {self.workflow_logs['processing_times']['total']:.2f} seconds\033[0m")
+        logger.info(f"\033[94m[WORKFLOW SUMMARY] Tables: {enriched_tables_count}/{self.workflow_logs['total_tables']} enriched ({success_rate_tables:.1f}%)\033[0m")
+        logger.info(f"\033[94m[WORKFLOW SUMMARY] Columns: {enriched_columns_count}/{self.workflow_logs['total_columns']} enriched ({success_rate_columns:.1f}%)\033[0m")
+        logger.info(f"\033[94m[WORKFLOW SUMMARY] Errors: {len(self.workflow_logs['errors'])}, Warnings: {len(self.workflow_logs['warnings'])}\033[0m")
+        logger.info("\033[94m" + "="*50 + "\033[0m")
+        
+        # Prepare final result
         result = {
+            "_workflow_logs": self.workflow_logs,
             "database_description": ev.database_description,
             "enriched_schema": database_schema
         }
-        logger.info(f"\033[92m[GENERATE] Database description: {ev.database_description}\033[0m")
-        logger.info(f"\033[92m[GENERATE] Database schema: {database_schema}\033[0m")
+        
         return StopEvent(result=result)
-
 

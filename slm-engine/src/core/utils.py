@@ -13,6 +13,13 @@ def extract_table_list(response: ChatResponse) -> list:
     """Extracts a list of table names from a response string that may contain code blocks."""
     # First, strip any code block formatting
     cleaned_response = response.message.content
+
+    think_pattern = r'<think>[\s\S]*?</think>'
+    think_match = re.search(think_pattern, cleaned_response)
+    
+    if think_match:
+        # Only process text after the </think> tag
+        cleaned_response = cleaned_response[think_match.end():].strip()
     
     # Remove markdown code block if present
     code_block_pattern = r"```(?:python)?\s*([\s\S]*?)\s*```"
@@ -165,12 +172,18 @@ def schema_clustering(table_details: list, resolution_value = 1.0) -> list:
         if not table_details:
             return []
         
+        # If there are fewer than 5 tables, return one cluster with all tables
+        if len(table_details) < 5:
+            # Sort tables alphabetically by tableIdentifier
+            sorted_tables = sorted(table_details, key=lambda x: x['tableIdentifier'])
+            return [sorted_tables]
+        
         # Tạo từ điển để lưu thông tin đầy đủ của bảng, với key là tableIdentifier
         table_info_map = {table['tableIdentifier']: table for table in table_details}
         
         # Lấy danh sách các tên bảng
         tables = list(table_info_map.keys())
-        
+
         # Trích xuất các khóa ngoại
         foreign_keys = []
         for table_info in table_details:
@@ -440,6 +453,13 @@ def extract_sql_query(response_text):
         Returns:
             A single line SQL query without any additional elements
         """
+        think_pattern = r'<think>[\s\S]*?</think>'
+        think_match = re.search(think_pattern, response_text)
+        
+        if think_match:
+            # Only process text after the </think> tag
+            response_text = response_text[think_match.end():].strip()
+        
         # Try to extract code blocks with sql, SQL, or no language specified
         sql_pattern = r"```(?:sql|SQL)?\s*([\s\S]*?)```"
         sql_matches = re.findall(sql_pattern, response_text)
@@ -448,55 +468,63 @@ def extract_sql_query(response_text):
             # Take the first match if multiple code blocks
             sql = sql_matches[0].strip()
         else:
-            # If no code blocks with ``` are found, try to extract the full query differently
+            # Check for complete SQL query ending with semicolon followed by non-SQL text
+            semicolon_split_pattern = r"(SELECT[\s\S]+?;)\s*\w+"
+            semicolon_split_match = re.search(semicolon_split_pattern, response_text, re.IGNORECASE)
             
-            # First attempt: look for complete queries with nested subqueries and proper formatting
-            # This complex pattern captures SQL with nested parentheses, conditions, etc.
-            complex_sql_pattern = r"SELECT[\s\S]+?FROM[\s\S]+?(?:WHERE[\s\S]+?)?(?:GROUP BY[\s\S]+?)?(?:HAVING[\s\S]+?)?(?:ORDER BY[\s\S]+?)?(?:LIMIT\s+\d+)?(?:OFFSET\s+\d+)?(?:;|$)"
-            complex_matches = re.findall(complex_sql_pattern, response_text, re.IGNORECASE)
-            
-            if complex_matches:
-                sql = complex_matches[0].strip()
+            if semicolon_split_match:
+                # Extract the SQL part ending with semicolon
+                sql = semicolon_split_match.group(1).strip()
             else:
-                # Second attempt: try to find a complete SQL statement with semicolon
-                semicolon_pattern = r"SELECT[\s\S]+?;|INSERT[\s\S]+?;|UPDATE[\s\S]+?;|DELETE[\s\S]+?;|CREATE[\s\S]+?;|DROP[\s\S]+?;|ALTER[\s\S]+?;"
-                semicolon_matches = re.findall(semicolon_pattern, response_text, re.DOTALL | re.IGNORECASE)
+                # If no code blocks with ``` are found, try to extract the full query differently
                 
-                if semicolon_matches:
-                    # Take the first complete SQL statement with semicolon
-                    sql = semicolon_matches[0].strip()
+                # First attempt: look for complete queries with nested subqueries and proper formatting
+                # This complex pattern captures SQL with nested parentheses, conditions, etc.
+                complex_sql_pattern = r"SELECT[\s\S]+?FROM[\s\S]+?(?:WHERE[\s\S]+?)?(?:GROUP BY[\s\S]+?)?(?:HAVING[\s\S]+?)?(?:ORDER BY[\s\S]+?)?(?:LIMIT\s+\d+)?(?:OFFSET\s+\d+)?(?:;|$)"
+                complex_matches = re.findall(complex_sql_pattern, response_text, re.IGNORECASE)
+                
+                if complex_matches:
+                    sql = complex_matches[0].strip()
                 else:
-                    # Try a simple approach - collect all lines between SELECT and the end of the query
-                    lines = response_text.split('\n')
-                    sql_lines = []
-                    in_sql = False
+                    # Second attempt: try to find a complete SQL statement with semicolon
+                    semicolon_pattern = r"SELECT[\s\S]+?;|INSERT[\s\S]+?;|UPDATE[\s\S]+?;|DELETE[\s\S]+?;|CREATE[\s\S]+?;|DROP[\s\S]+?;|ALTER[\s\S]+?;"
+                    semicolon_matches = re.findall(semicolon_pattern, response_text, re.DOTALL | re.IGNORECASE)
                     
-                    for line in lines:
-                        # Start collecting when we see SELECT
-                        if re.search(r'\bSELECT\b', line, re.IGNORECASE) and not in_sql:
-                            in_sql = True
-                            sql_lines.append(line)
-                        # Continue collecting if we're in SQL mode
-                        elif in_sql:
-                            # Stop if we hit an empty line after collecting some SQL or see end markers
-                            if (not line.strip() and len(sql_lines) > 3) or re.search(r'\bEXPLAIN\b|\bANALYZE\b', line, re.IGNORECASE):
-                                break
-                            sql_lines.append(line)
-                    
-                    if sql_lines:
-                        sql = '\n'.join(sql_lines)
+                    if semicolon_matches:
+                        # Take the first complete SQL statement with semicolon
+                        sql = semicolon_matches[0].strip()
                     else:
-                        # If all else fails, fall back to keyword search
-                        sql_keywords = r"(?:SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|WITH|DESCRIBE)"
-                        potential_sql_lines = re.findall(fr"(?m)^.*{sql_keywords}.*$", response_text)
+                        # Try a simple approach - collect all lines between SELECT and the end of the query
+                        lines = response_text.split('\n')
+                        sql_lines = []
+                        in_sql = False
                         
-                        if potential_sql_lines:
-                            # Join potential SQL lines
-                            sql = " ".join(line.strip() for line in potential_sql_lines)
+                        for line in lines:
+                            # Start collecting when we see SELECT
+                            if re.search(r'\bSELECT\b', line, re.IGNORECASE) and not in_sql:
+                                in_sql = True
+                                sql_lines.append(line)
+                            # Continue collecting if we're in SQL mode
+                            elif in_sql:
+                                # Stop if we hit an empty line after collecting some SQL or see end markers
+                                if (not line.strip() and len(sql_lines) > 3) or re.search(r'\bEXPLAIN\b|\bANALYZE\b', line, re.IGNORECASE):
+                                    break
+                                sql_lines.append(line)
+                        
+                        if sql_lines:
+                            sql = '\n'.join(sql_lines)
                         else:
-                            # If nothing looks like SQL, return a default query
-                            print("No valid SQL query found in the response, returning default query.")
-                            return "SELECT 0;"
+                            # If all else fails, fall back to keyword search
+                            sql_keywords = r"(?:SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|WITH|DESCRIBE)"
+                            potential_sql_lines = re.findall(fr"(?m)^.*{sql_keywords}.*$", response_text)
+                            
+                            if potential_sql_lines:
+                                # Join potential SQL lines
+                                sql = " ".join(line.strip() for line in potential_sql_lines)
+                            else:
+                                # If nothing looks like SQL, return a default query
+                                print("No valid SQL query found in the response, returning default query.")
+                                return "SELECT 0;"
         
         # Fix incomplete queries by checking for missing parts
         # 1. Is the query missing column parts?
@@ -627,8 +655,12 @@ def extract_sql_query(response_text):
                     # Update the SQL with the more complete SELECT part
                     sql = sql.replace(match.group(1), select_part)
         
+        # Check for a complete SQL query ending with semicolon followed by explanation text
+        if ";" in sql:
+            sql = sql.split(";")[0] + ";"
+        
         # If the result is empty or obviously not SQL, return the default
-        if not sql or not any(keyword in sql.upper() for keyword in ["SELECT", "INSERT", "UPDATE", "DELETE", "CREATE"]):
+        if not sql or not any(keyword in sql.upper() for keyword in ["SELECT"]):
             print("Extracted content doesn't appear to be a valid SQL query, returning default query.")
             return "SELECT 0;"
             
