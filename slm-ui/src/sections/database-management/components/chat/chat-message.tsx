@@ -4,10 +4,10 @@ import { m } from 'framer-motion';
 
 import { IChatMessage } from 'src/types/chat';
 
-import { UserMessage } from './UserMessage';
-import { ErrorMessage } from './ErrorMessage';
-import { SqlQueryResults } from './SqlQueryResults';
-import { SimpleBotMessage } from './SimpleBotMessage';
+import { UserMessage } from './user-message';
+import { ErrorMessage } from './error-message';
+import { SqlQueryResults } from './sql-query-result';
+import { SimpleBotMessage } from './simple-bot-message';
 
 interface ChatMessageProps {
   message: IChatMessage;
@@ -44,8 +44,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
 export default ChatMessage;
 
 // Export all the message components for direct usage
-export * from './UserMessage';
-export * from './ErrorMessage';
-export * from './SimpleBotMessage';
-export * from './SqlQueryResults';
-export * from './BotLoadingMessage';
+export * from './user-message';
+export * from './error-message';
+export * from './simple-bot-message';
+export * from './sql-query-result';
+export * from './bot-loading-message';

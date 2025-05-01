@@ -1,2 +1,2 @@
-export * from './DataSourceSidebar';
-export * from './ConversationSidebar';
+export * from './data-source-sidebar';
+export * from './conversation-sidebar';

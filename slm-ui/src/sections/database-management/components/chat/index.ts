@@ -1,3 +1,3 @@
-export * from './ChatMessage';
-export { default as ChatSection } from './ChatSection';
-export { default as ChatMessageInput } from './ChatMessageInput';
+export * from './chat-message';
+export { default as ChatSection } from './chat-section';
+export { default as ChatMessageInput } from './chat-message-input';

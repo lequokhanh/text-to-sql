@@ -4,23 +4,25 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { Box } from '@mui/material';
 
+import { useDataSources } from 'src/hooks/use-data-sources';
+import { useConversations } from 'src/hooks/use-conversations';
+
+import axiosEngine from 'src/utils/axios-engine';
+import { formatSqlQuery } from 'src/utils/sql-formatter';
 import axiosEmbed, { endpoints } from 'src/utils/axios-embed';
+import { formatResultsAsMarkdownTable } from 'src/utils/format-utils';
 
 import { IChatMessage } from 'src/types/chat';
 import { DatabaseSource } from 'src/types/database';
+import { Conversation } from 'src/types/conversation';
 
-import { Conversation } from '../types';
-import axiosEngine from '../../../utils/axios-engine';
-import { formatSqlQuery } from '../utils/sql-formatter';
-import { TabHeader } from '../components/layout/TabHeader';
-import { useDataSources, useConversations } from '../hooks';
-import { DatabaseLayout } from '../components/layout/DatabaseLayout';
+import { TabHeader } from '../components/layout/tab-header';
 import { MainContent } from '../components/main-content/MainContent';
-import { formatResultsAsMarkdownTable } from '../utils/format-utils';
-import { NoSourceSelected } from '../components/states/NoSourceSelected';
-import { DataSourceSidebar } from '../components/sidebars/DataSourceSidebar';
-import { ConversationSidebar } from '../components/sidebars/ConversationSidebar';
-import { NoConversationSelected } from '../components/states/NoConversationSelected';
+import { DatabaseLayout } from '../components/layout/database-layout';
+import { NoSourceSelected } from '../components/states/no-source-selected';
+import { DataSourceSidebar } from '../components/sidebars/data-source-sidebar';
+import { ConversationSidebar } from '../components/sidebars/conversation-sidebar';
+import { NoConversationSelected } from '../components/states/no-conversation-selected';
 
 export default function DatabaseView() {
   // State for dialog

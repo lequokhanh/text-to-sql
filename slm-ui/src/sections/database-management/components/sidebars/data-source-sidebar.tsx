@@ -19,7 +19,7 @@ import Iconify from 'src/components/iconify';
 
 import { DatabaseSource } from 'src/types/database';
 
-import { ScrollableContent } from '../layout/DatabaseLayout';
+import { ScrollableContent } from '../layout/database-layout';
 
 const DataSourceButton = styled(Button)(({ theme }) => ({
   justifyContent: 'flex-start',

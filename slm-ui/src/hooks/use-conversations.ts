@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 
 import { IChatMessage } from 'src/types/chat';
+import { Conversation } from 'src/types/conversation';
 
-import { Conversation } from '../types';
 
 export function useConversations() {
   const [conversations, setConversations] = useState<Record<string, Conversation[]>>({});

@@ -17,8 +17,8 @@ import Iconify from 'src/components/iconify';
 import { IChatMessage } from 'src/types/chat';
 import { DatabaseSource } from 'src/types/database';
 
-import ChatMessageInput from './ChatMessageInput';
-import { ChatMessage, BotLoadingMessage } from './ChatMessage';
+import ChatMessageInput from './chat-message-input';
+import { ChatMessage, BotLoadingMessage } from './chat-message';
 
 // ============================== Styled Components ==============================
 
