@@ -85,14 +85,6 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
       }
     }
 
-    if (formData.username && formData.username.length < 3) {
-      errors.username = 'Username must be at least 3 characters';
-    }
-
-    if (formData.password && formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
-    }
-
     if (sourceName && sourceName.length < 3) {
       errors.sourceName = 'Data Source name must be at least 3 characters';
     }
