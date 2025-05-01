@@ -16,11 +16,12 @@ import {
   InputAdornment,
 } from '@mui/material';
 
+import { ScrollableContent } from 'src/layouts/db-chat/database-layout';
+
 import Iconify from 'src/components/iconify';
 import SearchNotFound from 'src/components/search-not-found';
 
 import { Conversation } from 'src/types/conversation';
-import { ScrollableContent } from '../layout/database-layout';
 
 const ConversationButton = styled(Button)(({ theme }) => ({
   justifyContent: 'flex-start',

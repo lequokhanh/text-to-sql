@@ -12,13 +12,14 @@ import { formatSqlQuery } from 'src/utils/sql-formatter';
 import axiosEmbed, { endpoints } from 'src/utils/axios-embed';
 import { formatResultsAsMarkdownTable } from 'src/utils/format-utils';
 
+import { TabHeader } from 'src/layouts/db-chat/tab-header';
+import { DatabaseLayout } from 'src/layouts/db-chat/database-layout';
+
 import { IChatMessage } from 'src/types/chat';
 import { DatabaseSource } from 'src/types/database';
 import { Conversation } from 'src/types/conversation';
 
-import { TabHeader } from '../components/layout/tab-header';
 import { MainContent } from '../components/main-content/MainContent';
-import { DatabaseLayout } from '../components/layout/database-layout';
 import { NoSourceSelected } from '../components/states/no-source-selected';
 import { DataSourceSidebar } from '../components/sidebars/data-source-sidebar';
 import { ConversationSidebar } from '../components/sidebars/conversation-sidebar';
