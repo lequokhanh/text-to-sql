@@ -13,7 +13,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-API_HOST = f"http://{os.getenv('EMBED_HOST_API')}:8080"
+API_HOST = f"http://{os.getenv('EMBED_HOST_API')}"
+# API_HOST = "http://localhost:8181"
 logger.info("EMBED_HOST_API: " + API_HOST)
 
 _endpoints = {
@@ -41,7 +42,7 @@ def validate_connection_payload(connection_payload):
     
     return True, None
 
-def get_schema(connection_payload):
+def get_schema(connection_payload) -> list:
     
     db_type = connection_payload.get("dbType", "").lower()
     try:
@@ -127,3 +128,171 @@ def execute_sql(connection_payload, sql_query):
         }
     else:
         raise AppException(ResponseEnum.FAILED_TO_EXECUTE_QUERY)
+    
+def get_sample_data(connection_payload, table_details, limit=3):
+    """
+    Lấy dữ liệu mẫu từ cơ sở dữ liệu với giá trị distinct cho mỗi cột.
+    Hỗ trợ PostgreSQL, SQLite và MySQL.
+    
+    Args:
+        connection_payload: Thông tin kết nối đến cơ sở dữ liệu
+        table_details: Thông tin chi tiết của bảng
+        limit: Số lượng giá trị mẫu cần lấy cho mỗi cột (mặc định: 3)
+        
+    Returns:
+        Danh sách các hàng CSV với nội dung phong phú và đa dạng
+    """
+    try:
+        # Lấy thông tin loại DB từ connection_payload
+        db_type = connection_payload.get('db_type', '').lower()
+        table_name = table_details['tableIdentifier']
+        
+        # Lấy danh sách tên cột từ thông tin bảng
+        column_names = []
+        for column in table_details.get('columns', []):
+            column_name = column.get('columnIdentifier')
+            if column_name:  # Đảm bảo cột có tên
+                column_names.append(column_name)
+        print("Column names: ", column_names)
+        if not column_names:
+            return []
+            
+        # Định nghĩa cách quote identifier và random ordering cho từng loại DB
+        quote_char = '"'
+        
+        if db_type == 'mysql':
+            quote_char = '`'
+        elif db_type == 'sqlite':
+            quote_char = '"'
+        else:  # postgresql hoặc mặc định
+            quote_char = '"'
+        
+        # Hàm trợ giúp để quote đúng tên cột và bảng
+        def quote_identifier(identifier):
+            return f'{quote_char}{identifier}{quote_char}'
+        
+        # Lấy dữ liệu mẫu distinct cho mỗi cột
+        column_samples = {}
+        
+        for column_name in column_names:
+            # Xây dựng câu truy vấn phù hợp với từng loại DB
+            quoted_col = quote_identifier(column_name)
+            quoted_table = quote_identifier(table_name)
+            
+            query = ""
+            try:
+                # Các truy vấn khác nhau cho từng loại DB
+                if db_type == 'postgresql':
+                    # Đối với PostgreSQL khi dùng SELECT DISTINCT, ORDER BY phải có trong danh sách select
+                    query = f"""
+                        SELECT DISTINCT {quoted_col}
+                        FROM {quoted_table} 
+                        WHERE {quoted_col} IS NOT NULL
+                        ORDER BY {quoted_col}
+                        LIMIT {limit}
+                    """
+                elif db_type == 'mysql':
+                    query = f"""
+                        SELECT DISTINCT {quoted_col}
+                        FROM {quoted_table}
+                        WHERE {quoted_col} IS NOT NULL
+                        ORDER BY RAND()
+                        LIMIT {limit}
+                    """
+                elif db_type == 'sqlite':
+                    query = f"""
+                        SELECT DISTINCT {quoted_col}
+                        FROM {quoted_table}
+                        WHERE {quoted_col} IS NOT NULL
+                        ORDER BY RANDOM()
+                        LIMIT {limit}
+                    """
+                else:
+                    # Mặc định an toàn nhất
+                    query = f"""
+                        SELECT DISTINCT {quoted_col}
+                        FROM {quoted_table}
+                        WHERE {quoted_col} IS NOT NULL
+                        LIMIT {limit}
+                    """
+                # Thực thi truy vấn
+                result = execute_sql(connection_payload, query)
+                
+                # Nếu truy vấn lỗi, thử lại với truy vấn đơn giản hơn
+                if result.get("error"):
+                    simple_query = f"""
+                        SELECT DISTINCT {quoted_col}
+                        FROM {quoted_table}
+                        WHERE {quoted_col} IS NOT NULL
+                        LIMIT {limit}
+                    """
+                    result = execute_sql(connection_payload, simple_query)
+                    
+                    # Nếu vẫn lỗi, thử không dùng trích dẫn
+                    if result.get("error"):
+                        no_quote_query = f"""
+                            SELECT DISTINCT {column_name}
+                            FROM {table_name}
+                            WHERE {column_name} IS NOT NULL
+                            LIMIT {limit}
+                        """
+                        result = execute_sql(connection_payload, no_quote_query)
+                # Lấy giá trị mẫu từ kết quả
+                sample_values = []
+                if not result.get("error") and result.get("data"):
+                    for record in result.get("data", []):
+                        # Thử lấy giá trị với tên cột chính xác
+                        value = record.get(column_name)
+                        
+                        # Nếu không tìm thấy, thử với tên cột viết thường
+                        if value is None and column_name.lower() in record:
+                            value = record.get(column_name.lower())
+                            
+                        if value is not None:
+                            sample_values.append(value)
+                
+                column_samples[column_name] = sample_values
+                
+            except Exception as column_error:
+                print(f"Error processing column {column_name}: {str(column_error)}")
+                column_samples[column_name] = []
+        
+        # Lọc ra các cột có dữ liệu mẫu
+        valid_columns = [col for col, samples in column_samples.items() if samples]
+        
+        if not valid_columns:
+            return []
+        
+        # Tạo số hàng tối đa dựa trên số lượng mẫu có được
+        max_samples = max([len(column_samples[col]) for col in valid_columns], default=0)
+        if max_samples == 0:
+            return []
+        
+        # Tạo các hàng CSV với các giá trị mẫu đa dạng
+        csv_rows = []
+        for i in range(max_samples):
+            row_values = []
+            for column_name in valid_columns:
+                samples = column_samples[column_name]
+                
+                # Lấy giá trị mẫu
+                value = samples[i % len(samples)]
+                str_value = str(value) if value is not None else "NULL"
+                
+                # Cắt ngắn nếu quá dài
+                if len(str_value) > 1000:
+                    str_value = str_value[:1000] + "..."
+                
+                # Thêm dấu ngoặc kép nếu giá trị chứa dấu phẩy
+                if "," in str_value:
+                    str_value = f'"{str_value}"'
+                    
+                row_values.append(str_value)
+            
+            csv_rows.append(", ".join(row_values))
+        
+        return csv_rows
+    except Exception as e:
+        # Ghi lại lỗi và trả về danh sách rỗng
+        print(f"Error getting sample data: {str(e)}")
+        return [str(e)]
