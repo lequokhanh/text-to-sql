@@ -15,15 +15,15 @@ import { formatResultsAsMarkdownTable } from 'src/utils/format-utils';
 import { TabHeader } from 'src/layouts/db-chat/tab-header';
 import { DatabaseLayout } from 'src/layouts/db-chat/database-layout';
 
+import { MainContent } from 'src/components/text-to-sql/main-content/MainContent';
+import { NoSourceSelected } from 'src/components/text-to-sql/states/no-source-selected';
+import { DataSourceSidebar } from 'src/components/text-to-sql/sidebars/data-source-sidebar';
+import { ConversationSidebar } from 'src/components/text-to-sql/sidebars/conversation-sidebar';
+import { NoConversationSelected } from 'src/components/text-to-sql/states/no-conversation-selected';
+
 import { IChatMessage } from 'src/types/chat';
 import { DatabaseSource } from 'src/types/database';
 import { Conversation } from 'src/types/conversation';
-
-import { MainContent } from '../components/main-content/MainContent';
-import { NoSourceSelected } from '../components/states/no-source-selected';
-import { DataSourceSidebar } from '../components/sidebars/data-source-sidebar';
-import { ConversationSidebar } from '../components/sidebars/conversation-sidebar';
-import { NoConversationSelected } from '../components/states/no-conversation-selected';
 
 export default function DatabaseView() {
   // State for dialog

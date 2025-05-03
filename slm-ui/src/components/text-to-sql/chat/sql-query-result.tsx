@@ -30,7 +30,7 @@ import Markdown from 'src/components/markdown';
 
 import { IChatMessage } from 'src/types/chat';
 
-import { exportToCSV, generateCsvFilename } from '../../../../utils/format-utils';
+import { exportToCSV, generateCsvFilename } from '../../../utils/format-utils';
 
 // Styled components
 const StickyTableHead = styled(TableHead)(({ theme }) => ({
