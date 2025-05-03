@@ -1,5 +1,7 @@
-import { Box, Stack, alpha, Typography, Paper, Fade } from '@mui/material';
 import { useState } from 'react';
+
+import { Box, Fade, Stack, alpha, Paper, Typography } from '@mui/material';
+
 import Iconify from 'src/components/iconify';
 
 export function NoSourceSelected() {
