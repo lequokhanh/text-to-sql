@@ -163,12 +163,25 @@ const StyledSearchInput = styled(InputBase)(({ theme }) => ({
 
 const EditActionsContainer = styled(Box)(({ theme }) => ({
   position: 'absolute',
-  right: theme.spacing(2),
-  top: '50%',
-  transform: 'translateY(-50%)',
+  bottom: theme.spacing(0.5),
+  right: theme.spacing(0.5),
   display: 'flex',
-  gap: theme.spacing(1),
+  gap: theme.spacing(0.25),
+  padding: theme.spacing(0.25),
   zIndex: 10,
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: 4,
+  boxShadow: theme.shadows[1],
+  fontSize: '0.65rem',
+  lineHeight: 1,
+  minHeight: 'auto',
+  opacity: 0.2,
+  transform: 'scale(0.6)',
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    opacity: 1,
+    transform: 'scale(1)',
+  },
 }));
 
 const StyledRelationChip = styled(Chip)(({ theme }) => ({
@@ -963,32 +976,6 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
     getRelationTypeDisplay,
     getRelationshipName
   ]);
-
-  useEffect(() => {
-    if (!editingTableId || !editingColumnId) {
-      return () => {};
-    }
-  
-    const handleClickOutside = (event: MouseEvent) => {
-      const isClickedOutside = !(
-        (event.target as Element).closest('input') ||
-        (event.target as Element).closest('textarea') ||
-        (event.target as Element).closest('button') ||
-        (event.target as Element).closest('.MuiButtonGroup-root') ||
-        (event.target as Element).closest('.EditActionsContainer')
-      );
-  
-      if (isClickedOutside) {
-        cancelEditing();
-      }
-    };
-  
-    document.addEventListener('mousedown', handleClickOutside);
-  
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [editingTableId, editingColumnId, cancelEditing]);
 
   // Initialize filtered tables
   useEffect(() => {
