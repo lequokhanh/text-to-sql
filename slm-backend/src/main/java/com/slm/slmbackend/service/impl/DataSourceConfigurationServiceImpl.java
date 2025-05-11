@@ -9,6 +9,7 @@ import com.slm.slmbackend.repository.ColumnRelationRepository;
 import com.slm.slmbackend.repository.DataSourceConfigurationRepository;
 import com.slm.slmbackend.repository.UserAccountRepository;
 import com.slm.slmbackend.service.DataSourceConfigurationService;
+import com.slm.slmbackend.service.EmbedService;
 import com.slm.slmbackend.service.IdGenerationService;
 import com.slm.slmbackend.util.MapperUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
     private final ColumnRelationRepository columnRelationRepository;
     private final IdGenerationService idGenerationService;
     private final UserAccountRepository userAccountRepository;
-
+    private final EmbedService embedService;
     @Override
     @Transactional
     public void createDataSourceConfiguration(UserAccount user, CreateDataSourceConfigurationDTO createDTO) {
@@ -458,6 +459,28 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
         }
 
         dataSourceConfigurationRepository.save(configuration);
+    }
+
+    @Override
+    public void testConnection(UserAccount authenticatedUser, Integer id) {
+        DataSourceConfiguration configuration = validateAndGetDataSource(authenticatedUser, id);
+        
+        // Create connection request object
+        Map<String, String> request = new HashMap<>();
+        request.put("url", String.format("%s:%s/%s",
+                configuration.getHost(),
+                configuration.getPort(),
+                configuration.getDatabaseName()));
+        request.put("username", configuration.getUsername());
+        request.put("password", configuration.getPassword());
+        request.put("type", configuration.getDatabaseType().name().toLowerCase());
+
+        // Proxy request to embed service
+        embedService.proxyRequest("/api/v1/db/test-connection", request)
+                .doOnError(error -> {
+                    throw new AppException(ResponseEnum.DATASOURCE_CONNECT_FAILED);
+                })
+                .block();
     }
 
 

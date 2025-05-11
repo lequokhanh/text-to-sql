@@ -18,6 +18,7 @@ export type TableDefinition = {
 };
 
 export type DatabaseSource = {
+  id: string;
   databaseType: 'POSTGRESQL' | 'MYSQL' | 'ORACLE';
   host: string;
   port: string;
@@ -33,4 +34,7 @@ export type DatabaseConnectionConfig = {
   username: string;
   password: string;
   dbType: string;
+  host?: string;
+  port?: string;
+  databaseName?: string;
 };

@@ -1,5 +1,6 @@
 // File: src/sections/database-management/components/management/DataSourceManagement.tsx
 
+import axios from 'axios';
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
@@ -132,11 +133,9 @@ export default function DataSourceManagement({
 
   const handleTestConnection = async (data: DatabaseSource) => {
     try {
-      // Implement your connection test logic here
-      // For example:
-      // const result = await axiosEmbed.post('/api/testConnection', data);
-
-      // Mock success for demonstration
+      // Test connection through backend
+      await axios.post(`/api/v1/data-sources/${data.id}/test-connection`);
+      
       setTestResult({
         success: true,
         message: 'Connection successful!',

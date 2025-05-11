@@ -28,7 +28,7 @@ import { alpha, styled, useTheme } from '@mui/material/styles';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import StepConnector, { stepConnectorClasses } from '@mui/material/StepConnector';
 
-import axios, { endpoints } from 'src/utils/axios-embed';
+import axiosInstance, { endpoints } from 'src/utils/axios';
 
 import Iconify from 'src/components/iconify';
 
@@ -283,7 +283,7 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
     setShowSchemaPreview(false);
 
     try {
-      const response = await axios.post(endpoints.db.connect, formData);
+      const response = await axiosInstance.post(endpoints.embed.connect, formData);
       const [host, portAndDb] = formData.url.split(':');
       const [port, databaseName] = portAndDb?.split('/') || [];
 
@@ -296,6 +296,7 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
         name: sourceName,
         username: formData.username,
         password: formData.password,
+        id: ''
       };
 
       setTableCount(sourceData.tableDefinitions?.length || 0);
@@ -338,7 +339,7 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
     setError('');
 
     try {
-      await axios.post(endpoints.db.testConnection, formData);
+      await axiosInstance.post(endpoints.embed.testConnection, formData);
       setConnectionSuccess(true);
       setError('');
     } catch (err) {
@@ -433,7 +434,7 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
             }}
           >
             <Iconify
-              icon="eva:database-fill"
+              icon="material-symbols-light:database-outline"
               width={24}
               height={24}
               sx={{ color: 'primary.main' }}

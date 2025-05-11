@@ -7,9 +7,7 @@ import { Box } from '@mui/material';
 import { useDataSources } from 'src/hooks/use-data-sources';
 import { useConversations } from 'src/hooks/use-conversations';
 
-import axiosEngine from 'src/utils/axios-engine';
-import { formatSqlQuery } from 'src/utils/sql-formatter';
-import axiosEmbed, { endpoints } from 'src/utils/axios-embed';
+import axiosInstance, { endpoints } from 'src/utils/axios';
 import { formatResultsAsMarkdownTable } from 'src/utils/format-utils';
 
 import { TabHeader } from 'src/layouts/db-chat/tab-header';
@@ -32,9 +30,6 @@ export default function DatabaseView() {
   // Tab state
   const [tabValue, setTabValue] = useState(0);
 
-  // Loading state
-  const [isLoading, setIsLoading] = useState(false);
-
   // Data sources state using custom hook
   const {
     dataSources,
@@ -52,10 +47,13 @@ export default function DatabaseView() {
     selectedConversation,
     setSelectedConversation,
     messages,
+    isLoading: isConversationLoading,
+    fetchSessions,
+    fetchMessages,
+    createNewConversation,
     addMessage,
     updateConversationPreview,
     clearConversation,
-    createNewConversation,
   } = useConversations();
 
   // Check if user is owner of selected data source
@@ -73,6 +71,8 @@ export default function DatabaseView() {
     setSelectedSource(source);
     setSelectedConversation(null);
     setTabValue(0); // Default to chat tab when selecting a source
+    // Fetch sessions for the selected source
+    fetchSessions(source.id);
   };
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -83,19 +83,26 @@ export default function DatabaseView() {
     fetchDataSources();
   }, [fetchDataSources]);
 
-  const handleNewChat = useCallback(() => {
+  const handleNewChat = useCallback(async () => {
     if (!selectedSource) return;
-    const conversation = createNewConversation(selectedSource.name);
-    setSelectedConversation(conversation);
-    setTabValue(0); // Switch to chat tab
+    try {
+      const conversation = await createNewConversation(selectedSource.id);
+      setSelectedConversation(conversation);
+      setTabValue(0); // Switch to chat tab
+    } catch (error) {
+      console.error('Error creating new chat:', error);
+      // TODO: Show error notification
+    }
   }, [selectedSource, createNewConversation, setSelectedConversation]);
 
   const handleSelectConversation = useCallback(
-    (conversation: Conversation) => {
+    async (conversation: Conversation) => {
       setSelectedConversation(conversation);
       setTabValue(0); // Switch to chat tab
+      // Fetch messages for the selected conversation
+      await fetchMessages(conversation.id);
     },
-    [setSelectedConversation]
+    [setSelectedConversation, fetchMessages]
   );
 
   const handleClearChat = useCallback(() => {
@@ -140,55 +147,18 @@ export default function DatabaseView() {
       };
 
       addMessage(selectedConversation.id, userMessage);
-      updateConversationPreview(selectedSource.name, selectedConversation.id, message);
+      updateConversationPreview(selectedSource.id, selectedConversation.id, message);
 
-      setIsLoading(true);
       try {
-        // Get SQL query from NL query
-        let { data: query } = await axiosEngine.post('/query', {
-          query: message,
-          connection_payload: {
-            url: `${selectedSource.host}:${selectedSource.port}/${selectedSource.databaseName}`,
-            username: selectedSource.username,
-            password: selectedSource.password,
-            dbType: selectedSource.databaseType.toLowerCase(),
-          },
+        // Ask question through backend proxy
+        const { data: response } = await axiosInstance.post(endpoints.chat.ask, {
+          chatSessionId: selectedConversation.id,
+          dataSourceId: selectedSource.id,
+          question: message,
         });
 
-        query = query.replace(/;$/, '');
-
-        // Apply SQL beautification
-        const beautifiedQuery = formatSqlQuery(query);
-
-        // Execute query against the database
-        const { data } = await axiosEmbed.post(endpoints.db.query, {
-          query,
-          url: `${selectedSource.host}:${selectedSource.port}/${selectedSource.databaseName}`,
-          username: selectedSource.username,
-          password: selectedSource.password,
-          dbType: selectedSource.databaseType.toLowerCase(),
-        });
-
-        let resultText = '';
-
-        if (Array.isArray(data)) {
-          // Format the response with two clear sections and improved styling
-          const sqlQuerySection = `## SQL Query\n\`\`\`sql\n${beautifiedQuery}\n\`\`\`\n\n`;
-          const resultsSection = `## Results (${data.length} ${
-            data.length === 1 ? 'row' : 'rows'
-          })\n`;
-
-          // Format as markdown table when possible
-          resultText = sqlQuerySection + resultsSection + formatResultsAsMarkdownTable(data);
-        } else {
-          // Fallback for other data formats
-          const sqlQuerySection = `## SQL Query\n\`\`\`sql\n${beautifiedQuery}\n\`\`\`\n\n`;
-          resultText = `${sqlQuerySection}## Results\n\`\`\`json\n${JSON.stringify(
-            data,
-            null,
-            2
-          )}\n\`\`\``;
-        }
+        // Format the response
+        const resultText = formatResultsAsMarkdownTable(response.data);
 
         const botMessage: IChatMessage = {
           id: `msg-${Date.now()}`,
@@ -198,26 +168,25 @@ export default function DatabaseView() {
           senderId: 'bot',
           attachments: [],
           metadata: {
-            query: beautifiedQuery,
-            results: data,
-            rowCount: Array.isArray(data) ? data.length : 0,
+            query: response.query,
+            results: response.data,
+            rowCount: Array.isArray(response.data) ? response.data.length : 0,
           },
         };
 
         addMessage(selectedConversation.id, botMessage);
       } catch (error) {
+        console.error('Error sending message:', error);
+        // Add error message to chat
         const errorMessage: IChatMessage = {
-          id: `msg-${Date.now()}`,
-          body: `## Error\n\`\`\`\n${error}\n\`\`\``,
+          id: `error-${Date.now()}`,
+          body: 'Sorry, there was an error processing your request. Please try again.',
           contentType: 'text',
           createdAt: new Date(),
           senderId: 'bot',
           attachments: [],
         };
-
         addMessage(selectedConversation.id, errorMessage);
-      } finally {
-        setIsLoading(false);
       }
     },
     [selectedConversation, selectedSource, addMessage, updateConversationPreview]
@@ -262,7 +231,7 @@ export default function DatabaseView() {
           onClearChat={handleClearChat}
           onExportChat={handleExportChat}
           messageCount={messages[selectedConversation.id]?.length || 0}
-          isLoading={isLoading}
+          isLoading={isConversationLoading}
         />
       );
     }

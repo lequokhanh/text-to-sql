@@ -1,52 +1,32 @@
 import { m, AnimatePresence } from 'framer-motion';
 import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Grid';
-import Badge from '@mui/material/Badge';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import Select from '@mui/material/Select';
-import Divider from '@mui/material/Divider';
-import Tooltip from '@mui/material/Tooltip';
-import Collapse from '@mui/material/Collapse';
-import TableRow from '@mui/material/TableRow';
-import MenuItem from '@mui/material/MenuItem';
-// Icons
-import KeyIcon from '@mui/icons-material/Key';
-import AddIcon from '@mui/icons-material/Add';
-import InputBase from '@mui/material/InputBase';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TextField from '@mui/material/TextField';
-import LinkIcon from '@mui/icons-material/Link';
-import SaveIcon from '@mui/icons-material/Save';
-import Search from '@mui/icons-material/Search';
-import CardHeader from '@mui/material/CardHeader';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import InputLabel from '@mui/material/InputLabel';
-import CloseIcon from '@mui/icons-material/Close';
-import DialogTitle from '@mui/material/DialogTitle';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import FormControl from '@mui/material/FormControl';
-import AddLinkIcon from '@mui/icons-material/AddLink';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import TableContainer from '@mui/material/TableContainer';
-import CircularProgress from '@mui/material/CircularProgress';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import DialogContentText from '@mui/material/DialogContentText';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import { alpha, styled, useTheme, keyframes } from '@mui/material/styles';
+// MUI Icons (consolidated imports)
+import {
+  Key as KeyIcon,
+  Add as AddIcon,
+  Link as LinkIcon,
+  Save as SaveIcon,
+  Close as CloseIcon,
+  Search as SearchIcon,
+  AddLink as AddLinkIcon,
+  AutoFixHigh as AutoFixHighIcon,
+  InfoOutlined as InfoOutlinedIcon,
+  EditOutlined as EditOutlinedIcon,
+  KeyboardArrowDown as KeyboardArrowDownIcon
+} from '@mui/icons-material';
+// MUI Core components
+import {
+  Box, Card, Chip, Grid,
+  alpha, Badge, Paper, Stack, Table, styled, Button,
+  Dialog, Select, Divider, Tooltip, useTheme, Collapse,
+  TableRow, MenuItem, keyframes, InputBase, TableBody,
+  TableCell, TableHead, TextField, CardHeader,
+  IconButton, Typography, InputLabel, DialogTitle,
+  ButtonGroup, FormControl, DialogActions, DialogContent,
+  useMediaQuery, TableContainer, CircularProgress,
+  DialogContentText
+} from '@mui/material';
 
 import { useDebounce } from 'src/hooks/use-debounce';
 
@@ -56,10 +36,10 @@ import { TableDefinition, ColumnDefinition } from 'src/types/database';
 
 import { SchemaVisualization } from './schema-visualization';
 
-// Define relation type constants to avoid typos
+// Define relation type constants
 type RelationType = 'OTO' | 'OTM' | 'MTO' | 'MTM';
 
-// Define relation interface
+// Define relation interface with improved typing
 interface RelationDefinition {
   tableIdentifier: string;
   columnIdentifier?: string;
@@ -67,46 +47,43 @@ interface RelationDefinition {
   type: RelationType;
 }
 
-
-// ----------------------------------------------------------------------
 // Styled components
 interface StyledCardProps {
   selected?: boolean;
 }
 
+// Styled Card with optimized theming logic
 const StyledCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'selected',
 })<StyledCardProps>(({ theme, selected }) => {
   const isDark = theme.palette.mode === 'dark';
 
-  let baseBoxShadow = '';
-  let selectedBoxShadow = '';
+  // Consolidated shadow variables
+  const baseBoxShadow = isDark
+    ? `0 8px 16px -8px ${alpha(theme.palette.common.black, 0.3)}, 0 4px 8px -4px ${alpha(theme.palette.common.black, 0.2)}`
+    : `0 8px 16px -8px ${alpha(theme.palette.common.black, 0.1)}, 0 4px 8px -4px ${alpha(theme.palette.common.black, 0.06)}`;
+
+  const selectedBoxShadow = isDark
+    ? `0 0 0 4px ${alpha(theme.palette.primary.dark, 0.3)}, 0 8px 24px -4px ${alpha(theme.palette.primary.dark, 0.5)}`
+    : `0 0 0 4px ${alpha(theme.palette.primary.light, 0.2)}, 0 8px 24px -4px ${alpha(theme.palette.primary.light, 0.4)}`;
+
   let hoverBoxShadow = '';
-  let background = '';
 
-  if (isDark) {
-    baseBoxShadow = `0 8px 16px -8px ${alpha(theme.palette.common.black, 0.3)}, 0 4px 8px -4px ${alpha(theme.palette.common.black, 0.2)}`;
-    selectedBoxShadow = `0 0 0 4px ${alpha(theme.palette.primary.dark, 0.3)}, 0 8px 24px -4px ${alpha(theme.palette.primary.dark, 0.5)}`;
-    background = alpha(theme.palette.background.paper, 0.7);
-
-    if (selected) {
+  if (selected) {
+    if (isDark) {
       hoverBoxShadow = `0 0 0 4px ${alpha(theme.palette.primary.dark, 0.4)}, 0 12px 32px -4px ${alpha(theme.palette.primary.dark, 0.6)}`;
     } else {
-      hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.5)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.4)}`;
-    }
-  } else {
-    baseBoxShadow = `0 8px 16px -8px ${alpha(theme.palette.common.black, 0.1)}, 0 4px 8px -4px ${alpha(theme.palette.common.black, 0.06)}`;
-    selectedBoxShadow = `0 0 0 4px ${alpha(theme.palette.primary.light, 0.2)}, 0 8px 24px -4px ${alpha(theme.palette.primary.light, 0.4)}`;
-    background = theme.palette.background.paper;
-
-    if (selected) {
       hoverBoxShadow = `0 0 0 4px ${alpha(theme.palette.primary.light, 0.3)}, 0 12px 32px -4px ${alpha(theme.palette.primary.light, 0.5)}`;
+    }
+  } else if (isDark) {
+      hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.5)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.4)}`;
     } else {
       hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.15)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.1)}`;
     }
-  }
+  
+  const background = isDark ? alpha(theme.palette.background.paper, 0.7) : theme.palette.background.paper;
 
-  const styles: Record<string, any> = {
+  return {
     transition: 'all 0.3s ease',
     marginBottom: theme.spacing(2),
     position: 'relative',
@@ -119,185 +96,187 @@ const StyledCard = styled(Card, {
       boxShadow: hoverBoxShadow,
       transform: 'translateY(-3px)',
     },
+    ...(selected && {
+      borderColor: theme.palette.primary.main,
+      borderWidth: 2,
+      borderStyle: 'solid',
+    }),
   };
-
-  if (selected) {
-    styles.borderColor = theme.palette.primary.main;
-    styles.borderWidth = 2;
-    styles.borderStyle = 'solid';
-  }
-
-  return styles;
 });
 
-const StyledTableContainer = styled(TableContainer)`
-  border-radius: 4; // Removed rounded corners
-  overflow: hidden;
-  border: 1px solid ${props => alpha(props.theme.palette.divider, props.theme.palette.mode === 'dark' ? 0.3 : 0.7)};
-  box-shadow: ${props => {
-    if (props.theme.palette.mode === 'dark') {
-      return `0 4px 12px -2px ${alpha(props.theme.palette.common.black, 0.3)}`;
-    }
-    return `0 4px 12px -2px ${alpha(props.theme.palette.common.black, 0.05)}`;
-  }};
-  backdrop-filter: blur(4px);
-  
-  & .MuiTableCell-root {
-    border-color: ${props => alpha(props.theme.palette.divider, props.theme.palette.mode === 'dark' ? 0.2 : 0.5)};
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-  
-  & .MuiTableCell-head {
-    font-size: 0.8rem;
-    font-weight: 600;
-    background-color: ${props => {
-    if (props.theme.palette.mode === 'dark') {
-      return alpha(props.theme.palette.background.paper, 0.7);
-    }
-    return alpha(props.theme.palette.grey[50], 0.9);
-  }};
-    color: ${props => {
-    if (props.theme.palette.mode === 'dark') {
-      return alpha(props.theme.palette.common.white, 0.85);
-    }
-    return props.theme.palette.grey[800];
-  }};
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-  
-  & .MuiTableCell-body {
-    font-size: 0.875rem;
-    color: ${props => {
-    if (props.theme.palette.mode === 'dark') {
-      return alpha(props.theme.palette.common.white, 0.75);
-    }
-    return props.theme.palette.grey[700];
-  }};
-  }
-  
-  & .MuiTableRow-root:nth-of-type(even) {
-    background-color: ${props => {
-    if (props.theme.palette.mode === 'dark') {
-      return alpha(props.theme.palette.common.black, 0.15);
-    }
-    return alpha(props.theme.palette.grey[50], 0.5);
-  }};
-  }
-  
-  width: 100%;
-  max-width: 100%;
-  
-  @media (min-width: 960px) {
-    max-width: 820px;
-  }
-  
-  @media (min-width: 1200px) {
-    max-width: 920px;
-  }
-  
-  margin: 0 auto;
-  
-  & .column-name {
-    width: 25%;
-    min-width: 120px;
-    max-width: 200px;
-  }
-  
-  & .column-type {
-    width: 15%;
-    min-width: 80px;
-    max-width: 120px;
-  }
-  
-  & .column-description {
-    width: 35%;
-    min-width: 180px;
-    max-width: 300px;
-  }
-  
-  & .column-relations {
-    width: 25%;
-    min-width: 150px;
-    max-width: 250px;
-    position: relative;
-  }
-`;
+// Table container with improved styling
+const StyledTableContainer = styled(TableContainer)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
 
-const StyledSearchInput = styled(InputBase)(({ theme }) => ({
-  borderRadius: 16,
-  backgroundColor: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.common.white, 0.06)
-    : alpha(theme.palette.common.black, 0.03),
-  padding: theme.spacing(0.75, 2),
-  width: '100%',
-  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-  transition: 'all 0.2s ease-in-out',
-  '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.common.white, 0.08)
-      : alpha(theme.palette.common.black, 0.05),
-    borderColor: alpha(theme.palette.primary.main, 0.3),
-  },
-  '&.Mui-focused': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.common.white, 0.1)
-      : alpha(theme.palette.common.black, 0.06),
-    borderColor: theme.palette.primary.main,
-    boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
-  },
-}));
+  return {
+    borderRadius: 16,
+    overflow: 'hidden',
+    border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.3 : 0.7)}`,
+    boxShadow: isDark
+      ? `0 4px 12px -2px ${alpha(theme.palette.common.black, 0.3)}`
+      : `0 4px 12px -2px ${alpha(theme.palette.common.black, 0.05)}`,
+    backdropFilter: 'blur(4px)',
 
-const EditActionsContainer = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  bottom: theme.spacing(0.5),
-  right: theme.spacing(0.5),
-  display: 'flex',
-  gap: theme.spacing(0.25),
-  padding: theme.spacing(0.5),
-  zIndex: 10,
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: 12,
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 4px 8px ${alpha(theme.palette.common.black, 0.3)}`
-    : `0 4px 8px ${alpha(theme.palette.common.black, 0.15)}`,
-  border: `1px solid ${theme.palette.mode === 'dark'
-    ? alpha(theme.palette.common.white, 0.1)
-    : alpha(theme.palette.grey[300], 0.7)}`,
-  backdropFilter: 'blur(4px)',
-  fontSize: '0.65rem',
-  lineHeight: 1,
-  minHeight: 'auto',
-  opacity: 0.2,
-  transform: 'scale(0.6)',
-  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    opacity: 1,
-    transform: 'scale(1)',
-  },
-  '& .MuiIconButton-root': {
-    borderRadius: 12,
-    transition: 'transform 0.2s ease',
+    '& .MuiTableCell-root': {
+      borderColor: alpha(theme.palette.divider, isDark ? 0.2 : 0.5),
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      overflowWrap: 'break-word',
+      transition: 'background-color 0.2s ease, color 0.2s ease',
+    },
+
+    '& .MuiTableCell-head': {
+      fontSize: '0.8rem',
+      fontWeight: 600,
+      backgroundColor: isDark
+        ? alpha(theme.palette.background.paper, 0.7)
+        : alpha(theme.palette.grey[50], 0.9),
+      color: isDark
+        ? alpha(theme.palette.common.white, 0.85)
+        : theme.palette.grey[800],
+      letterSpacing: '0.03em',
+      textTransform: 'uppercase',
+      paddingTop: 12,
+      paddingBottom: 12,
+    },
+
+    '& .MuiTableCell-body': {
+      fontSize: '0.875rem',
+      color: isDark
+        ? alpha(theme.palette.common.white, 0.75)
+        : theme.palette.grey[700],
+    },
+
+    '& .MuiTableRow-root:nth-of-type(even)': {
+      backgroundColor: isDark
+        ? alpha(theme.palette.common.black, 0.15)
+        : alpha(theme.palette.grey[50], 0.5),
+    },
+
+    width: '100%',
+    maxWidth: '100%',
+
+    '@media (min-width: 960px)': {
+      maxWidth: 820,
+    },
+
+    '@media (min-width: 1200px)': {
+      maxWidth: 920,
+    },
+
+    margin: '0 auto',
+
+    '& .column-name': {
+      width: '25%',
+      minWidth: 120,
+      maxWidth: 200,
+    },
+
+    '& .column-type': {
+      width: '15%',
+      minWidth: 80,
+      maxWidth: 120,
+    },
+
+    '& .column-description': {
+      width: '35%',
+      minWidth: 180,
+      maxWidth: 300,
+    },
+
+    '& .column-relations': {
+      width: '25%',
+      minWidth: 150,
+      maxWidth: 250,
+      position: 'relative',
+    },
+  };
+});
+
+// Search input with improved styling
+const StyledSearchInput = styled(InputBase)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    borderRadius: 16,
+    backgroundColor: isDark
+      ? alpha(theme.palette.common.white, 0.06)
+      : alpha(theme.palette.common.black, 0.03),
+    padding: theme.spacing(0.75, 2),
+    width: '100%',
+    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+    transition: 'all 0.2s ease-in-out',
     '&:hover': {
-      transform: 'scale(1.1)',
-    }
-  }
-}));
+      backgroundColor: isDark
+        ? alpha(theme.palette.common.white, 0.08)
+        : alpha(theme.palette.common.black, 0.05),
+      borderColor: alpha(theme.palette.primary.main, 0.3),
+    },
+    '&.Mui-focused': {
+      backgroundColor: isDark
+        ? alpha(theme.palette.common.white, 0.1)
+        : alpha(theme.palette.common.black, 0.06),
+      borderColor: theme.palette.primary.main,
+      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+    },
+  };
+});
 
+// Edit actions container with improved styling
+const EditActionsContainer = styled(Box)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    position: 'absolute',
+    bottom: theme.spacing(0.5),
+    right: theme.spacing(0.5),
+    display: 'flex',
+    gap: theme.spacing(0.25),
+    padding: theme.spacing(0.5),
+    zIndex: 10,
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: 12,
+    boxShadow: isDark
+      ? `0 4px 8px ${alpha(theme.palette.common.black, 0.3)}`
+      : `0 4px 8px ${alpha(theme.palette.common.black, 0.15)}`,
+    border: `1px solid ${isDark
+      ? alpha(theme.palette.common.white, 0.1)
+      : alpha(theme.palette.grey[300], 0.7)}`,
+    backdropFilter: 'blur(4px)',
+    fontSize: '0.65rem',
+    lineHeight: 1,
+    minHeight: 'auto',
+    opacity: 0.2,
+    transform: 'scale(0.6)',
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    '&:hover': {
+      opacity: 1,
+      transform: 'scale(1)',
+    },
+    '& .MuiIconButton-root': {
+      borderRadius: 12,
+      transition: 'transform 0.2s ease',
+      '&:hover': {
+        transform: 'scale(1.1)',
+      }
+    }
+  };
+});
+
+// Row action buttons with improved styling
 const RowActionButtons = styled(Box)(({ theme }) => {
-  const isDarkMode = theme.palette.mode === 'dark';
-  const backgroundColor = isDarkMode
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated color variables
+  const backgroundColor = isDark
     ? alpha(theme.palette.grey[900], 0.85)
     : alpha(theme.palette.background.paper, 0.95);
-  const borderColor = isDarkMode
+
+  const borderColor = isDark
     ? alpha(theme.palette.common.white, 0.1)
     : alpha(theme.palette.grey[300], 0.7);
-  const boxShadow = isDarkMode
+
+  const boxShadow = isDark
     ? `0 4px 8px ${alpha(theme.palette.common.black, 0.5)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`
     : `0 4px 8px ${alpha(theme.palette.common.black, 0.1)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`;
 
@@ -310,72 +289,57 @@ const RowActionButtons = styled(Box)(({ theme }) => {
     gap: theme.spacing(0.5),
     padding: theme.spacing(0.5),
     zIndex: 5,
-
-    // Enhanced backdrop style for better visibility in both modes
     backgroundColor,
-
-    // Glass effect
     backdropFilter: 'blur(8px)',
-
-    // Better border definition
     border: `1px solid ${borderColor}`,
-
-    borderRadius: 8, // Kept border radius for buttons container
-
-    // Enhanced shadow for better depth perception
+    borderRadius: 8,
     boxShadow,
-
     opacity: 0,
     transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-    // transform: 'translateY(50%) scale(0.8) translateX(10px)',
 
-    // Enhanced hover animation
     '.MuiTableRow-root:hover &': {
       opacity: 1,
       transform: 'translateY(50%) scale(1) translateX(0)',
     },
 
-    // Button styles within container
     '& .MuiIconButton-root': {
       transition: 'all 0.2s ease',
       margin: '0 2px',
-      borderRadius: 8, // Kept rounded corners for buttons
+      borderRadius: 8,
 
-      // Better defined background colors
       '&.MuiIconButton-colorPrimary': {
-        backgroundColor: isDarkMode
+        backgroundColor: isDark
           ? alpha(theme.palette.primary.dark, 0.2)
           : alpha(theme.palette.primary.light, 0.15),
         '&:hover': {
-          backgroundColor: isDarkMode
+          backgroundColor: isDark
             ? alpha(theme.palette.primary.dark, 0.3)
             : alpha(theme.palette.primary.light, 0.25),
         }
       },
 
       '&.MuiIconButton-colorInfo': {
-        backgroundColor: isDarkMode
+        backgroundColor: isDark
           ? alpha(theme.palette.info.dark, 0.2)
           : alpha(theme.palette.info.light, 0.15),
         '&:hover': {
-          backgroundColor: isDarkMode
+          backgroundColor: isDark
             ? alpha(theme.palette.info.dark, 0.3)
             : alpha(theme.palette.info.light, 0.25),
         }
       },
 
       '&.MuiIconButton-colorError': {
-        backgroundColor: isDarkMode
+        backgroundColor: isDark
           ? alpha(theme.palette.error.dark, 0.2)
           : alpha(theme.palette.error.light, 0.15),
         '&:hover': {
-          backgroundColor: isDarkMode
+          backgroundColor: isDark
             ? alpha(theme.palette.error.dark, 0.3)
             : alpha(theme.palette.error.light, 0.25),
         }
       },
 
-      // Enhanced hover effect
       '&:hover': {
         transform: 'scale(1.1)',
       }
@@ -383,35 +347,46 @@ const RowActionButtons = styled(Box)(({ theme }) => {
   };
 });
 
+// FadeIn transition component
 const FadeInTransition = styled(m.div)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
 }));
 
+// Relation chip with improved styling
 const StyledRelationChip = styled(Chip)(({ theme }) => {
-  const isDarkMode = theme.palette.mode === 'dark';
-  const backgroundColor = isDarkMode
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated color variables
+  const backgroundColor = isDark
     ? alpha(theme.palette.info.dark, 0.15)
     : alpha(theme.palette.info.light, 0.12);
-  const textColor = isDarkMode
+
+  const textColor = isDark
     ? alpha(theme.palette.info.light, 0.9)
     : theme.palette.info.dark;
-  const borderColor = isDarkMode
+
+  const borderColor = isDark
     ? alpha(theme.palette.info.dark, 0.3)
     : alpha(theme.palette.info.light, 0.3);
-  const hoverBackgroundColor = isDarkMode
+
+  const hoverBackgroundColor = isDark
     ? alpha(theme.palette.info.dark, 0.25)
     : alpha(theme.palette.info.light, 0.25);
-  const shadowColor = alpha(theme.palette.common.black, isDarkMode ? 0.25 : 0.07);
-  const hoverShadowColor = alpha(theme.palette.common.black, isDarkMode ? 0.3 : 0.1);
-  const iconColor = isDarkMode
+
+  const shadowColor = alpha(theme.palette.common.black, isDark ? 0.25 : 0.07);
+  const hoverShadowColor = alpha(theme.palette.common.black, isDark ? 0.3 : 0.1);
+
+  const iconColor = isDark
     ? alpha(theme.palette.info.light, 0.8)
     : theme.palette.info.dark;
-  const deleteIconColor = isDarkMode
+
+  const deleteIconColor = isDark
     ? alpha(theme.palette.error.light, 0.7)
     : theme.palette.error.dark;
-  const deleteIconHoverColor = isDarkMode
+
+  const deleteIconHoverColor = isDark
     ? theme.palette.error.light
     : theme.palette.error.main;
 
@@ -423,7 +398,7 @@ const StyledRelationChip = styled(Chip)(({ theme }) => {
     marginBottom: 2,
     backgroundColor,
     color: textColor,
-    borderRadius: 12, // Increased border radius for chips
+    borderRadius: 12,
     whiteSpace: 'normal',
     transition: 'all 0.2s ease',
     border: `1px solid ${borderColor}`,
@@ -450,7 +425,7 @@ const StyledRelationChip = styled(Chip)(({ theme }) => {
       borderRadius: 12,
       '&:hover': {
         color: deleteIconHoverColor,
-        backgroundColor: isDarkMode
+        backgroundColor: isDark
           ? alpha(theme.palette.error.dark, 0.2)
           : alpha(theme.palette.error.light, 0.2),
       },
@@ -458,21 +433,28 @@ const StyledRelationChip = styled(Chip)(({ theme }) => {
   };
 });
 
+// Column type chip with improved styling
 const StyledColumnTypeChip = styled(Chip)(({ theme }) => {
-  const isDarkMode = theme.palette.mode === 'dark';
-  const backgroundColor = isDarkMode
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated color variables
+  const backgroundColor = isDark
     ? alpha(theme.palette.grey[800], 0.7)
     : alpha(theme.palette.grey[100], 0.9);
-  const textColor = isDarkMode
+
+  const textColor = isDark
     ? alpha(theme.palette.common.white, 0.85)
     : theme.palette.grey[700];
-  const borderColor = isDarkMode
+
+  const borderColor = isDark
     ? alpha(theme.palette.grey[700], 0.5)
     : alpha(theme.palette.grey[300], 0.8);
-  const innerShadow = isDarkMode
+
+  const innerShadow = isDark
     ? `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.05)}`
     : `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.9)}`;
-  const hoverBackground = isDarkMode
+
+  const hoverBackground = isDark
     ? alpha(theme.palette.grey[700], 0.8)
     : alpha(theme.palette.grey[200], 0.9);
 
@@ -482,7 +464,7 @@ const StyledColumnTypeChip = styled(Chip)(({ theme }) => {
     fontWeight: 500,
     backgroundColor,
     color: textColor,
-    borderRadius: 12, // Increased border radius for chips
+    borderRadius: 12,
     border: `1px solid ${borderColor}`,
     transition: 'all 0.2s ease',
     boxShadow: innerShadow,
@@ -499,22 +481,28 @@ const StyledColumnTypeChip = styled(Chip)(({ theme }) => {
   };
 });
 
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    right: -10,
-    top: 8,
-    border: `2px solid ${theme.palette.background.paper}`,
-    padding: '0 4px',
-    borderRadius: 12, // Increased border radius
-    fontSize: '0.7rem',
-    minWidth: 18,
-    height: 18,
-    boxShadow: theme.palette.mode === 'dark'
-      ? `0 0 0 1px ${alpha(theme.palette.common.black, 0.3)}`
-      : `0 0 0 1px ${alpha(theme.palette.common.white, 0.3)}`,
-  },
-}));
+// Badge with improved styling
+const StyledBadge = styled(Badge)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
 
+  return {
+    '& .MuiBadge-badge': {
+      right: -10,
+      top: 8,
+      border: `2px solid ${theme.palette.background.paper}`,
+      padding: '0 4px',
+      borderRadius: 12,
+      fontSize: '0.7rem',
+      minWidth: 18,
+      height: 18,
+      boxShadow: isDark
+        ? `0 0 0 1px ${alpha(theme.palette.common.black, 0.3)}`
+        : `0 0 0 1px ${alpha(theme.palette.common.white, 0.3)}`,
+    },
+  };
+});
+
+// Icon styling
 const StyledPrimaryKeyIcon = styled(KeyIcon)(({ theme }) => ({
   fontSize: 16,
   color: theme.palette.warning.main,
@@ -529,9 +517,10 @@ const StyledRelationIcon = styled(LinkIcon)(({ theme }) => ({
   marginRight: theme.spacing(0.5),
 }));
 
+// Motion table row
 const MotionTableRow = m(TableRow);
 
-// Relations container with improved scrolling
+// Relations container
 const RelationsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexWrap: 'nowrap',
@@ -552,33 +541,38 @@ const RelationsContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-const DescriptionTextField = styled(TextField)(({ theme }) => ({
-  '& .MuiInputBase-root': {
-    minHeight: 48,
-    alignItems: 'start',
-    borderRadius: 16,
-  },
-  '& .MuiInputBase-inputMultiline': {
-    padding: theme.spacing(1),
-  },
-  '& .MuiOutlinedInput-root': {
-    borderRadius: 16,
-    overflow: 'hidden',
-    transition: 'all 0.2s ease',
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.mode === 'dark'
-        ? alpha(theme.palette.primary.light, 0.5)
-        : alpha(theme.palette.primary.main, 0.5),
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.primary.main,
-      borderWidth: 2,
-      boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.1)}`,
-    }
-  }
-}));
+// Description text field
+const DescriptionTextField = styled(TextField)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
 
-// Enhanced animation for AI button with theme-aware colors
+  return {
+    '& .MuiInputBase-root': {
+      minHeight: 48,
+      alignItems: 'start',
+      borderRadius: 16,
+    },
+    '& .MuiInputBase-inputMultiline': {
+      padding: theme.spacing(1),
+    },
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 16,
+      overflow: 'hidden',
+      transition: 'all 0.2s ease',
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: isDark
+          ? alpha(theme.palette.primary.light, 0.5)
+          : alpha(theme.palette.primary.main, 0.5),
+      },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: 2,
+        boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.1)}`,
+      }
+    }
+  };
+});
+
+// Pulse animation for AI button
 const pulseAnimation = keyframes`
   0% {
     box-shadow: 0 0 0 0 var(--pulse-color-start);
@@ -591,86 +585,82 @@ const pulseAnimation = keyframes`
   }
 `;
 
-// AI Fill Button with glow effect
+// AI Button wrapper
 interface AIButtonWrapperProps {
   isAnimating: boolean;
-  children: React.ReactNode;
 }
 
-const AIButtonWrapper = styled('div')<AIButtonWrapperProps>(({ theme, isAnimating }) => ({
-  position: 'relative',
-  display: 'inline-flex',
-  borderRadius: 12,
-  // Set CSS variables based on theme mode for the pulse animation
-  '--pulse-color-start': theme.palette.mode === 'dark'
-    ? alpha(theme.palette.primary.dark, 0.7)
-    : alpha(theme.palette.primary.main, 0.7),
-  '--pulse-color-mid': theme.palette.mode === 'dark'
-    ? alpha(theme.palette.primary.dark, 0)
-    : alpha(theme.palette.primary.main, 0),
-  '--pulse-color-end': theme.palette.mode === 'dark'
-    ? alpha(theme.palette.primary.dark, 0)
-    : alpha(theme.palette.primary.main, 0),
-  ...(isAnimating && {
-    '&::after': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      borderRadius: 12,
-      animation: `${pulseAnimation} 1.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95)`,
-    }
-  })
-}));
+const AIButtonWrapper = styled('div')<AIButtonWrapperProps>(({ theme, isAnimating }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    position: 'relative',
+    display: 'inline-flex',
+    borderRadius: 12,
+    '--pulse-color-start': isDark
+      ? alpha(theme.palette.primary.dark, 0.7)
+      : alpha(theme.palette.primary.main, 0.7),
+    '--pulse-color-mid': isDark
+      ? alpha(theme.palette.primary.dark, 0)
+      : alpha(theme.palette.primary.main, 0),
+    '--pulse-color-end': isDark
+      ? alpha(theme.palette.primary.dark, 0)
+      : alpha(theme.palette.primary.main, 0),
+    ...(isAnimating && {
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: 12,
+        animation: `${pulseAnimation} 1.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95)`,
+      }
+    })
+  };
+});
 
 // AI Fill Button
 const AIFillButton = styled(Button)(({ theme }) => {
-  const isDarkMode = theme.palette.mode === 'dark';
+  const isDark = theme.palette.mode === 'dark';
 
-  // Background gradient
-  const background = isDarkMode
+  // Consolidated gradient variables
+  const background = isDark
     ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.9)} 0%, ${theme.palette.primary.main} 50%, ${alpha(theme.palette.primary.dark, 0.85)} 100%)`
     : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${theme.palette.primary.dark} 50%, ${alpha(theme.palette.primary.main, 0.85)} 100%)`;
 
-  // Hover background
-  const hoverBackground = isDarkMode
+  const hoverBackground = isDark
     ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.95)} 0%, ${theme.palette.primary.main} 60%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`
     : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 60%, ${theme.palette.primary.main} 100%)`;
 
-  // Shadow
-  const boxShadow = isDarkMode
+  // Shadow variables
+  const boxShadow = isDark
     ? `0 4px 12px ${alpha(theme.palette.primary.dark, 0.5)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`
     : `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`;
 
-  // Hover shadow
-  const hoverBoxShadow = isDarkMode
+  const hoverBoxShadow = isDark
     ? `0 6px 16px ${alpha(theme.palette.primary.dark, 0.6)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.4)}`
     : `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.15)}`;
 
-  // Active shadow
-  const activeBoxShadow = isDarkMode
+  const activeBoxShadow = isDark
     ? `0 2px 8px ${alpha(theme.palette.primary.dark, 0.4)}, 0 1px 3px ${alpha(theme.palette.common.black, 0.3)}`
     : `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}, 0 1px 3px ${alpha(theme.palette.common.black, 0.08)}`;
 
-  // Border
-  const border = isDarkMode
+  // Border and disabled styles
+  const border = isDark
     ? `1px solid ${alpha(theme.palette.primary.light, 0.2)}`
     : `1px solid ${alpha(theme.palette.primary.dark, 0.1)}`;
 
-  // Disabled background
-  const disabledBackground = isDarkMode
+  const disabledBackground = isDark
     ? `linear-gradient(135deg, ${alpha(theme.palette.grey[800], 0.7)} 0%, ${alpha(theme.palette.grey[700], 0.7)} 100%)`
     : `linear-gradient(135deg, ${alpha(theme.palette.grey[300], 0.8)} 0%, ${alpha(theme.palette.grey[400], 0.8)} 100%)`;
 
-  // Disabled color
-  const disabledColor = isDarkMode
+  const disabledColor = isDark
     ? theme.palette.grey[500]
     : theme.palette.grey[400];
 
-  // Disabled border
-  const disabledBorder = isDarkMode
+  const disabledBorder = isDark
     ? `1px solid ${alpha(theme.palette.common.white, 0.05)}`
     : `1px solid ${alpha(theme.palette.common.black, 0.05)}`;
 
@@ -683,24 +673,15 @@ const AIFillButton = styled(Button)(({ theme }) => {
     textTransform: 'none',
     whiteSpace: 'nowrap',
     letterSpacing: '0.03em',
-    borderRadius: 16, // Increased border radius for buttons
+    borderRadius: 16,
     transition: 'all 0.2s ease-in-out',
     position: 'relative',
     overflow: 'hidden',
-
-    // Enhanced gradient for both light and dark modes
     background,
-
-    // Modern glass morphism effect
     backdropFilter: 'blur(10px)',
-
-    // Improved shadow for depth
     boxShadow,
-
-    // Subtle border for definition
     border,
 
-    // Add subtle shimmer effect with pseudo-element
     '&::before': {
       content: '""',
       position: 'absolute',
@@ -718,7 +699,6 @@ const AIFillButton = styled(Button)(({ theme }) => {
       transform: 'translateY(-2px)',
       background: hoverBackground,
 
-      // Animate shimmer on hover
       '&::before': {
         left: '100%',
         transition: 'all 0.75s ease',
@@ -737,155 +717,46 @@ const AIFillButton = styled(Button)(({ theme }) => {
       border: disabledBorder,
     },
 
-    // Add subtle text shadow for better readability
     '& .MuiButton-startIcon, & .MuiButton-endIcon': {
       filter: `drop-shadow(0 1px 1px ${alpha(theme.palette.common.black, 0.5)})`,
     },
   };
 });
 
-// // Action Button
-// const ActionButton = styled(Button)(({ theme }) => {
-//   const isDarkMode = theme.palette.mode === 'dark';
-
-//   // Base colors
-//   const backgroundColor = isDarkMode
-//     ? alpha(theme.palette.grey[800], 0.7)
-//     : theme.palette.common.white;
-
-//   const textColor = isDarkMode
-//     ? theme.palette.common.white
-//     : theme.palette.grey[800];
-
-//   // Shadow
-//   const boxShadow = isDarkMode
-//     ? `0 2px 6px ${alpha(theme.palette.common.black, 0.3)}, 0 1px 2px ${alpha(theme.palette.common.black, 0.2)}`
-//     : `0 2px 6px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`;
-
-//   // Border
-//   const border = isDarkMode
-//     ? `1px solid ${alpha(theme.palette.common.white, 0.1)}`
-//     : `1px solid ${alpha(theme.palette.grey[300], 0.7)}`;
-
-//   // Hover state
-//   const hoverBackgroundColor = isDarkMode
-//     ? alpha(theme.palette.grey[700], 0.9)
-//     : alpha(theme.palette.common.white, 0.95);
-
-//   const hoverBoxShadow = isDarkMode
-//     ? `0 4px 10px ${alpha(theme.palette.common.black, 0.35)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.25)}`
-//     : `0 4px 10px ${alpha(theme.palette.common.black, 0.1)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.06)}`;
-
-//   // Active state
-//   const activeBoxShadow = isDarkMode
-//     ? `0 1px 3px ${alpha(theme.palette.common.black, 0.3)}`
-//     : `0 1px 3px ${alpha(theme.palette.common.black, 0.07)}`;
-
-//   // Primary variant
-//   const primaryBackground = isDarkMode
-//     ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.85)} 0%, ${theme.palette.primary.main} 100%)`
-//     : `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`;
-
-//   const primaryHoverBackground = isDarkMode
-//     ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.9)} 0%, ${alpha(theme.palette.primary.main, 1.1)} 100%)`
-//     : `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 1.1)} 0%, ${alpha(theme.palette.primary.main, 1.1)} 100%)`;
-
-//   // Error variant
-//   const errorBackground = isDarkMode
-//     ? `linear-gradient(135deg, ${alpha(theme.palette.error.dark, 0.85)} 0%, ${theme.palette.error.main} 100%)`
-//     : `linear-gradient(135deg, ${theme.palette.error.light} 0%, ${theme.palette.error.main} 100%)`;
-
-//   return {
-//     borderRadius: 16, // Increased border radius for buttons
-//     padding: theme.spacing(0.75, 1.5),
-//     textTransform: 'none',
-//     fontSize: '0.8rem',
-//     fontWeight: 500,
-//     letterSpacing: '0.02em',
-
-//     // Background based on theme mode
-//     backgroundColor,
-
-//     // Better color contrast based on theme
-//     color: textColor,
-
-//     // Enhanced shadows by theme
-//     boxShadow,
-
-//     // Better defined borders by theme
-//     border,
-
-//     // Subtle glass effect
-//     backdropFilter: 'blur(4px)',
-
-//     transition: 'all 0.2s ease-in-out',
-
-//     '&:hover': {
-//       transform: 'translateY(-1px)',
-//       boxShadow: hoverBoxShadow,
-//       backgroundColor: hoverBackgroundColor,
-//     },
-
-//     '&:active': {
-//       transform: 'translateY(0)',
-//       boxShadow: activeBoxShadow,
-//     },
-
-//     // Button variants
-//     '&.MuiButton-containedPrimary': {
-//       background: primaryBackground,
-//       color: theme.palette.common.white,
-//       border: 'none',
-//       '&:hover': {
-//         background: primaryHoverBackground,
-//       },
-//       '& .MuiButton-startIcon, & .MuiButton-endIcon': {
-//         filter: `drop-shadow(0 1px 1px ${alpha(theme.palette.common.black, 0.3)})`,
-//       },
-//     },
-
-//     '&.MuiButton-containedError': {
-//       background: errorBackground,
-//       color: theme.palette.common.white,
-//       border: 'none',
-//     },
-//   };
-// });
-
 // Empty state component
 const EmptyStateMessage = styled(Paper)(({ theme }) => {
-  const isDarkMode = theme.palette.mode === 'dark';
+  const isDark = theme.palette.mode === 'dark';
 
   // Background gradient
-  const background = isDarkMode
+  const background = isDark
     ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.5)} 100%)`
     : `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.grey[50], 0.9)} 100%)`;
 
   // Border color
-  const borderColor = isDarkMode
+  const borderColor = isDark
     ? alpha(theme.palette.grey[700], 0.3)
     : alpha(theme.palette.grey[300], 0.7);
 
   // Shadow
-  const boxShadow = isDarkMode
+  const boxShadow = isDark
     ? `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.05)}, 0 6px 12px -6px ${alpha(theme.palette.common.black, 0.4)}`
     : `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.9)}, 0 6px 12px -6px ${alpha(theme.palette.common.black, 0.1)}`;
 
   // Typography colors  
-  const titleColor = isDarkMode
+  const titleColor = isDark
     ? alpha(theme.palette.common.white, 0.85)
     : theme.palette.grey[800];
 
-  const bodyColor = isDarkMode
+  const bodyColor = isDark
     ? alpha(theme.palette.common.white, 0.6)
     : theme.palette.grey[600];
 
   // Icon color
-  const iconColor = isDarkMode
+  const iconColor = isDark
     ? alpha(theme.palette.primary.main, 0.3)
     : alpha(theme.palette.primary.light, 0.4);
 
-  const iconShadow = `drop-shadow(0 2px 4px ${alpha(theme.palette.common.black, isDarkMode ? 0.4 : 0.1)})`;
+  const iconShadow = `drop-shadow(0 2px 4px ${alpha(theme.palette.common.black, isDark ? 0.4 : 0.1)})`;
 
   return {
     display: 'flex',
@@ -893,24 +764,15 @@ const EmptyStateMessage = styled(Paper)(({ theme }) => {
     alignItems: 'center',
     justifyContent: 'center',
     padding: theme.spacing(4),
-    borderRadius: 20, // Added border radius for empty state
-    // Enhanced background with subtle gradient
+    borderRadius: 20,
     background,
-
-    // Improved border for better definition
     border: `1px solid ${borderColor}`,
-
-    // Glass effect
     backdropFilter: 'blur(8px)',
-
-    // Enhanced shadow
     boxShadow,
-
     textAlign: 'center',
     height: '100%',
     minHeight: 240,
 
-    // Enhanced typography styles
     '& .MuiTypography-subtitle1': {
       marginTop: theme.spacing(2),
       fontWeight: 600,
@@ -924,7 +786,6 @@ const EmptyStateMessage = styled(Paper)(({ theme }) => {
       maxWidth: '80%',
     },
 
-    // Enhanced icon styles
     '& .MuiSvgIcon-root, & .iconify': {
       fontSize: 48,
       marginBottom: theme.spacing(2),
@@ -934,7 +795,7 @@ const EmptyStateMessage = styled(Paper)(({ theme }) => {
   };
 });
 
-// Define proper types for the RelationTypeSelector component
+// RelationTypeSelector component
 interface RelationTypeSelectorProps {
   value: RelationType;
   onChange: (newType: RelationType) => void;
@@ -948,10 +809,10 @@ const RelationTypeSelector: React.FC<RelationTypeSelectorProps> = ({
   disabled = false
 }) => {
   const relationTypes = [
-    { value: 'OTO' as const, label: '1:1', tooltip: 'One-to-One' },
-    { value: 'OTM' as const, label: '1:n', tooltip: 'One-to-Many' },
-    { value: 'MTO' as const, label: 'n:1', tooltip: 'Many-to-One' },
-    { value: 'MTM' as const, label: 'n:n', tooltip: 'Many-to-Many' }
+    { value: 'OTO' as RelationType, label: '1:1', tooltip: 'One-to-One' },
+    { value: 'OTM' as RelationType, label: '1:n', tooltip: 'One-to-Many' },
+    { value: 'MTO' as RelationType, label: 'n:1', tooltip: 'Many-to-One' },
+    { value: 'MTM' as RelationType, label: 'n:n', tooltip: 'Many-to-Many' }
   ];
 
   return (
@@ -994,7 +855,7 @@ const RelationTypeSelector: React.FC<RelationTypeSelectorProps> = ({
   );
 };
 
-// Enhanced toast message animations
+// Animation variants
 const toastVariants = {
   hidden: {
     opacity: 0,
@@ -1025,19 +886,17 @@ const toastVariants = {
     filter: 'blur(4px)',
     transition: {
       duration: 0.3,
-      ease: [0.43, 0.13, 0.23, 0.96] // Custom easing for smooth exit
+      ease: [0.43, 0.13, 0.23, 0.96]
     }
   }
 };
 
-// Variants for child elements in toast
 const toastChildVariants = {
   hidden: { opacity: 0, y: 10 },
   visible: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -5 }
 };
 
-// Enhanced table animations
 const tableVariants = {
   hidden: {
     opacity: 0,
@@ -1053,10 +912,10 @@ const tableVariants = {
     transition: {
       delay: i * 0.05,
       duration: 0.4,
-      ease: [0.25, 0.1, 0.25, 1.0], // Custom easing for more natural motion
+      ease: [0.25, 0.1, 0.25, 1.0],
       scale: {
         duration: 0.5,
-        ease: [0.34, 1.56, 0.64, 1] // Custom spring-like easing for scale
+        ease: [0.34, 1.56, 0.64, 1]
       }
     }
   }),
@@ -1067,12 +926,11 @@ const tableVariants = {
     filter: 'blur(4px)',
     transition: {
       duration: 0.3,
-      ease: [0.43, 0.13, 0.23, 0.96] // Custom easing for smooth exit
+      ease: [0.43, 0.13, 0.23, 0.96]
     }
   }
 };
 
-// Enhanced row variants for table rows
 const rowVariants = {
   hidden: {
     opacity: 0,
@@ -1083,7 +941,7 @@ const rowVariants = {
     x: 0,
     transition: {
       duration: 0.3,
-      ease: [0.25, 0.1, 0.25, 1.0] // Custom easing
+      ease: [0.25, 0.1, 0.25, 1.0]
     }
   },
   exit: {
@@ -1091,128 +949,154 @@ const rowVariants = {
     x: -10,
     transition: {
       duration: 0.2,
-      ease: [0.43, 0.13, 0.23, 0.96] // Custom easing
+      ease: [0.43, 0.13, 0.23, 0.96]
     }
   }
 };
 
-interface Props {
+// State type definitions
+interface ToastState {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  visible: boolean;
+}
+
+interface RelationDialogState {
+  open: boolean;
+  sourceTableId: string;
+  sourceColumnId: string;
+  targetTableId: string;
+  targetColumnId: string;
+  relationType: RelationType;
+}
+
+interface AppState {
+  expandedTables: Record<string, boolean>;
+  selectedTable: string | null;
+  editingTableId: string | null;
+  editingColumnId: string | null;
+  searchQuery: string;
+  filteredTables: TableDefinition[];
+  editableTables: TableDefinition[];
+  aiLoading: boolean;
+  aiButtonTooltipOpen: boolean;
+  hoveredTableId: string | null;
+  hoveredColumnId: string | null;
+  toast: ToastState;
+  relationDialog: RelationDialogState;
+}
+
+// Main component interface
+interface TableDefinitionViewProps {
   tables: TableDefinition[];
   onTablesUpdate?: (updatedTables: TableDefinition[]) => void;
 }
 
-export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
+// Main component
+export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionViewProps): JSX.Element {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  // const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Main state
-  const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({});
-  const [selectedTable, setSelectedTable] = useState<string | null>(null);
-  const [editingTableId, setEditingTableId] = useState<string | null>(null);
-  const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredTables, setFilteredTables] = useState<TableDefinition[]>([]);
-  const [editableTables, setEditableTables] = useState<TableDefinition[]>([]);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiButtonTooltipOpen, setAiButtonTooltipOpen] = useState(false);
-  const [hoveredTableId, setHoveredTableId] = useState<string | null>(null);
-  const [hoveredColumnId, setHoveredColumnId] = useState<string | null>(null);
+  // Enhanced responsive grid layout
+  const gridSizes = useMemo(() => ({
+    tableList: { xs: 12, sm: 12, md: 6, lg: 6, xl: 6 }, // 50%
+    diagram: { xs: 12, sm: 12, md: 6, lg: 6, xl: 6 },   // 50%
+  }), []);
 
-  // New relation dialog state
-  const [relationDialogOpen, setRelationDialogOpen] = useState(false);
-  const [newRelation, setNewRelation] = useState<{
-    sourceTableId: string;
-    sourceColumnId: string;
-    targetTableId: string;
-    targetColumnId: string;
-    relationType: RelationType;
-  }>({
-    sourceTableId: '',
-    sourceColumnId: '',
-    targetTableId: '',
-    targetColumnId: '',
-    relationType: 'OTO',
+  // Unified state management
+  const [state, setState] = useState<AppState>({
+    expandedTables: {},
+    selectedTable: null,
+    editingTableId: null,
+    editingColumnId: null,
+    searchQuery: '',
+    filteredTables: [],
+    editableTables: [],
+    aiLoading: false,
+    aiButtonTooltipOpen: false,
+    hoveredTableId: null,
+    hoveredColumnId: null,
+    toast: {
+      message: '',
+      type: 'info',
+      visible: false,
+    },
+    relationDialog: {
+      open: false,
+      sourceTableId: '',
+      sourceColumnId: '',
+      targetTableId: '',
+      targetColumnId: '',
+      relationType: 'OTO',
+    }
   });
 
-  // Toast message state
-  const [toast, setToast] = useState<{
-    message: string;
-    type: 'success' | 'error' | 'info';
-    visible: boolean;
-  }>({
-    message: '',
-    type: 'info',
-    visible: false,
-  });
+  // Destructured state for easier access
+  const {
+    expandedTables, selectedTable, editingTableId, editingColumnId,
+    searchQuery, filteredTables, editableTables, aiLoading,
+    aiButtonTooltipOpen, hoveredTableId, hoveredColumnId,
+    toast, relationDialog
+  } = state;
 
   // Refs
   const tableListRef = useRef<HTMLDivElement>(null);
-
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Initialize editable tables when component mounts or tables prop changes
+  // Initialize tables on component mount
   useEffect(() => {
-    if (tables && tables.length > 0) {
-      setEditableTables(JSON.parse(JSON.stringify(tables)));
+    if (tables?.length > 0) {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(tables));
 
-      // Auto-expand the first table if none is expanded
-      if (Object.keys(expandedTables).length === 0 && !selectedTable) {
-        setExpandedTables({ [tables[0].tableIdentifier]: true });
-        setSelectedTable(tables[0].tableIdentifier);
-      }
+      setState(prev => ({
+        ...prev,
+        editableTables: tablesDeepCopy,
+        filteredTables: tablesDeepCopy,
+        // Auto-expand first table if none selected
+        ...(Object.keys(expandedTables).length === 0 && !selectedTable && {
+          expandedTables: { [tables[0].tableIdentifier]: true },
+          selectedTable: tables[0].tableIdentifier
+        })
+      }));
     }
   }, [tables, expandedTables, selectedTable]);
 
   // Filter tables based on search query
   useEffect(() => {
     if (!debouncedSearchQuery.trim()) {
-      setFilteredTables(editableTables);
+      setState(prev => ({ ...prev, filteredTables: prev.editableTables }));
       return;
     }
 
     const query = debouncedSearchQuery.toLowerCase();
-    const filtered = editableTables.filter(
-      (table) =>
-        table.tableIdentifier.toLowerCase().includes(query) ||
-        table.columns.some(
-          (col) =>
-            col.columnIdentifier.toLowerCase().includes(query) ||
-            (col.columnDescription && col.columnDescription.toLowerCase().includes(query)) ||
-            col.columnType.toLowerCase().includes(query)
-        )
+    const filtered = editableTables.filter(table =>
+      table.tableIdentifier.toLowerCase().includes(query) ||
+      table.columns.some(col =>
+        col.columnIdentifier.toLowerCase().includes(query) ||
+        (col.columnDescription && col.columnDescription.toLowerCase().includes(query)) ||
+        col.columnType.toLowerCase().includes(query)
+      )
     );
-    setFilteredTables(filtered);
+
+    setState(prev => ({ ...prev, filteredTables: filtered }));
   }, [debouncedSearchQuery, editableTables]);
 
-  // Initialize filtered tables
-  useEffect(() => {
-    setFilteredTables(editableTables);
-  }, [editableTables]);
-
-  // Show success toast
-  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
-    setToast({
-      message,
-      type,
-      visible: true,
-    });
-
-    // Auto-hide after 3 seconds
+  // Core helper functions
+  const showToast = useCallback((message: string, type: ToastState['type']) => {
+    setState(prev => ({ ...prev, toast: { message, type, visible: true } }));
     setTimeout(() => {
-      setToast(prev => ({ ...prev, visible: false }));
+      setState(prev => ({ ...prev, toast: { ...prev.toast, visible: false } }));
     }, 3000);
-  };
+  }, []);
 
-  // Toggle table expansion and selection
   const toggleTable = useCallback((tableId: string) => {
-    setExpandedTables(prev => ({
+    setState(prev => ({
       ...prev,
-      [tableId]: !prev[tableId]
+      expandedTables: { ...prev.expandedTables, [tableId]: !prev.expandedTables[tableId] },
+      selectedTable: tableId
     }));
-    setSelectedTable(tableId);
 
-    // Scroll to the selected table if it's not in view
+    // Scroll to the selected table
     setTimeout(() => {
       const tableElement = document.getElementById(`table-${tableId}`);
       if (tableElement && tableListRef.current) {
@@ -1226,36 +1110,33 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
     }, 100);
   }, []);
 
-  // Start editing a column
   const startEditing = useCallback((tableId: string, columnId: string) => {
-    setEditingTableId(tableId);
-    setEditingColumnId(columnId);
+    setState(prev => ({ ...prev, editingTableId: tableId, editingColumnId: columnId }));
   }, []);
 
-  // Cancel editing for a specific column
   const cancelEditing = useCallback(() => {
-    setEditingTableId(null);
-    setEditingColumnId(null);
-
-    // Reset the editable tables to their original state
-    setEditableTables(JSON.parse(JSON.stringify(tables)));
-
+    setState(prev => ({
+      ...prev,
+      editingTableId: null,
+      editingColumnId: null,
+      editableTables: JSON.parse(JSON.stringify(tables))
+    }));
     showToast('Editing canceled', 'info');
-  }, [tables]);
+  }, [tables, showToast]);
 
-  // Save changes for a specific column
   const saveColumnChanges = useCallback((
     tableId: string,
     columnId: string,
     updatedColumn: ColumnDefinition
   ) => {
     try {
-      // Update the tables state
-      const updatedTables = editableTables.map(table => {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
         if (table.tableIdentifier === tableId) {
           return {
             ...table,
-            columns: table.columns.map(column =>
+            columns: table.columns.map((column: ColumnDefinition) =>
               column.columnIdentifier === columnId ? updatedColumn : column
             )
           };
@@ -1263,39 +1144,39 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
         return table;
       });
 
-      // Update the editable tables state
-      setEditableTables(updatedTables);
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables,
+        editingTableId: null,
+        editingColumnId: null
+      }));
 
-      // Call the onTablesUpdate callback if provided
       if (onTablesUpdate) {
         onTablesUpdate(updatedTables);
       }
 
-      // Clear editing state
-      setEditingTableId(null);
-      setEditingColumnId(null);
-
-      // Show success notification
       showToast('Column updated successfully!', 'success');
     } catch (error) {
       console.error('Error saving column changes:', error);
       showToast('Failed to save changes', 'error');
     }
-  }, [editableTables, onTablesUpdate]);
+  }, [editableTables, onTablesUpdate, showToast]);
 
-  // Handle column changes
   const handleColumnChange = useCallback((
     tableId: string,
     columnId: string,
     field: keyof ColumnDefinition,
     value: any
   ) => {
-    setEditableTables(prevTables =>
-      prevTables.map(table => {
+    setState(prev => {
+      const updatedTables = JSON.parse(JSON.stringify(prev.editableTables));
+
+      const result = updatedTables.map((table: TableDefinition) => {
         if (table.tableIdentifier === tableId) {
           return {
             ...table,
-            columns: table.columns.map(column =>
+            columns: table.columns.map((column: ColumnDefinition) =>
               column.columnIdentifier === columnId
                 ? { ...column, [field]: value }
                 : column
@@ -1303,182 +1184,200 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
           };
         }
         return table;
-      })
-    );
+      });
+
+      return {
+        ...prev,
+        editableTables: result
+      };
+    });
   }, []);
 
-  // Get column count for a table
+  // Data processing functions
   const getColumnCount = useCallback((tableId: string): number => {
     const table = editableTables.find(t => t.tableIdentifier === tableId);
     return table?.columns.length || 0;
   }, [editableTables]);
 
-  // Get primary key count for a table
   const getPrimaryKeyCount = useCallback((tableId: string): number => {
     const table = editableTables.find(t => t.tableIdentifier === tableId);
     return table?.columns.filter(c => c.isPrimaryKey).length || 0;
   }, [editableTables]);
 
-  // Get relation count for a table
   const getRelationCount = useCallback((tableId: string): number => {
     const table = editableTables.find(t => t.tableIdentifier === tableId);
     return table?.columns.reduce((count, column) =>
       count + (column.relations ? column.relations.length : 0), 0) || 0;
   }, [editableTables]);
 
-  // Get relation type display
   const getRelationTypeDisplay = useCallback((relationType: string): string => {
-    switch (relationType) {
-      case 'OTM': return '1:n';
-      case 'MTO': return 'n:1';
-      case 'OTO': return '1:1';
-      case 'MTM': return 'n:n';
-      default: return relationType;
-    }
+    const map: Record<string, string> = { 'OTM': '1:n', 'MTO': 'n:1', 'OTO': '1:1', 'MTM': 'n:n' };
+    return map[relationType] || relationType;
   }, []);
 
-  // Get relation name
   const getRelationshipName = useCallback((key: string): string => {
-    if (key === 'OTM') return 'One-to-Many';
-    if (key === 'MTO') return 'Many-to-One';
-    if (key === 'OTO') return 'One-to-One';
-    return 'Many-to-Many';
+    const map: Record<string, string> = {
+      'OTM': 'One-to-Many',
+      'MTO': 'Many-to-One',
+      'OTO': 'One-to-One',
+      'MTM': 'Many-to-Many'
+    };
+    return map[key] || key;
   }, []);
 
-  // Generate AI description for a column
+  // AI description generation
   const generateAIDescription = async (column: ColumnDefinition, table: TableDefinition): Promise<string> => {
-    // Simulate API call delay
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Generate more context-aware descriptions based on column type and name
-    let baseDescription = '';
-
-    // Check if column is a foreign key (has relations)
+    // Context-aware descriptions
     const isForeignKey = column.relations && column.relations.length > 0;
-
-    // Check common column name patterns
     const colName = column.columnIdentifier.toLowerCase();
 
     if (column.isPrimaryKey) {
-      baseDescription = `Unique identifier for each record in the ${table.tableIdentifier} table`;
-    } else if (isForeignKey) {
+      return `Unique identifier for each record in the ${table.tableIdentifier} table`;
+    }
+
+    if (isForeignKey) {
       const relations = column.relations || [];
       const targetTables = relations.map(r => r.tableIdentifier).join(', ');
-      baseDescription = `Foreign key referencing ${targetTables} ${relations.length > 1 ? 'tables' : 'table'}`;
-    } else if (colName.includes('id') && colName.endsWith('id')) {
-      baseDescription = `Reference to ${colName.replace(/_?id$/, '')} record`;
-    } else if (colName.includes('name')) {
-      baseDescription = `Name or title of the ${table.tableIdentifier} record`;
-    } else if (colName.includes('date') || colName.includes('time')) {
+      return `Foreign key referencing ${targetTables} ${relations.length > 1 ? 'tables' : 'table'}`;
+    }
+
+    if (colName.includes('id') && colName.endsWith('id')) {
+      return `Reference to ${colName.replace(/_?id$/, '')} record`;
+    }
+
+    if (colName.includes('name')) {
+      return `Name or title of the ${table.tableIdentifier} record`;
+    }
+
+    if (colName.includes('date') || colName.includes('time')) {
       let action = 'event occurred';
       if (colName.includes('created')) action = 'record was created';
       else if (colName.includes('updated')) action = 'record was last modified';
       else if (colName.includes('deleted')) action = 'record was removed';
 
-      baseDescription = `Timestamp indicating when the ${action}`;
-    } else if (colName.includes('price') || colName.includes('cost') || colName.includes('amount')) {
-      baseDescription = `Monetary value representing the ${colName.replace(/_/g, ' ')}`;
-    } else if (colName.includes('status')) {
-      baseDescription = `Current state of the ${table.tableIdentifier} record`;
-    } else if (colName.includes('description')) {
-      baseDescription = `Detailed description of the ${table.tableIdentifier} record`;
-    } else if (column.columnType.toLowerCase().includes('bool')) {
-      const flagDescription = colName
-        .replace(/^is_/, '')
-        .replace(/^has_/, '')
-        .replace(/_/g, ' ');
-      baseDescription = `Flag indicating whether the ${table.tableIdentifier} ${flagDescription}`;
-    } else {
-      baseDescription = `Stores ${column.columnType} data for ${table.tableIdentifier} records`;
+      return `Timestamp indicating when the ${action}`;
     }
 
-    return baseDescription;
+    if (/price|cost|amount/.test(colName)) {
+      return `Monetary value representing the ${colName.replace(/_/g, ' ')}`;
+    }
+
+    if (colName.includes('status')) {
+      return `Current state of the ${table.tableIdentifier} record`;
+    }
+
+    if (colName.includes('description')) {
+      return `Detailed description of the ${table.tableIdentifier} record`;
+    }
+
+    if (/bool|flag/.test(column.columnType.toLowerCase())) {
+      const flagDescription = colName
+        .replace(/^is_|^has_/, '')
+        .replace(/_/g, ' ');
+      return `Flag indicating whether the ${table.tableIdentifier} ${flagDescription}`;
+    }
+
+    return `Stores ${column.columnType} data for ${table.tableIdentifier} records`;
   };
 
-  // Fill all column descriptions with AI
   const fillAllDescriptionsWithAI = async () => {
     try {
-      setAiLoading(true);
-      setAiButtonTooltipOpen(false);
+      setState(prev => ({ ...prev, aiLoading: true, aiButtonTooltipOpen: false }));
 
-      const updatedTables = [...editableTables];
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
       let generatedCount = 0;
 
       await Promise.all(
-        updatedTables.map(async (table) => {
-          await Promise.all(
-            table.columns.map(async (column) => {
-              if (column.columnDescription) return;
-              const aiDescription = await generateAIDescription(column, table);
-              column.columnDescription = aiDescription;
+        tablesDeepCopy.flatMap((table: TableDefinition) =>
+          table.columns.map(async (column: ColumnDefinition) => {
+            if (!column.columnDescription) {
+              column.columnDescription = await generateAIDescription(column, table);
               generatedCount += 1;
-            })
-          );
-        })
+            }
+          })
+        )
       );
 
-      // Update state with new descriptions
-      setEditableTables(updatedTables);
+      setState(prev => ({
+        ...prev,
+        editableTables: tablesDeepCopy,
+        filteredTables: tablesDeepCopy,
+        aiLoading: false
+      }));
 
-      // Show different messages based on how many descriptions were generated
-      if (generatedCount > 0) {
-        showToast(`Successfully generated ${generatedCount} column descriptions!`, 'success');
-
-        // Notify the parent component of the changes
-        if (onTablesUpdate) {
-          onTablesUpdate(updatedTables);
-        }
-      } else {
-        showToast('All columns already have descriptions', 'info');
+      if (onTablesUpdate && generatedCount > 0) {
+        onTablesUpdate(tablesDeepCopy);
       }
+
+      showToast(
+        generatedCount > 0
+          ? `Successfully generated ${generatedCount} column descriptions!`
+          : 'All columns already have descriptions',
+        generatedCount > 0 ? 'success' : 'info'
+      );
     } catch (error) {
       console.error('AI description generation failed:', error);
       showToast('Failed to generate AI descriptions', 'error');
-    } finally {
-      setAiLoading(false);
+      setState(prev => ({ ...prev, aiLoading: false }));
     }
   };
 
-  // Open relation dialog
+  // Relation management
   const openRelationDialog = useCallback((tableId: string, columnId: string) => {
-    setNewRelation({
-      sourceTableId: tableId,
-      sourceColumnId: columnId,
-      targetTableId: '',
-      targetColumnId: '',
-      relationType: 'OTO',
-    });
-    setRelationDialogOpen(true);
+    setState(prev => ({
+      ...prev,
+      relationDialog: {
+        ...prev.relationDialog,
+        open: true,
+        sourceTableId: tableId,
+        sourceColumnId: columnId,
+        targetTableId: '',
+        targetColumnId: '',
+        relationType: 'OTO'
+      }
+    }));
   }, []);
 
-  // Handle relation dialog close
-  const handleRelationDialogClose = () => {
-    setRelationDialogOpen(false);
-  };
+  const handleRelationDialogClose = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      relationDialog: { ...prev.relationDialog, open: false }
+    }));
+  }, []);
 
-  // Add new relation
-  const addNewRelation = () => {
+  const updateRelationDialog = useCallback((field: keyof RelationDialogState, value: string) => {
+    setState(prev => ({
+      ...prev,
+      relationDialog: { ...prev.relationDialog, [field]: value }
+    }));
+  }, []);
+
+  const addNewRelation = useCallback(() => {
     try {
-      // Validate relation inputs
-      if (!newRelation.sourceTableId || !newRelation.sourceColumnId ||
-        !newRelation.targetTableId || !newRelation.targetColumnId) {
+      const { sourceTableId, sourceColumnId, targetTableId, targetColumnId, relationType } = relationDialog;
+
+      if (!sourceTableId || !sourceColumnId || !targetTableId || !targetColumnId) {
         showToast('Please fill all relation fields', 'error');
         return;
       }
 
-      // Create new relation object
       const relationToAdd: RelationDefinition = {
-        tableIdentifier: newRelation.targetTableId,
-        columnIdentifier: newRelation.sourceColumnId,
-        toColumn: newRelation.targetColumnId,
-        type: newRelation.relationType,
+        tableIdentifier: targetTableId,
+        columnIdentifier: sourceColumnId,
+        toColumn: targetColumnId,
+        type: relationType,
       };
 
-      // Check if relation already exists
-      const sourceTable = editableTables.find(t => t.tableIdentifier === newRelation.sourceTableId);
-      const sourceColumn = sourceTable?.columns.find(c => c.columnIdentifier === newRelation.sourceColumnId);
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
 
-      if (sourceColumn?.relations?.some(r =>
+      // Check if relation already exists
+      const sourceTable = tablesDeepCopy.find((t: TableDefinition) => t.tableIdentifier === sourceTableId);
+      const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === sourceColumnId);
+
+      if (sourceColumn?.relations?.some((r: RelationDefinition) =>
         r.tableIdentifier === relationToAdd.tableIdentifier &&
         r.toColumn === relationToAdd.toColumn
       )) {
@@ -1486,13 +1385,13 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
         return;
       }
 
-      // Update tables with new relation
-      const updatedTables = editableTables.map(table => {
-        if (table.tableIdentifier === newRelation.sourceTableId) {
+      // Add relation
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
+        if (table.tableIdentifier === sourceTableId) {
           return {
             ...table,
-            columns: table.columns.map(column => {
-              if (column.columnIdentifier === newRelation.sourceColumnId) {
+            columns: table.columns.map((column: ColumnDefinition) => {
+              if (column.columnIdentifier === sourceColumnId) {
                 return {
                   ...column,
                   relations: [...(column.relations || []), relationToAdd]
@@ -1505,26 +1404,24 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
         return table;
       });
 
-      // Update state
-      setEditableTables(updatedTables);
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables,
+        relationDialog: { ...prev.relationDialog, open: false }
+      }));
 
-      // Call the onTablesUpdate callback if provided
       if (onTablesUpdate) {
         onTablesUpdate(updatedTables);
       }
 
-      // Show success notification
       showToast('Relation added successfully!', 'success');
-
-      // Close dialog
-      setRelationDialogOpen(false);
     } catch (error) {
       console.error('Error adding relation:', error);
       showToast('Failed to add relation', 'error');
     }
-  };
+  }, [relationDialog, editableTables, onTablesUpdate, showToast]);
 
-  // Delete relation
   const deleteRelation = useCallback((
     tableId: string,
     columnId: string,
@@ -1532,17 +1429,18 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
     targetColumnId: string
   ) => {
     try {
-      // Update tables by removing the relation
-      const updatedTables = editableTables.map(table => {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
         if (table.tableIdentifier === tableId) {
           return {
             ...table,
-            columns: table.columns.map(column => {
+            columns: table.columns.map((column: ColumnDefinition) => {
               if (column.columnIdentifier === columnId) {
                 return {
                   ...column,
                   relations: (column.relations || []).filter(
-                    r => !(r.tableIdentifier === targetTableId && r.toColumn === targetColumnId)
+                    (r: RelationDefinition) => !(r.tableIdentifier === targetTableId && r.toColumn === targetColumnId)
                   )
                 };
               }
@@ -1553,23 +1451,24 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
         return table;
       });
 
-      // Update state
-      setEditableTables(updatedTables);
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables
+      }));
 
-      // Call the onTablesUpdate callback if provided
       if (onTablesUpdate) {
         onTablesUpdate(updatedTables);
       }
 
-      // Show success notification
       showToast('Relation deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting relation:', error);
       showToast('Failed to delete relation', 'error');
     }
-  }, [editableTables, onTablesUpdate]);
+  }, [editableTables, onTablesUpdate, showToast]);
 
-  // Get the current editing column
+  // Get current editing column
   const getEditingColumn = useCallback(() => {
     if (!editingTableId || !editingColumnId) return null;
 
@@ -1579,26 +1478,17 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
     return table.columns.find(c => c.columnIdentifier === editingColumnId) || null;
   }, [editingTableId, editingColumnId, editableTables]);
 
-  // Render a column row
+  // Render column row
   const renderColumnRow = useCallback((table: TableDefinition, column: ColumnDefinition, index: number) => {
-    const isEditing =
-      editingTableId === table.tableIdentifier && editingColumnId === column.columnIdentifier;
-    const isHovered =
-      hoveredTableId === table.tableIdentifier && hoveredColumnId === column.columnIdentifier;
-
-    // Get the current editing column to save
+    const isEditing = editingTableId === table.tableIdentifier && editingColumnId === column.columnIdentifier;
+    const isHovered = hoveredTableId === table.tableIdentifier && hoveredColumnId === column.columnIdentifier;
     const currentEditingColumn = isEditing ? getEditingColumn() : null;
 
-    // Handle Enter key press
     const handleKeyPress = (event: React.KeyboardEvent) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
         if (currentEditingColumn) {
-          saveColumnChanges(
-            table.tableIdentifier,
-            column.columnIdentifier,
-            currentEditingColumn
-          );
+          saveColumnChanges(table.tableIdentifier, column.columnIdentifier, currentEditingColumn);
         }
       }
     };
@@ -1612,24 +1502,28 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
         exit="exit"
         variants={rowVariants}
         onMouseEnter={() => {
-          setHoveredTableId(table.tableIdentifier);
-          setHoveredColumnId(column.columnIdentifier);
+          setState(prev => ({
+            ...prev,
+            hoveredTableId: table.tableIdentifier,
+            hoveredColumnId: column.columnIdentifier
+          }));
         }}
         onMouseLeave={() => {
-          setHoveredTableId(null);
-          setHoveredColumnId(null);
+          setState(prev => ({
+            ...prev,
+            hoveredTableId: null,
+            hoveredColumnId: null
+          }));
         }}
         sx={{
-          position: 'relative', // Essential for absolute positioned children
+          position: 'relative',
           cursor: 'pointer',
           '&:hover': {
             backgroundColor: (t) => alpha(t.palette.primary.main, 0.05),
-            '& .MuiTableCell-root': {
-              color: 'primary.main'
-            }
+            '& .MuiTableCell-root': { color: 'primary.main' }
           },
           '& .MuiTableCell-root': {
-            py: 1.5, // Increased vertical padding to accommodate the buttons
+            py: 1.5,
             px: { xs: 1, sm: 1.5 },
             ...(isEditing && {
               backgroundColor: alpha(theme.palette.primary.main, 0.04),
@@ -1645,18 +1539,16 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
               <TextField
                 size="small"
                 value={column.columnIdentifier}
-                onChange={(e) =>
-                  handleColumnChange(
-                    table.tableIdentifier,
-                    column.columnIdentifier,
-                    'columnIdentifier',
-                    e.target.value
-                  )
-                }
+                onChange={(e) => handleColumnChange(
+                  table.tableIdentifier,
+                  column.columnIdentifier,
+                  'columnIdentifier',
+                  e.target.value
+                )}
                 onKeyPress={handleKeyPress}
                 fullWidth
                 autoFocus
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 8 } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 aria-label="Edit column name"
               />
             ) : (
@@ -1674,17 +1566,15 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
             <TextField
               size="small"
               value={column.columnType}
-              onChange={(e) =>
-                handleColumnChange(
-                  table.tableIdentifier,
-                  column.columnIdentifier,
-                  'columnType',
-                  e.target.value
-                )
-              }
+              onChange={(e) => handleColumnChange(
+                table.tableIdentifier,
+                column.columnIdentifier,
+                'columnType',
+                e.target.value
+              )}
               onKeyPress={handleKeyPress}
               fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 8 } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               aria-label="Edit column type"
             />
           ) : (
@@ -1698,20 +1588,17 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
             <DescriptionTextField
               size="small"
               value={column.columnDescription || ''}
-              onChange={(e) =>
-                handleColumnChange(
-                  table.tableIdentifier,
-                  column.columnIdentifier,
-                  'columnDescription',
-                  e.target.value
-                )
-              }
+              onChange={(e) => handleColumnChange(
+                table.tableIdentifier,
+                column.columnIdentifier,
+                'columnDescription',
+                e.target.value
+              )}
               onKeyPress={handleKeyPress}
               fullWidth
               multiline
               rows={2}
               placeholder="Enter column description..."
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 8 } }}
               aria-label="Edit column description"
             />
           ) : (
@@ -1728,7 +1615,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
           )}
         </TableCell>
 
-        {/* Relations Cell with Relationship Type Editor */}
+        {/* Relations Cell */}
         <TableCell className="column-relations">
           <RelationsContainer>
             {column.relations?.length ? (
@@ -1739,7 +1626,6 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                       <RelationTypeSelector
                         value={relation.type as RelationType}
                         onChange={(newType) => {
-                          // Create a deep copy of relations
                           const updatedRelations = [...(column.relations || [])];
                           updatedRelations[relationIndex] = {
                             ...updatedRelations[relationIndex],
@@ -1853,7 +1739,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
           )}
         </TableCell>
 
-        {/* Add the save/cancel buttons when editing */}
+        {/* Save/cancel buttons when editing */}
         {isEditing && (
           <EditActionsContainer>
             <Tooltip title="Save changes">
@@ -1900,7 +1786,6 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
     );
   }, [
     theme,
-    startEditing,
     editingTableId,
     editingColumnId,
     hoveredTableId,
@@ -1912,18 +1797,14 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
     getRelationTypeDisplay,
     getRelationshipName,
     deleteRelation,
-    openRelationDialog
+    openRelationDialog,
+    startEditing
   ]);
 
-  // Adjust grid layout based on screen size
-  const gridSizes = useMemo(() => ({
-    tableList: { xs: 12, sm: 12, md: 5.5, lg: 4.5 },  // Slightly wider table list
-    diagram: { xs: 12, sm: 12, md: 6.5, lg: 7.5 },    // Slightly narrower diagram
-  }), []);
-
+  // Render component
   return (
-    <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-      {/* Toast message */}
+    <Box sx={{ position: 'relative', overflow: 'hidden', width: '100%' }}>
+      {/* Toast notification */}
       <AnimatePresence>
         {toast.visible && (
           <m.div
@@ -1933,72 +1814,43 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
             variants={toastVariants}
             style={{
               position: 'fixed',
-              bottom: 20,
-              right: 20,
+              bottom: 24,
+              right: 24,
               zIndex: 9999,
             }}
           >
             <Paper
               elevation={4}
               sx={{
-                px: 2,
-                py: 1.5,
+                px: 2.5,
+                py: 1.75,
                 borderRadius: 2,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1,
-                backgroundColor: (({ type }) => {
-                  const tone = theme.palette.mode === 'dark' ? 'dark' : 'light';
-                  if (type === 'success') return alpha(theme.palette.success[tone], 0.95);
-                  if (type === 'error') return alpha(theme.palette.error[tone], 0.95);
-                  return alpha(theme.palette.info[tone], 0.95);
-                })(toast),
-                color: (({ type }) => {
-                  if (type === 'success') return theme.palette.success.contrastText;
-                  if (type === 'error') return theme.palette.error.contrastText;
-                  return theme.palette.info.contrastText;
-                })(toast),
+                gap: 1.5,
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? alpha(theme.palette[toast.type].dark, 0.95)
+                  : alpha(theme.palette[toast.type].light, 0.95),
+                color: theme.palette[toast.type].contrastText,
+                maxWidth: { xs: '90vw', sm: 400 },
               }}
             >
               <m.div variants={toastChildVariants}>
                 <Iconify
-                  icon={(type => {
-                    if (type === 'success') return 'eva:checkmark-circle-2-fill';
-                    if (type === 'error') return 'eva:alert-circle-fill';
+                  icon={(() => {
+                    if (toast.type === 'success') return 'eva:checkmark-circle-2-fill';
+                    if (toast.type === 'error') return 'eva:alert-circle-fill';
                     return 'eva:info-fill';
-                  })(toast.type)}
-                  width={22}
-                  height={22}
+                  })()}
+                  width={24}
+                  height={24}
                   sx={{
                     filter: `drop-shadow(0 1px 2px ${alpha(theme.palette.common.black, 0.3)})`,
-                    animation: (type => {
-                      if (type === 'success') return 'pulse-success 2s infinite';
-                      if (type === 'error') return 'pulse-error 2s infinite';
-                      return 'pulse-info 2s infinite';
-                    })(toast.type),
-                    '@keyframes pulse-success': {
-                      '0%, 100%': { color: theme.palette.success.light },
-                      '50%': { color: theme.palette.common.white }
-                    },
-                    '@keyframes pulse-error': {
-                      '0%, 100%': { color: theme.palette.error.light },
-                      '50%': { color: theme.palette.common.white }
-                    },
-                    '@keyframes pulse-info': {
-                      '0%, 100%': { color: theme.palette.info.light },
-                      '50%': { color: theme.palette.common.white }
-                    }
                   }}
                 />
               </m.div>
               <m.div variants={toastChildVariants} style={{ flex: 1 }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 500,
-                    textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.3)}`
-                  }}
-                >
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   {toast.message}
                 </Typography>
               </m.div>
@@ -2007,19 +1859,19 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Add Relation Dialog */}
+      {/* Relation dialog */}
       <Dialog
-        open={relationDialogOpen}
+        open={relationDialog.open}
         onClose={handleRelationDialogClose}
         maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: 2,
+            borderRadius: 3,
             overflow: 'hidden',
-            boxShadow: (t) => t.palette.mode === 'dark'
-              ? '0 12px 24px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3)'
-              : '0 12px 24px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.06)',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 12px 24px rgba(0, 0, 0, 0.4)'
+              : '0 12px 24px rgba(0, 0, 0, 0.1)',
           }
         }}
       >
@@ -2027,7 +1879,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
           bgcolor: theme.palette.mode === 'dark'
             ? alpha(theme.palette.primary.dark, 0.1)
             : alpha(theme.palette.primary.lighter, 0.2),
-          py: 2,
+          py: 2.5,
           '& .MuiTypography-root': {
             fontSize: '1.25rem',
             fontWeight: 600,
@@ -2035,28 +1887,28 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
         }}>
           Add New Relation
         </DialogTitle>
-        <DialogContent sx={{ py: 3 }}>
+
+        <DialogContent sx={{ py: 3.5, px: { xs: 2.5, sm: 3 } }}>
           <DialogContentText sx={{ mb: 3 }}>
             Create a new relationship between columns in your database schema.
           </DialogContentText>
+
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Source
               </Typography>
               <Paper variant="outlined" sx={{
-                p: 2,
-                borderRadius: 16,
+                p: 2.5,
+                borderRadius: 3,
                 mb: 2,
-                border: theme.palette.mode === 'dark'
-                  ? `1px solid ${alpha(theme.palette.grey[700], 0.5)}`
-                  : `1px solid ${alpha(theme.palette.grey[300], 0.8)}`,
+                border: `1px solid ${alpha(theme.palette.grey[theme.palette.mode === 'dark' ? 700 : 300], 0.7)}`,
               }}>
-                <Typography variant="body2">
-                  <strong>Table:</strong> {newRelation.sourceTableId}
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Table:</strong> {relationDialog.sourceTableId}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Column:</strong> {newRelation.sourceColumnId}
+                  <strong>Column:</strong> {relationDialog.sourceColumnId}
                 </Typography>
               </Paper>
             </Grid>
@@ -2066,33 +1918,10 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                 <InputLabel id="target-table-label">Target Table</InputLabel>
                 <Select
                   labelId="target-table-label"
-                  value={newRelation.targetTableId}
+                  value={relationDialog.targetTableId}
                   label="Target Table"
-                  onChange={(e) => setNewRelation({ ...newRelation, targetTableId: e.target.value as string })}
-                  sx={{
-                    borderRadius: 16,
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: theme.palette.mode === 'dark'
-                        ? alpha(theme.palette.grey[500], 0.32)
-                        : alpha(theme.palette.grey[300], 0.8),
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: theme.palette.primary.main,
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: theme.palette.primary.main,
-                      borderWidth: 2,
-                    }
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        borderRadius: 16,
-                        mt: 1,
-                        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.12)',
-                      }
-                    }
-                  }}
+                  onChange={(e) => updateRelationDialog('targetTableId', e.target.value as string)}
+                  sx={{ borderRadius: 3 }}
                 >
                   {editableTables.map((table) => (
                     <MenuItem key={table.tableIdentifier} value={table.tableIdentifier}>
@@ -2104,40 +1933,17 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth disabled={!newRelation.targetTableId}>
+              <FormControl fullWidth disabled={!relationDialog.targetTableId}>
                 <InputLabel id="target-column-label">Target Column</InputLabel>
                 <Select
                   labelId="target-column-label"
-                  value={newRelation.targetColumnId}
+                  value={relationDialog.targetColumnId}
                   label="Target Column"
-                  onChange={(e) => setNewRelation({ ...newRelation, targetColumnId: e.target.value as string })}
-                  sx={{
-                    borderRadius: 16,
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: theme.palette.mode === 'dark'
-                        ? alpha(theme.palette.grey[500], 0.32)
-                        : alpha(theme.palette.grey[300], 0.8),
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: theme.palette.primary.main,
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: theme.palette.primary.main,
-                      borderWidth: 2,
-                    }
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        borderRadius: 16,
-                        mt: 1,
-                        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.12)',
-                      }
-                    }
-                  }}
+                  onChange={(e) => updateRelationDialog('targetColumnId', e.target.value as string)}
+                  sx={{ borderRadius: 3 }}
                 >
                   {editableTables
-                    .find((t) => t.tableIdentifier === newRelation.targetTableId)
+                    .find((t) => t.tableIdentifier === relationDialog.targetTableId)
                     ?.columns.map((column) => (
                       <MenuItem key={column.columnIdentifier} value={column.columnIdentifier}>
                         {column.columnIdentifier} ({column.columnType})
@@ -2151,43 +1957,40 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
               <Typography variant="subtitle2" gutterBottom>
                 Relation Type
               </Typography>
-              <Box sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2
-              }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <RelationTypeSelector
-                  value={newRelation.relationType}
-                  onChange={(type) => setNewRelation({ ...newRelation, relationType: type })}
-                  disabled={!newRelation.targetTableId || !newRelation.targetColumnId}
+                  value={relationDialog.relationType}
+                  onChange={(type) => updateRelationDialog('relationType', type)}
+                  disabled={!relationDialog.targetTableId || !relationDialog.targetColumnId}
                 />
 
                 <Box sx={{
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  p: 1.5,
-                  borderRadius: 16,
+                  alignItems: 'flex-start',
+                  gap: 1.5,
+                  p: 2,
+                  borderRadius: 3,
                   bgcolor: alpha(theme.palette.info.main, 0.1)
                 }}>
-                  <InfoOutlinedIcon color="info" fontSize="small" />
-                  <Typography variant="caption" color="text.secondary">
-                    {newRelation.relationType === 'OTO' && 'One record in the source table corresponds to exactly one record in the target table.'}
-                    {newRelation.relationType === 'OTM' && 'One record in the source table corresponds to many records in the target table.'}
-                    {newRelation.relationType === 'MTO' && 'Many records in the source table correspond to one record in the target table.'}
-                    {newRelation.relationType === 'MTM' && 'Many records in the source table correspond to many records in the target table.'}
+                  <InfoOutlinedIcon color="info" fontSize="small" sx={{ mt: 0.25 }} />
+                  <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+                    {relationDialog.relationType === 'OTO' && 'One record in the source table corresponds to exactly one record in the target table.'}
+                    {relationDialog.relationType === 'OTM' && 'One record in the source table corresponds to many records in the target table.'}
+                    {relationDialog.relationType === 'MTO' && 'Many records in the source table correspond to one record in the target table.'}
+                    {relationDialog.relationType === 'MTM' && 'Many records in the source table correspond to many records in the target table.'}
                   </Typography>
                 </Box>
               </Box>
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
+
+        <DialogActions sx={{ px: 3, py: 2.5 }}>
           <Button
             onClick={handleRelationDialogClose}
             color="inherit"
             variant="outlined"
-            sx={{ borderRadius: 16 }}
+            sx={{ borderRadius: 3 }}
             startIcon={<CloseIcon />}
           >
             Cancel
@@ -2196,63 +1999,65 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
             onClick={addNewRelation}
             color="primary"
             variant="contained"
-            sx={{ borderRadius: 16 }}
+            sx={{ borderRadius: 3 }}
             startIcon={<AddLinkIcon />}
-            disabled={!newRelation.targetTableId || !newRelation.targetColumnId}
+            disabled={!relationDialog.targetTableId || !relationDialog.targetColumnId}
           >
             Add Relation
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Grid container spacing={3} sx={{ overflow: 'hidden' }}>
-        {/* Table List Column */}
+      {/* Main layout grid */}
+      <Grid
+        container
+        spacing={{ xs: 2, sm: 3 }}
+        sx={{ alignItems: 'stretch' }}
+      >
+        {/* Table List Panel */}
         <Grid item {...gridSizes.tableList}>
           <Box sx={{
             display: 'flex',
             flexDirection: 'column',
-            height: 700, // Fixed height for the container
+            height: { xs: 'auto', md: 700 },
+            minHeight: { xs: 500, sm: 600, md: 700 },
           }}>
-            {/* Search Box and AI Button Row */}
+            {/* Search and AI Button row */}
             <Box sx={{
-              mb: 2,
+              mb: 2.5,
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
+              gap: 1.5,
               width: '100%',
             }}>
-              <Box sx={{ flexGrow: 1, position: 'relative' }}>
+              <Box sx={{ flexGrow: 1 }}>
                 <StyledSearchInput
                   placeholder="Search tables or columns..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  startAdornment={<Search fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />}
+                  onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
+                  startAdornment={<SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />}
                   fullWidth
                   aria-label="Search tables or columns"
                 />
               </Box>
 
-              {/* AI Button - Now next to search box */}
               <Tooltip
                 title={aiLoading ? "Generating descriptions..." : "Auto-generate descriptions for all columns"}
                 arrow
+                placement="top-end"
                 open={aiButtonTooltipOpen}
-                onOpen={() => setAiButtonTooltipOpen(true)}
-                onClose={() => setAiButtonTooltipOpen(false)}
+                onOpen={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: true }))}
+                onClose={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: false }))}
               >
                 <AIButtonWrapper isAnimating={aiLoading}>
                   <AIFillButton
                     onClick={fillAllDescriptionsWithAI}
-                    onMouseEnter={() => setAiButtonTooltipOpen(true)}
-                    onMouseLeave={() => setAiButtonTooltipOpen(false)}
+                    onMouseEnter={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: true }))}
+                    onMouseLeave={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: false }))}
                     disabled={aiLoading || !editableTables.length}
                     startIcon={aiLoading ? <CircularProgress size={16} color="inherit" /> : <AutoFixHighIcon />}
                     aria-label="Auto-generate descriptions"
-                    sx={{
-                      boxShadow: aiLoading ?
-                        `0 0 12px ${alpha(theme.palette.primary.main, 0.4)}` :
-                        undefined,
-                    }}
+                    sx={{ px: { xs: 1.5, sm: 2 } }}
                   >
                     {isMobile ? "Auto-fill" : "Auto-fill Descriptions"}
                   </AIFillButton>
@@ -2260,18 +2065,17 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
               </Tooltip>
             </Box>
 
-            {/* Scrollable Table List */}
+            {/* Table list with scrolling */}
             <Box
               ref={tableListRef}
               sx={{
                 flexGrow: 1,
                 overflow: 'auto',
+                pt: 2,
                 pr: 1,
-                height: 'calc(700px - 60px)', // Fixed height minus search bar
+                height: { xs: '500px', sm: '600px', md: 'calc(700px - 64px)' },
                 scrollbarWidth: 'thin',
-                '&::-webkit-scrollbar': {
-                  width: 6,
-                },
+                '&::-webkit-scrollbar': { width: 6 },
                 '&::-webkit-scrollbar-track': {
                   backgroundColor: alpha(theme.palette.common.black, 0.05),
                   borderRadius: 3,
@@ -2295,13 +2099,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                     <EmptyStateMessage>
                       <Iconify
                         icon="eva:search-outline"
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          color: 'text.secondary',
-                          opacity: 0.5,
-                          mb: 1
-                        }}
+                        sx={{ width: 40, height: 40, color: 'text.secondary', opacity: 0.5, mb: 1 }}
                       />
                       <Typography variant="subtitle1" color="text.secondary">
                         No tables found
@@ -2312,7 +2110,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                     </EmptyStateMessage>
                   </FadeInTransition>
                 ) : (
-                  <Stack spacing={2}>
+                  <Stack spacing={2.5}>
                     {filteredTables.map((table, index) => (
                       <m.div
                         key={table.tableIdentifier}
@@ -2339,39 +2137,35 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                       onClick={() => toggleTable(table.tableIdentifier)}
                                       sx={{
                                         transition: 'transform 0.3s ease',
-                                        transform: expandedTables[table.tableIdentifier]
-                                          ? 'rotate(-180deg)'
-                                          : 'rotate(0deg)',
+                                        transform: expandedTables[table.tableIdentifier] ? 'rotate(-180deg)' : 'rotate(0deg)',
                                         color: 'primary.main',
                                         bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
-                                        '&:hover': {
-                                          bgcolor: (t) => alpha(t.palette.primary.main, 0.2),
-                                        }
                                       }}
                                       aria-label={`Toggle table ${table.tableIdentifier}`}
+                                      aria-expanded={expandedTables[table.tableIdentifier]}
                                     >
-                                      <Iconify icon="eva:arrow-ios-downward-fill" />
+                                      <KeyboardArrowDownIcon />
                                     </IconButton>
                                     <Typography
                                       variant="subtitle1"
                                       sx={{
-                                        fontWeight: selectedTable === table.tableIdentifier
-                                          ? 'bold'
-                                          : 'medium',
-                                        color: selectedTable === table.tableIdentifier
-                                          ? 'primary.main'
-                                          : 'text.primary',
+                                        fontWeight: selectedTable === table.tableIdentifier ? 'bold' : 'medium',
+                                        color: selectedTable === table.tableIdentifier ? 'primary.main' : 'text.primary',
                                       }}
                                     >
                                       {table.tableIdentifier}
                                     </Typography>
                                   </Stack>
-                                  <Stack direction="row" spacing={4}>
+
+                                  <Stack
+                                    direction="row"
+                                    spacing={{ xs: 2, sm: 3, md: 4 }}
+                                    alignItems="center"
+                                  >
                                     <StyledBadge
                                       badgeContent={getPrimaryKeyCount(table.tableIdentifier)}
                                       color="warning"
                                       showZero
-                                      aria-label={`Primary keys: ${getPrimaryKeyCount(table.tableIdentifier)}`}
                                     >
                                       <Tooltip title="Primary keys">
                                         <KeyIcon
@@ -2387,7 +2181,6 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                       badgeContent={getRelationCount(table.tableIdentifier)}
                                       color="info"
                                       showZero
-                                      aria-label={`Relations: ${getRelationCount(table.tableIdentifier)}`}
                                     >
                                       <Tooltip title="Relations">
                                         <LinkIcon
@@ -2406,26 +2199,17 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                       sx={{
                                         height: 20,
                                         borderRadius: 10,
-                                        '& .MuiChip-label': {
-                                          px: 1,
-                                          fontSize: '0.75rem'
-                                        }
+                                        '& .MuiChip-label': { px: 1, fontSize: '0.75rem' }
                                       }}
-                                      aria-label={`Columns: ${getColumnCount(table.tableIdentifier)}`}
                                     />
                                   </Stack>
                                 </Stack>
-                                {/* Additional information row */}
+
                                 {!expandedTables[table.tableIdentifier] && (
                                   <Typography
                                     variant="caption"
                                     color="text.secondary"
-                                    sx={{
-                                      display: 'block',
-                                      mt: 0.5,
-                                      ml: 4,
-                                      fontSize: '0.7rem'
-                                    }}
+                                    sx={{ display: 'block', mt: 0.5, ml: 4, fontSize: '0.7rem' }}
                                   >
                                     {getColumnCount(table.tableIdentifier)} columns,{' '}
                                     {getPrimaryKeyCount(table.tableIdentifier)} keys,{' '}
@@ -2437,16 +2221,14 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                             sx={{
                               p: 2,
                               pb: expandedTables[table.tableIdentifier] ? 1 : 2,
-                              '& .MuiCardHeader-action': { alignSelf: 'center' },
                               ...(expandedTables[table.tableIdentifier] && {
                                 borderBottom: (t) => `1px dashed ${t.palette.divider}`,
                               }),
                               background: (t) => {
                                 if (selectedTable === table.tableIdentifier) {
-                                  if (t.palette.mode === 'dark') {
-                                    return alpha(t.palette.primary.dark, 0.1);
-                                  }
-                                  return alpha(t.palette.primary.lighter, 0.2);
+                                  return t.palette.mode === 'dark'
+                                    ? alpha(t.palette.primary.dark, 0.1)
+                                    : alpha(t.palette.primary.lighter, 0.2);
                                 }
                                 return 'transparent';
                               }
@@ -2470,7 +2252,6 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                               color="primary"
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                // Get the first column as default
                                                 const firstColumn = table.columns[0];
                                                 if (firstColumn) {
                                                   openRelationDialog(table.tableIdentifier, firstColumn.columnIdentifier);
@@ -2478,9 +2259,6 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                               }}
                                               sx={{
                                                 bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
-                                                '&:hover': {
-                                                  bgcolor: (t) => alpha(t.palette.primary.main, 0.2),
-                                                },
                                                 width: 24,
                                                 height: 24,
                                               }}
@@ -2494,7 +2272,9 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                   </TableHead>
                                   <TableBody>
                                     <AnimatePresence>
-                                      {table.columns.map((column, colIndex) => renderColumnRow(table, column, colIndex))}
+                                      {table.columns.map((column, colIndex) =>
+                                        renderColumnRow(table, column, colIndex)
+                                      )}
                                     </AnimatePresence>
                                   </TableBody>
                                 </Table>
@@ -2511,60 +2291,34 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
           </Box>
         </Grid>
 
-        {/* Diagram Preview Column - NO SCROLL HERE */}
+        {/* Schema Diagram Panel */}
         <Grid item {...gridSizes.diagram}>
           <Paper
             elevation={4}
             sx={{
-              height: 700, // Fixed height to match table list
-              overflow: 'hidden', // Prevent any scrolling
+              height: { xs: 'auto', md: 700 },
+              minHeight: { xs: 500, sm: 600, md: 700 },
+              overflow: 'hidden',
               p: { xs: 2, sm: 3 },
               display: 'flex',
               flexDirection: 'column',
-              borderRadius: 2, // Removed rounded corners
+              borderRadius: 3,
               position: 'relative',
-              // Enhanced background with subtle gradient
-              background: (t) => {
-                if (t.palette.mode === 'dark') {
-                  return `linear-gradient(145deg, ${alpha(t.palette.background.paper, 0.9)} 0%, ${alpha(t.palette.grey[900], 0.8)} 100%)`;
-                }
-                return `linear-gradient(145deg, ${t.palette.background.paper} 0%, ${alpha(t.palette.grey[50], 0.85)} 100%)`;
-              },
-              // Enhanced border definition
-              border: (t) => {
-                if (t.palette.mode === 'dark') {
-                  return `1px solid ${alpha(t.palette.grey[700], 0.3)}`;
-                }
-                return `1px solid ${alpha(t.palette.grey[300], 0.7)}`;
-              },
-              // Enhanced shadow
-              boxShadow: (t) => {
-                if (t.palette.mode === 'dark') {
-                  return `0 12px 24px -12px ${alpha(t.palette.common.black, 0.5)}, 0 8px 16px -8px ${alpha(t.palette.common.black, 0.4)}`;
-                }
-                return `0 12px 24px -12px ${alpha(t.palette.common.black, 0.1)}, 0 8px 16px -8px ${alpha(t.palette.common.black, 0.06)}`;
-              },
-              // Glass effect
+              background: theme.palette.mode === 'dark'
+                ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.grey[900], 0.8)} 100%)`
+                : `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.grey[50], 0.85)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.grey[theme.palette.mode === 'dark' ? 700 : 300], theme.palette.mode === 'dark' ? 0.3 : 0.7)}`,
               backdropFilter: 'blur(10px)',
-              // Enhanced inner shadow for depth
-              '&:before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 6,
-                background: (t) => {
-                  if (t.palette.mode === 'dark') {
-                    return `linear-gradient(to bottom, ${alpha(t.palette.common.white, 0.07)}, ${alpha(t.palette.common.white, 0)})`;
-                  }
-                  return `linear-gradient(to bottom, ${alpha(t.palette.common.white, 0.7)}, ${alpha(t.palette.common.white, 0)})`;
-                },
-                zIndex: 1,
-              },
             }}
           >
-            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{
+              mb: 2,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1
+            }}>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Iconify
                   icon="eva:diagram-fill"
@@ -2574,92 +2328,54 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                 />
                 <Typography variant="h6">Schema Diagram</Typography>
               </Stack>
+
               {selectedTable && (
                 <Chip
                   label={selectedTable}
                   color="primary"
                   size="small"
-                  onDelete={() => setSelectedTable(null)}
-                  sx={{
-                    height: 28,
-                    borderRadius: 8,
-                    '& .MuiChip-deleteIcon': {
-                      fontSize: '1rem',
-                    }
-                  }}
-                  aria-label={`Selected table: ${selectedTable}`}
+                  onDelete={() => setState(prev => ({ ...prev, selectedTable: null }))}
+                  sx={{ height: 28, borderRadius: 8 }}
                 />
               )}
             </Box>
+
             <Divider sx={{ mb: 2 }} />
+
             <Box
               sx={{
                 flexGrow: 1,
                 position: 'relative',
-                borderRadius: 2, // Removed rounded corners
-                border: (t) => {
-                  if (t.palette.mode === 'dark') {
-                    return `1px solid ${alpha(t.palette.divider, 0.2)}`;
-                  }
-                  return `1px solid ${alpha(t.palette.divider, 0.5)}`;
-                },
-                height: 'calc(700px - 100px)', // Fixed height minus header and padding
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.2 : 0.5)}`,
+                height: { xs: '400px', sm: '500px', md: 'calc(700px - 100px)' },
                 overflow: 'hidden',
-                // Enhanced background style with subtle pattern
-                bgcolor: 'transparent',
-                background: (t) => {
-                  if (t.palette.mode === 'dark') {
-                    return `linear-gradient(135deg, ${alpha(t.palette.background.default, 0.5)} 0%, ${alpha(t.palette.grey[900], 0.4)} 100%)`;
-                  }
-                  return `linear-gradient(135deg, ${alpha(t.palette.background.default, 0.3)} 0%, ${alpha(t.palette.grey[100], 0.2)} 100%)`;
-                },
-                // Background pattern
-                backgroundImage: (t) => {
-                  if (t.palette.mode === 'dark') {
-                    return `radial-gradient(${alpha(t.palette.grey[800], 0.4)} 1px, transparent 1px), radial-gradient(${alpha(t.palette.grey[800], 0.3)} 1px, transparent 1px)`;
-                  }
-                  return `radial-gradient(${alpha(t.palette.grey[400], 0.2)} 1px, transparent 1px), radial-gradient(${alpha(t.palette.grey[400], 0.15)} 1px, transparent 1px)`;
-                },
+                background: theme.palette.mode === 'dark'
+                  ? `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.5)} 0%, ${alpha(theme.palette.grey[900], 0.4)} 100%)`
+                  : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.3)} 0%, ${alpha(theme.palette.grey[100], 0.2)} 100%)`,
+                backgroundImage: theme.palette.mode === 'dark'
+                  ? `radial-gradient(${alpha(theme.palette.grey[800], 0.4)} 1px, transparent 1px), 
+                     radial-gradient(${alpha(theme.palette.grey[800], 0.3)} 1px, transparent 1px)`
+                  : `radial-gradient(${alpha(theme.palette.grey[400], 0.2)} 1px, transparent 1px), 
+                     radial-gradient(${alpha(theme.palette.grey[400], 0.15)} 1px, transparent 1px)`,
                 backgroundSize: '20px 20px',
                 backgroundPosition: '0 0, 10px 10px',
-                // Glass effect
                 backdropFilter: 'blur(2px)',
-                // Enhanced inner shadow for depth
-                boxShadow: (t) => {
-                  if (t.palette.mode === 'dark') {
-                    return `inset 0 0 20px ${alpha(t.palette.common.black, 0.2)}`;
-                  }
-                  return `inset 0 0 20px ${alpha(t.palette.common.black, 0.05)}`;
-                },
               }}
             >
               {filteredTables.length > 0 ? (
-                <Box sx={{
-                  width: '92%',
-                  height: '92%',
-                  margin: 'auto',
-                  position: 'relative',
-                  top: '4%'
-                }}>
+                <Box sx={{ width: '92%', height: '92%', margin: 'auto', position: 'relative', top: '4%' }}>
                   <SchemaVisualization
                     tables={editableTables}
                     selectedTable={selectedTable}
-                    onTableClick={(tableId: string) => {
-                      toggleTable(tableId);
-                    }}
+                    onTableClick={toggleTable}
                   />
                 </Box>
               ) : (
                 <EmptyStateMessage>
                   <Iconify
                     icon="eva:layers-outline"
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      color: 'text.secondary',
-                      opacity: 0.5,
-                      mb: 2
-                    }}
+                    sx={{ width: 48, height: 48, color: 'text.secondary', opacity: 0.5, mb: 2 }}
                   />
                   <Typography variant="subtitle1" color="text.secondary">
                     No schema to visualize
