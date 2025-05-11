@@ -17,7 +17,6 @@ from core.utils import (
     parse_schema_enrichment
 )
 from core.templates import (
-    TABLE_EXTRACTION_TMPL,
     DATABASE_DESCRIPTION_TMPL,
     SQL_ERROR_REFLECTION_TMPL,
     SCHEMA_ENRICHMENT_TMPL
@@ -135,22 +134,22 @@ class  SQLAgentWorkflow(Workflow):
         logger.info(f"\033[93m[RETRIEVE] Query: \"{ev.query}\"\033[0m")
         logger.info(f"\033[93m[RETRIEVE] Available tables: {len(ev.tables)}\033[0m")
         
-        tables = []
-        for table in ev.tables:
-            if table["tableIdentifier"] is not None:
-                formatted_table = f"- {table['tableIdentifier']} ({table['tableDescription']})"
-            else:
-                formatted_table = f"- {table['tableDescription']}"
-            tables.append(formatted_table)
-
         database_description = await context.get("database_description")
+        # tables = []
+        # for table in ev.tables:
+        #     if table["tableIdentifier"] is not None:
+        #         formatted_table = f"- {table['tableIdentifier']} ({table['tableDescription']})"
+        #     else:
+        #         formatted_table = f"- {table['tableDescription']}"
+        #     tables.append(formatted_table)
+        table_details = await context.get("table_details")
+        table_schemas = schema_parser(table_details, "Synthesis", include_sample_data=False)
 
         fmt_messages = self.table_retrieval_prompt.format_messages(
             database_description=database_description,
-            query_str=ev.query,
-            table_names="\n".join(tables)
+            user_question=ev.query,
+            database_schema=table_schemas
         )
-        
         # Log the prompt
         log_prompt(fmt_messages, "RETRIEVE")
         

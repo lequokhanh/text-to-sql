@@ -3,6 +3,7 @@ import atexit
 import socket
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_restx import Api, Resource, fields
 from core.workflow import SQLAgentWorkflow, SchemaEnrichmentWorkflow
 from core.baseline_workflow import BaselineWorkflow
 from core.templates import text2sql_prompt_routing, TABLE_RETRIEVAL_TMPL
@@ -35,6 +36,43 @@ logger.info(f"Looking for .env file at: {env_path.absolute()}")
 app = Flask(__name__)
 CORS(app)
 logger.info("Flask app initialized with CORS support")
+
+# Initialize Flask-RESTX
+api = Api(
+    app,
+    version='1.0',
+    title='SLM Engine API',
+    description='API for SQL Language Model Engine',
+    doc='/docs'
+)
+
+# Create namespaces
+query_ns = api.namespace('query', description='Query operations')
+settings_ns = api.namespace('settings', description='Settings operations')
+schema_ns = api.namespace('schema', description='Schema operations')
+
+# Define models for request/response documentation
+connection_payload_model = api.model('ConnectionPayload', {
+    'host': fields.String(required=True, description='Database host'),
+    'port': fields.Integer(required=True, description='Database port'),
+    'database': fields.String(required=True, description='Database name'),
+    'username': fields.String(required=True, description='Database username'),
+    'password': fields.String(required=True, description='Database password'),
+    'schema_enrich_info': fields.Raw(description='Schema enrichment information')
+})
+
+query_request_model = api.model('QueryRequest', {
+    'query': fields.String(required=True, description='Natural language query'),
+    'connection_payload': fields.Nested(connection_payload_model, required=True)
+})
+
+settings_model = api.model('Settings', {
+    'ollama_host': fields.String(description='Ollama host URL'),
+    'ollama_model': fields.String(description='Ollama model name'),
+    'additional_kwargs': fields.Raw(description='Additional LLM parameters'),
+    'prompt_routing': fields.Integer(description='Prompt routing configuration'),
+    'enrich_schema': fields.Boolean(description='Schema enrichment flag')
+})
 
 # Register error handlers
 register_error_handlers(app)
@@ -167,293 +205,310 @@ def print_banner(banner_file='banner.txt'):
     # Always log server started message
     logger.info("Server started successfully!")
 
-@app.route('/')
-def home():
-    return "SLM Engine is running!"
-
-@app.route('/query', methods=['POST'])
-async def query():
-    """Handle regular query endpoint"""
-    logger.info("Received request to /query endpoint")
-    try:
-        data = request.json
-        query = data.get("query")
-        connection_payload = data.get("connection_payload")
-        logger.info(f"Processing query: {query}")
-
-        if not query or not connection_payload:
-            logger.warning("Missing required parameters in request")
-            return jsonify({"error": "Missing 'query' or 'connection_payload'"}), 400
-        
-        is_valid, error_message = validate_connection_payload(connection_payload)
-        if not is_valid:
-            logger.warning(f"Invalid connection payload: {error_message}")
-            return jsonify({"error": error_message}), 400
-
-        logger.info("Retrieving schema from database")
-
-        table_details = get_schema(connection_payload)
-        for table in table_details:
-                table["sample_data"] = get_sample_data(
-                    connection_payload=connection_payload, 
-                    table_details=table
-                )
-        database_description = ""
-        # Only process schema enrichment if enrich_schema setting is True
-        if llm_settings["enrich_schema"] and "schema_enrich_info" in connection_payload and connection_payload["schema_enrich_info"] is not None:
-            logger.info(f"Retrieved schema with {len(table_details)} tables and enrichment information")
-            
-            # Tạo mapping từ tableIdentifier đến enriched table để tìm kiếm nhanh hơn
-            enriched_tables_map = {
-                table["tableIdentifier"]: table 
-                for table in connection_payload["schema_enrich_info"]["enriched_schema"]
-            }
-            
-            # Add database description to response data if available
-            if "database_description" in connection_payload["schema_enrich_info"]:
-                database_description = connection_payload["schema_enrich_info"]["database_description"]
-            
-            for table in table_details:
-                table_id = table["tableIdentifier"]
-                
-                # Kiểm tra xem bảng có trong mapping không
-                if table_id in enriched_tables_map:
-                    enriched_table = enriched_tables_map[table_id]
-                    
-                    # Cập nhật mô tả bảng
-                    table["tableDescription"] = enriched_table.get("tableDescription", "")
-                    
-                    # Tạo mapping từ columnIdentifier đến enriched column
-                    enriched_columns_map = {
-                        col["columnIdentifier"]: col 
-                        for col in enriched_table["columns"]
-                    }
-                    
-                    # Cập nhật mô tả cột
-                    for column in table["columns"]:
-                        column_id = column["columnIdentifier"]
-                        
-                        # Kiểm tra điều kiện cập nhật và xem cột có trong mapping không
-                        is_empty_description = (
-                            column.get("columnDescription") in ["", "NULL", "''"] or
-                            column.get("columnDescription") is None or
-                            len(str(column.get("columnDescription", ""))) <= 1
-                        )
-                        
-                        if is_empty_description and column_id in enriched_columns_map:
-                            enriched_column = enriched_columns_map[column_id]
-                            column["columnDescription"] = enriched_column.get("columnDescription", "")
-        else:
-            logger.info(f"Schema enrichment is disabled or no enrichment info available")
-                
-        logger.info(f"Retrieved schema with {len(table_details)} tables")
-
-        logger.info("Executing workflow")
-        response = await workflow.run(
-            query=query,
-            table_details=table_details,
-            database_description=database_description,
-            connection_payload=connection_payload
-        )
-        logger.info("Workflow completed successfully")
-        
-        return ResponseWrapper.success(response)
-
-    except Exception as e:
-        logger.error(f"Error processing query: {str(e)}", exc_info=True)
-        raise AppException(str(e), 500)
-    
-@app.route('/query-baseline', methods=['POST'])
-async def query_baseline():
-    """Handle regular query endpoint"""
-    logger.info("Received request to /query-baseline endpoint")
-    try:
-        data = request.json
-        query = data.get("query")
-        connection_payload = data.get("connection_payload")
-        logger.info(f"Processing query: {query}")
-        
-        if not query or not connection_payload:
-            logger.warning("Missing required parameters in request")
-            return jsonify({"error": "Missing 'query' or 'connection_payload'"}), 400
-        
-        is_valid, error_message = validate_connection_payload(connection_payload)
-        if not is_valid:
-            logger.warning(f"Invalid connection payload: {error_message}")
-            return jsonify({"error": error_message}), 400
-        
-        logger.info("Retrieving schema from database")
-        
-        table_details = get_schema(connection_payload)
-        for table in table_details:
-                table["sample_data"] = get_sample_data(
-                    connection_payload=connection_payload, 
-                    table_details=table
-                )
-        database_description = ""
-        # Only process schema enrichment if enrich_schema setting is True
-        if llm_settings["enrich_schema"] and "schema_enrich_info" in connection_payload and connection_payload["schema_enrich_info"] is not None:
-            logger.info(f"Retrieved schema with {len(table_details)} tables and enrichment information")
-            
-            # Tạo mapping từ tableIdentifier đến enriched table để tìm kiếm nhanh hơn
-            enriched_tables_map = {
-                table["tableIdentifier"]: table 
-                for table in connection_payload["schema_enrich_info"]["enriched_schema"]
-            }
-            
-            # Add database description to response data if available
-            if "database_description" in connection_payload["schema_enrich_info"]:
-                database_description = connection_payload["schema_enrich_info"]["database_description"]
-            
-            for table in table_details:
-                table_id = table["tableIdentifier"]
-                
-                # Kiểm tra xem bảng có trong mapping không
-                if table_id in enriched_tables_map:
-                    enriched_table = enriched_tables_map[table_id]
-                    
-                    # Cập nhật mô tả bảng
-                    table["tableDescription"] = enriched_table.get("tableDescription", "")
-                    
-                    # Tạo mapping từ columnIdentifier đến enriched column
-                    enriched_columns_map = {
-                        col["columnIdentifier"]: col 
-                        for col in enriched_table["columns"]
-                    }
-                    
-                    # Cập nhật mô tả cột
-                    for column in table["columns"]:
-                        column_id = column["columnIdentifier"]
-                        
-                        # Kiểm tra điều kiện cập nhật và xem cột có trong mapping không
-                        is_empty_description = (
-                            column.get("columnDescription") in ["", "NULL", "''"] or
-                            column.get("columnDescription") is None or
-                            len(str(column.get("columnDescription", ""))) <= 1
-                        )
-                        
-                        if is_empty_description and column_id in enriched_columns_map:
-                            enriched_column = enriched_columns_map[column_id]
-                            column["columnDescription"] = enriched_column.get("columnDescription", "")
-        else:
-            logger.info(f"Schema enrichment is disabled or no enrichment info available")
-
-        logger.info(f"Retrieved schema with {len(table_details)} tables")
-        logger.info("Executing workflow")
-        response = await baseline_workflow.run(
-            query=query,
-            table_details=table_details,
-            connection_payload=connection_payload,
-            database_description=database_description
-        )
-
-        logger.info("Workflow completed successfully")
-        
-        return ResponseWrapper.success(response)
-    except Exception as e:
-        logger.error(f"Error processing query: {str(e)}", exc_info=True)
-        raise AppException(str(e), 500)
-
-
-@app.route('/schema-enrichment', methods=['POST'])
-async def schema_enrichment():
-    """Handle schema enrichment endpoint"""
-    logger.info("Received request to /schema-enrichment endpoint")
-    try:
-        data = request.json
-        connection_payload = data.get("connection_payload")     
-
-        if not connection_payload:
-            logger.warning("Missing required parameters in request")
-            return jsonify({"error": "Missing 'connection_payload' or 'database_schema'"}), 400
-        
-        is_valid, error_message = validate_connection_payload(connection_payload)
-        if not is_valid:
-            logger.warning(f"Invalid connection payload: {error_message}")
-            return jsonify({"error": error_message}), 400
-
-        logger.info("Retrieving database schema...")
-        table_details = get_schema(connection_payload)
-           
-        logger.info(f"Retrieved schema with {len(table_details)} tables")
-
-        logger.info("Executing workflow")
-        response = await schema_workflow.run(
-            connection_payload=connection_payload,
-            database_schema=table_details
-        )
-        logger.info("Workflow completed successfully")
-        response["original_schema"] = get_schema(connection_payload)
-        return ResponseWrapper.success(response)
-
-    except Exception as e:
-        logger.error(f"Error processing schema enrichment: {str(e)}", exc_info=True)
-        raise AppException(str(e), 500) 
-
-@app.route('/settings', methods=['GET'])
-def get_settings():
-    """Get current LLM settings"""
-    logger.info("Received request to view current LLM settings")
-    try:
-        return ResponseWrapper.success({
-            "ollama_host": llm_settings["ollama_host"],
-            "ollama_model": llm_settings["ollama_model"],
-            "additional_kwargs": llm_settings["additional_kwargs"],
-            "prompt_routing": llm_settings["prompt_routing"],
-            "enrich_schema": llm_settings["enrich_schema"]
+@query_ns.route('')
+class Query(Resource):
+    @query_ns.expect(query_request_model)
+    @query_ns.doc('execute_query',
+        responses={
+            200: 'Success',
+            400: 'Bad Request',
+            500: 'Internal Server Error'
         })
-    except Exception as e:
-        logger.error(f"Error retrieving settings: {str(e)}", exc_info=True)
-        raise AppException(str(e), 500)
+    async def post(self):
+        """Execute a natural language query"""
+        logger.info("Received request to /query endpoint")
+        try:
+            data = request.json
+            query = data.get("query")
+            connection_payload = data.get("connection_payload")
+            logger.info(f"Processing query: {query}")
 
-@app.route('/settings', methods=['POST'])
-def update_settings():
-    """Update LLM settings"""
-    logger.info("Received request to update LLM settings")
-    try:
-        data = request.json
-        
-        # Extract settings from request
-        host = data.get("ollama_host")
-        model = data.get("ollama_model")
-        additional_kwargs = data.get("additional_kwargs")
-        prompt_routing = data.get("prompt_routing")
-        enrich_schema = data.get("enrich_schema")
-        
-        # Validate that at least one setting is provided
-        if host is None and model is None and additional_kwargs is None and prompt_routing is None and enrich_schema is None:
-            logger.warning("No settings provided in request")
-            return jsonify({"error": "At least one setting must be provided"}), 400
-        
-        # Initialize LLM with new settings
-        new_llm, new_workflow, new_schema_workflow, _ = initialize_llm(
-            host=host,
-            model=model,
-            additional_kwargs=additional_kwargs,
-            prompt_routing=prompt_routing,
-            enrich_schema=enrich_schema
-        )
-        
-        logger.info("LLM settings updated successfully")
-        return ResponseWrapper.success({
-            "message": "Settings updated successfully",
-            "current_settings": {
+            if not query or not connection_payload:
+                logger.warning("Missing required parameters in request")
+                return jsonify({"error": "Missing 'query' or 'connection_payload'"}), 400
+            
+            is_valid, error_message = validate_connection_payload(connection_payload)
+            if not is_valid:
+                logger.warning(f"Invalid connection payload: {error_message}")
+                return jsonify({"error": error_message}), 400
+
+            logger.info("Retrieving schema from database")
+
+            table_details = get_schema(connection_payload)
+            for table in table_details:
+                    table["sample_data"] = get_sample_data(
+                        connection_payload=connection_payload, 
+                        table_details=table
+                    )
+            database_description = ""
+            if llm_settings["enrich_schema"] and "schema_enrich_info" in connection_payload and connection_payload["schema_enrich_info"] is not None:
+                logger.info(f"Retrieved schema with {len(table_details)} tables and enrichment information")
+                
+                enriched_tables_map = {
+                    table["tableIdentifier"]: table 
+                    for table in connection_payload["schema_enrich_info"]["enriched_schema"]
+                }
+                
+                if "database_description" in connection_payload["schema_enrich_info"]:
+                    database_description = connection_payload["schema_enrich_info"]["database_description"]
+                
+                for table in table_details:
+                    table_id = table["tableIdentifier"]
+                    
+                    if table_id in enriched_tables_map:
+                        enriched_table = enriched_tables_map[table_id]
+                        table["tableDescription"] = enriched_table.get("tableDescription", "")
+                        
+                        enriched_columns_map = {
+                            col["columnIdentifier"]: col 
+                            for col in enriched_table["columns"]
+                        }
+                        
+                        for column in table["columns"]:
+                            column_id = column["columnIdentifier"]
+                            
+                            is_empty_description = (
+                                column.get("columnDescription") in ["", "NULL", "''"] or
+                                column.get("columnDescription") is None or
+                                len(str(column.get("columnDescription", ""))) <= 1
+                            )
+                            
+                            if is_empty_description and column_id in enriched_columns_map:
+                                enriched_column = enriched_columns_map[column_id]
+                                column["columnDescription"] = enriched_column.get("columnDescription", "")
+            else:
+                logger.info(f"Schema enrichment is disabled or no enrichment info available")
+                    
+            logger.info(f"Retrieved schema with {len(table_details)} tables")
+
+            logger.info("Executing workflow")
+            response = await workflow.run(
+                query=query,
+                table_details=table_details,
+                database_description=database_description,
+                connection_payload=connection_payload
+            )
+            logger.info("Workflow completed successfully")
+            
+            return ResponseWrapper.success(response)
+
+        except Exception as e:
+            logger.error(f"Error processing query: {str(e)}", exc_info=True)
+            raise AppException(str(e), 500)
+
+@query_ns.route('/baseline')
+class QueryBaseline(Resource):
+    @query_ns.expect(query_request_model)
+    @query_ns.doc('execute_baseline_query',
+        responses={
+            200: 'Success',
+            400: 'Bad Request',
+            500: 'Internal Server Error'
+        })
+    async def post(self):
+        """Execute a baseline query"""
+        logger.info("Received request to /query-baseline endpoint")
+        try:
+            data = request.json
+            query = data.get("query")
+            connection_payload = data.get("connection_payload")
+            logger.info(f"Processing query: {query}")
+            
+            if not query or not connection_payload:
+                logger.warning("Missing required parameters in request")
+                return jsonify({"error": "Missing 'query' or 'connection_payload'"}), 400
+            
+            is_valid, error_message = validate_connection_payload(connection_payload)
+            if not is_valid:
+                logger.warning(f"Invalid connection payload: {error_message}")
+                return jsonify({"error": error_message}), 400
+            
+            logger.info("Retrieving schema from database")
+            
+            table_details = get_schema(connection_payload)
+            for table in table_details:
+                    table["sample_data"] = get_sample_data(
+                        connection_payload=connection_payload, 
+                        table_details=table
+                    )
+            database_description = ""
+            if llm_settings["enrich_schema"] and "schema_enrich_info" in connection_payload and connection_payload["schema_enrich_info"] is not None:
+                logger.info(f"Retrieved schema with {len(table_details)} tables and enrichment information")
+                
+                enriched_tables_map = {
+                    table["tableIdentifier"]: table 
+                    for table in connection_payload["schema_enrich_info"]["enriched_schema"]
+                }
+                
+                if "database_description" in connection_payload["schema_enrich_info"]:
+                    database_description = connection_payload["schema_enrich_info"]["database_description"]
+                
+                for table in table_details:
+                    table_id = table["tableIdentifier"]
+                    
+                    if table_id in enriched_tables_map:
+                        enriched_table = enriched_tables_map[table_id]
+                        table["tableDescription"] = enriched_table.get("tableDescription", "")
+                        
+                        enriched_columns_map = {
+                            col["columnIdentifier"]: col 
+                            for col in enriched_table["columns"]
+                        }
+                        
+                        for column in table["columns"]:
+                            column_id = column["columnIdentifier"]
+                            
+                            is_empty_description = (
+                                column.get("columnDescription") in ["", "NULL", "''"] or
+                                column.get("columnDescription") is None or
+                                len(str(column.get("columnDescription", ""))) <= 1
+                            )
+                            
+                            if is_empty_description and column_id in enriched_columns_map:
+                                enriched_column = enriched_columns_map[column_id]
+                                column["columnDescription"] = enriched_column.get("columnDescription", "")
+            else:
+                logger.info(f"Schema enrichment is disabled or no enrichment info available")
+
+            logger.info(f"Retrieved schema with {len(table_details)} tables")
+            logger.info("Executing workflow")
+            response = await baseline_workflow.run(
+                query=query,
+                table_details=table_details,
+                connection_payload=connection_payload,
+                database_description=database_description
+            )
+
+            logger.info("Workflow completed successfully")
+            
+            return ResponseWrapper.success(response)
+        except Exception as e:
+            logger.error(f"Error processing query: {str(e)}", exc_info=True)
+            raise AppException(str(e), 500)
+
+@schema_ns.route('/enrichment')
+class SchemaEnrichment(Resource):
+    @schema_ns.expect(api.model('SchemaEnrichmentRequest', {
+        'connection_payload': fields.Nested(connection_payload_model, required=True)
+    }))
+    @schema_ns.doc('enrich_schema',
+        responses={
+            200: 'Success',
+            400: 'Bad Request',
+            500: 'Internal Server Error'
+        })
+    async def post(self):
+        """Enrich database schema with additional information"""
+        logger.info("Received request to /schema-enrichment endpoint")
+        try:
+            data = request.json
+            connection_payload = data.get("connection_payload")     
+
+            if not connection_payload:
+                logger.warning("Missing required parameters in request")
+                return jsonify({"error": "Missing 'connection_payload' or 'database_schema'"}), 400
+            
+            is_valid, error_message = validate_connection_payload(connection_payload)
+            if not is_valid:
+                logger.warning(f"Invalid connection payload: {error_message}")
+                return jsonify({"error": error_message}), 400
+
+            logger.info("Retrieving database schema...")
+            table_details = get_schema(connection_payload)
+               
+            logger.info(f"Retrieved schema with {len(table_details)} tables")
+
+            logger.info("Executing workflow")
+            response = await schema_workflow.run(
+                connection_payload=connection_payload,
+                database_schema=table_details
+            )
+            logger.info("Workflow completed successfully")
+            response["original_schema"] = get_schema(connection_payload)
+            return ResponseWrapper.success(response)
+
+        except Exception as e:
+            logger.error(f"Error processing schema enrichment: {str(e)}", exc_info=True)
+            raise AppException(str(e), 500)
+
+@settings_ns.route('')
+class Settings(Resource):
+    @settings_ns.doc('get_settings',
+        responses={
+            200: 'Success',
+            500: 'Internal Server Error'
+        })
+    def get(self):
+        """Get current LLM settings"""
+        logger.info("Received request to view current LLM settings")
+        try:
+            return ResponseWrapper.success({
                 "ollama_host": llm_settings["ollama_host"],
                 "ollama_model": llm_settings["ollama_model"],
                 "additional_kwargs": llm_settings["additional_kwargs"],
                 "prompt_routing": llm_settings["prompt_routing"],
                 "enrich_schema": llm_settings["enrich_schema"]
-            }
+            })
+        except Exception as e:
+            logger.error(f"Error retrieving settings: {str(e)}", exc_info=True)
+            raise AppException(str(e), 500)
+
+    @settings_ns.expect(settings_model)
+    @settings_ns.doc('update_settings',
+        responses={
+            200: 'Success',
+            400: 'Bad Request',
+            500: 'Internal Server Error'
         })
-    except Exception as e:
-        logger.error(f"Error updating settings: {str(e)}", exc_info=True)
-        raise AppException(str(e), 500)
-    
-@app.route('/health-check', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    logger.debug("Health check request received")
-    return jsonify({"status": "ok"})
+    def post(self):
+        """Update LLM settings"""
+        logger.info("Received request to update LLM settings")
+        try:
+            data = request.json
+            
+            host = data.get("ollama_host")
+            model = data.get("ollama_model")
+            additional_kwargs = data.get("additional_kwargs")
+            prompt_routing = data.get("prompt_routing")
+            enrich_schema = data.get("enrich_schema")
+            
+            if host is None and model is None and additional_kwargs is None and prompt_routing is None and enrich_schema is None:
+                logger.warning("No settings provided in request")
+                return jsonify({"error": "At least one setting must be provided"}), 400
+            
+            new_llm, new_workflow, new_schema_workflow, _ = initialize_llm(
+                host=host,
+                model=model,
+                additional_kwargs=additional_kwargs,
+                prompt_routing=prompt_routing,
+                enrich_schema=enrich_schema
+            )
+            
+            logger.info("LLM settings updated successfully")
+            return ResponseWrapper.success({
+                "message": "Settings updated successfully",
+                "current_settings": {
+                    "ollama_host": llm_settings["ollama_host"],
+                    "ollama_model": llm_settings["ollama_model"],
+                    "additional_kwargs": llm_settings["additional_kwargs"],
+                    "prompt_routing": llm_settings["prompt_routing"],
+                    "enrich_schema": llm_settings["enrich_schema"]
+                }
+            })
+        except Exception as e:
+            logger.error(f"Error updating settings: {str(e)}", exc_info=True)
+            raise AppException(str(e), 500)
+
+@api.route('/health-check')
+class HealthCheck(Resource):
+    @api.doc('health_check',
+        responses={
+            200: 'Success'
+        })
+    def get(self):
+        """Health check endpoint"""
+        logger.debug("Health check request received")
+        return jsonify({"status": "ok"})
 
 if __name__ == '__main__':
     print_banner()

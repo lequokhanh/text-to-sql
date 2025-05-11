@@ -3,6 +3,7 @@ requests
 flask
 flask[async]
 flask-cors
+flask-restx
 llama-index
 llama-index-core
 llama-index-llms-ollama
