@@ -44,5 +44,5 @@ public interface DataSourceConfigurationService {
     void removeGroupFromDataSource(UserAccount authenticatedUser, Integer id, Integer groupId);
     void removeUserFromGroup(UserAccount authenticatedUser, Integer id, Integer groupId, Integer userId);
 
-    //chat
+    void testConnection(UserAccount authenticatedUser, Integer id);
 }

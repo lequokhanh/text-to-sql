@@ -3,8 +3,6 @@ package com.slm.slmbackend.dto.datasource;
 import com.slm.slmbackend.enums.DatabaseType;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 public class DataSourceConfigurationDTO {
     private Integer id;

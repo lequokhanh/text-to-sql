@@ -1,7 +1,6 @@
 package com.slm.slmbackend.controller;
 
 import com.slm.slmbackend.dto.auth.CredentialRequestDTO;
-import com.slm.slmbackend.enums.ResponseEnum;
 import com.slm.slmbackend.response.ResponseWrapper;
 import com.slm.slmbackend.response.TokenResponse;
 import com.slm.slmbackend.service.AuthService;

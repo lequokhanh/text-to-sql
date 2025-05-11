@@ -1,39 +1,32 @@
-import { enqueueSnackbar } from 'notistack';
 import { m, AnimatePresence } from 'framer-motion';
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Grid';
-import Badge from '@mui/material/Badge';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import Tooltip from '@mui/material/Tooltip';
-import Collapse from '@mui/material/Collapse';
-import TableRow from '@mui/material/TableRow';
-import KeyIcon from '@mui/icons-material/Key';
-import InputBase from '@mui/material/InputBase';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TextField from '@mui/material/TextField';
-import LinkIcon from '@mui/icons-material/Link';
-import SaveIcon from '@mui/icons-material/Save';
-import Search from '@mui/icons-material/Search';
-import CardHeader from '@mui/material/CardHeader';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import CancelIcon from '@mui/icons-material/Close';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import TableContainer from '@mui/material/TableContainer';
-import CircularProgress from '@mui/material/CircularProgress';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import { alpha, styled, useTheme, keyframes } from '@mui/material/styles';
+// MUI Icons (consolidated imports)
+import {
+  Key as KeyIcon,
+  Add as AddIcon,
+  Link as LinkIcon,
+  Save as SaveIcon,
+  Close as CloseIcon,
+  Search as SearchIcon,
+  AddLink as AddLinkIcon,
+  AutoFixHigh as AutoFixHighIcon,
+  InfoOutlined as InfoOutlinedIcon,
+  EditOutlined as EditOutlinedIcon,
+  KeyboardArrowDown as KeyboardArrowDownIcon
+} from '@mui/icons-material';
+// MUI Core components
+import {
+  Box, Card, Chip, Grid,
+  alpha, Badge, Paper, Stack, Table, styled, Button,
+  Dialog, Select, Divider, Tooltip, useTheme, Collapse,
+  TableRow, MenuItem, keyframes, InputBase, TableBody,
+  TableCell, TableHead, TextField, CardHeader,
+  IconButton, Typography, InputLabel, DialogTitle,
+  ButtonGroup, FormControl, DialogActions, DialogContent,
+  useMediaQuery, TableContainer, CircularProgress,
+  DialogContentText
+} from '@mui/material';
 
 import { useDebounce } from 'src/hooks/use-debounce';
 
@@ -43,176 +36,473 @@ import { TableDefinition, ColumnDefinition } from 'src/types/database';
 
 import { SchemaVisualization } from './schema-visualization';
 
-// Define relation type constants to avoid typos
+// Define relation type constants
 type RelationType = 'OTO' | 'OTM' | 'MTO' | 'MTM';
 
-// ----------------------------------------------------------------------
+// Define relation interface with improved typing
+interface RelationDefinition {
+  tableIdentifier: string;
+  columnIdentifier?: string;
+  toColumn: string;
+  type: RelationType;
+}
+
 // Styled components
 interface StyledCardProps {
   selected?: boolean;
 }
 
+// Styled Card with optimized theming logic
 const StyledCard = styled(Card, {
-  shouldForwardProp: (prop) => prop !== 'selected'
-})<StyledCardProps>(({ theme, selected }) => ({
-  transition: 'all 0.3s ease',
-  marginBottom: theme.spacing(2),
-  position: 'relative',
-  overflow: 'hidden',
-  borderRadius: 12,
-  ...(selected && {
-    borderColor: theme.palette.primary.main,
-    borderWidth: 2,
-    borderStyle: 'solid',
-    boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.1)}`,
-  }),
-  '&:hover': {
-    boxShadow: selected
-      ? `0 0 0 4px ${alpha(theme.palette.primary.main, 0.15)}`
-      : theme.shadows[6],
-    transform: 'translateY(-2px)',
-  },
-}));
+  shouldForwardProp: (prop) => prop !== 'selected',
+})<StyledCardProps>(({ theme, selected }) => {
+  const isDark = theme.palette.mode === 'dark';
 
-// Fixed: Enhanced table container with fixed width
-// Using template string syntax instead of object syntax
-const StyledTableContainer = styled(TableContainer)`
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid ${props => props.theme.palette.divider};
+  // Consolidated shadow variables
+  const baseBoxShadow = isDark
+    ? `0 8px 16px -8px ${alpha(theme.palette.common.black, 0.3)}, 0 4px 8px -4px ${alpha(theme.palette.common.black, 0.2)}`
+    : `0 8px 16px -8px ${alpha(theme.palette.common.black, 0.1)}, 0 4px 8px -4px ${alpha(theme.palette.common.black, 0.06)}`;
+
+  const selectedBoxShadow = isDark
+    ? `0 0 0 4px ${alpha(theme.palette.primary.dark, 0.3)}, 0 8px 24px -4px ${alpha(theme.palette.primary.dark, 0.5)}`
+    : `0 0 0 4px ${alpha(theme.palette.primary.light, 0.2)}, 0 8px 24px -4px ${alpha(theme.palette.primary.light, 0.4)}`;
+
+  let hoverBoxShadow = '';
+
+  if (selected) {
+    if (isDark) {
+      hoverBoxShadow = `0 0 0 4px ${alpha(theme.palette.primary.dark, 0.4)}, 0 12px 32px -4px ${alpha(theme.palette.primary.dark, 0.6)}`;
+    } else {
+      hoverBoxShadow = `0 0 0 4px ${alpha(theme.palette.primary.light, 0.3)}, 0 12px 32px -4px ${alpha(theme.palette.primary.light, 0.5)}`;
+    }
+  } else if (isDark) {
+      hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.5)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.4)}`;
+    } else {
+      hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.15)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.1)}`;
+    }
   
-  & .MuiTableCell-root {
-    border-color: ${props => props.theme.palette.divider};
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: break-word;
-  }
-  
-  & .MuiTableCell-head {
-    font-size: 0.8rem;
-    font-weight: 600;
-    background-color: ${props => props.theme.palette.mode === 'dark'
-    ? alpha(props.theme.palette.background.default, 0.6)
-    : alpha(props.theme.palette.grey[50], 1)
+  const background = isDark ? alpha(theme.palette.background.paper, 0.7) : theme.palette.background.paper;
+
+  return {
+    transition: 'all 0.3s ease',
+    marginBottom: theme.spacing(2),
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 20,
+    background,
+    backdropFilter: 'blur(8px)',
+    boxShadow: selected ? selectedBoxShadow : baseBoxShadow,
+    '&:hover': {
+      boxShadow: hoverBoxShadow,
+      transform: 'translateY(-3px)',
+    },
+    ...(selected && {
+      borderColor: theme.palette.primary.main,
+      borderWidth: 2,
+      borderStyle: 'solid',
+    }),
   };
-  }
-  
-  & .MuiTableCell-body {
-    font-size: 0.875rem;
-  }
-  
-  width: 100%;
-  max-width: 100%;
-  
-  @media (min-width: 960px) {
-    max-width: 800px;
-  }
-  
-  @media (min-width: 1200px) {
-    max-width: 900px;
-  }
-  
-  margin: 0 auto;
-  
-  & .column-name {
-    width: 25%;
-    min-width: 120px;
-    max-width: 200px;
-  }
-  
-  & .column-type {
-    width: 15%;
-    min-width: 80px;
-    max-width: 120px;
-  }
-  
-  & .column-description {
-    width: 35%;
-    min-width: 180px;
-    max-width: 300px;
-  }
-  
-  & .column-relations {
-    width: 25%;
-    min-width: 150px;
-    max-width: 250px;
-  }
-`;
+});
 
-const StyledSearchInput = styled(InputBase)(({ theme }) => ({
-  borderRadius: 8,
-  backgroundColor: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.common.white, 0.06)
-    : alpha(theme.palette.common.black, 0.03),
-  padding: theme.spacing(0.5, 1.5),
-  width: '100%',
-  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-  '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.common.white, 0.08)
-      : alpha(theme.palette.common.black, 0.05),
-  },
-  '&.Mui-focused': {
-    backgroundColor: theme.palette.mode === 'dark'
+// Table container with improved styling
+const StyledTableContainer = styled(TableContainer)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    borderRadius: 16,
+    overflow: 'hidden',
+    border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.3 : 0.7)}`,
+    boxShadow: isDark
+      ? `0 4px 12px -2px ${alpha(theme.palette.common.black, 0.3)}`
+      : `0 4px 12px -2px ${alpha(theme.palette.common.black, 0.05)}`,
+    backdropFilter: 'blur(4px)',
+
+    '& .MuiTableCell-root': {
+      borderColor: alpha(theme.palette.divider, isDark ? 0.2 : 0.5),
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      overflowWrap: 'break-word',
+      transition: 'background-color 0.2s ease, color 0.2s ease',
+    },
+
+    '& .MuiTableCell-head': {
+      fontSize: '0.8rem',
+      fontWeight: 600,
+      backgroundColor: isDark
+        ? alpha(theme.palette.background.paper, 0.7)
+        : alpha(theme.palette.grey[50], 0.9),
+      color: isDark
+        ? alpha(theme.palette.common.white, 0.85)
+        : theme.palette.grey[800],
+      letterSpacing: '0.03em',
+      textTransform: 'uppercase',
+      paddingTop: 12,
+      paddingBottom: 12,
+    },
+
+    '& .MuiTableCell-body': {
+      fontSize: '0.875rem',
+      color: isDark
+        ? alpha(theme.palette.common.white, 0.75)
+        : theme.palette.grey[700],
+    },
+
+    '& .MuiTableRow-root:nth-of-type(even)': {
+      backgroundColor: isDark
+        ? alpha(theme.palette.common.black, 0.15)
+        : alpha(theme.palette.grey[50], 0.5),
+    },
+
+    width: '100%',
+    maxWidth: '100%',
+
+    '@media (min-width: 960px)': {
+      maxWidth: 820,
+    },
+
+    '@media (min-width: 1200px)': {
+      maxWidth: 920,
+    },
+
+    margin: '0 auto',
+
+    '& .column-name': {
+      width: '25%',
+      minWidth: 120,
+      maxWidth: 200,
+    },
+
+    '& .column-type': {
+      width: '15%',
+      minWidth: 80,
+      maxWidth: 120,
+    },
+
+    '& .column-description': {
+      width: '35%',
+      minWidth: 180,
+      maxWidth: 300,
+    },
+
+    '& .column-relations': {
+      width: '25%',
+      minWidth: 150,
+      maxWidth: 250,
+      position: 'relative',
+    },
+  };
+});
+
+// Search input with improved styling
+const StyledSearchInput = styled(InputBase)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    borderRadius: 16,
+    backgroundColor: isDark
+      ? alpha(theme.palette.common.white, 0.06)
+      : alpha(theme.palette.common.black, 0.03),
+    padding: theme.spacing(0.75, 2),
+    width: '100%',
+    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: isDark
+        ? alpha(theme.palette.common.white, 0.08)
+        : alpha(theme.palette.common.black, 0.05),
+      borderColor: alpha(theme.palette.primary.main, 0.3),
+    },
+    '&.Mui-focused': {
+      backgroundColor: isDark
+        ? alpha(theme.palette.common.white, 0.1)
+        : alpha(theme.palette.common.black, 0.06),
+      borderColor: theme.palette.primary.main,
+      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+    },
+  };
+});
+
+// Edit actions container with improved styling
+const EditActionsContainer = styled(Box)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    position: 'absolute',
+    bottom: theme.spacing(0.5),
+    right: theme.spacing(0.5),
+    display: 'flex',
+    gap: theme.spacing(0.25),
+    padding: theme.spacing(0.5),
+    zIndex: 10,
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: 12,
+    boxShadow: isDark
+      ? `0 4px 8px ${alpha(theme.palette.common.black, 0.3)}`
+      : `0 4px 8px ${alpha(theme.palette.common.black, 0.15)}`,
+    border: `1px solid ${isDark
       ? alpha(theme.palette.common.white, 0.1)
-      : alpha(theme.palette.common.black, 0.06),
-    borderColor: theme.palette.primary.main,
-    boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
-  },
-}));
+      : alpha(theme.palette.grey[300], 0.7)}`,
+    backdropFilter: 'blur(4px)',
+    fontSize: '0.65rem',
+    lineHeight: 1,
+    minHeight: 'auto',
+    opacity: 0.2,
+    transform: 'scale(0.6)',
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    '&:hover': {
+      opacity: 1,
+      transform: 'scale(1)',
+    },
+    '& .MuiIconButton-root': {
+      borderRadius: 12,
+      transition: 'transform 0.2s ease',
+      '&:hover': {
+        transform: 'scale(1.1)',
+      }
+    }
+  };
+});
 
-const EditActionsContainer = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  right: theme.spacing(2),
-  top: '50%',
-  transform: 'translateY(-50%)',
+// Row action buttons with improved styling
+const RowActionButtons = styled(Box)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated color variables
+  const backgroundColor = isDark
+    ? alpha(theme.palette.grey[900], 0.85)
+    : alpha(theme.palette.background.paper, 0.95);
+
+  const borderColor = isDark
+    ? alpha(theme.palette.common.white, 0.1)
+    : alpha(theme.palette.grey[300], 0.7);
+
+  const boxShadow = isDark
+    ? `0 4px 8px ${alpha(theme.palette.common.black, 0.5)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`
+    : `0 4px 8px ${alpha(theme.palette.common.black, 0.1)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`;
+
+  return {
+    position: 'absolute',
+    bottom: '50%',
+    right: theme.spacing(0.5),
+    transform: 'translateY(50%) scale(0.8)',
+    display: 'flex',
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(0.5),
+    zIndex: 5,
+    backgroundColor,
+    backdropFilter: 'blur(8px)',
+    border: `1px solid ${borderColor}`,
+    borderRadius: 8,
+    boxShadow,
+    opacity: 0,
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+
+    '.MuiTableRow-root:hover &': {
+      opacity: 1,
+      transform: 'translateY(50%) scale(1) translateX(0)',
+    },
+
+    '& .MuiIconButton-root': {
+      transition: 'all 0.2s ease',
+      margin: '0 2px',
+      borderRadius: 8,
+
+      '&.MuiIconButton-colorPrimary': {
+        backgroundColor: isDark
+          ? alpha(theme.palette.primary.dark, 0.2)
+          : alpha(theme.palette.primary.light, 0.15),
+        '&:hover': {
+          backgroundColor: isDark
+            ? alpha(theme.palette.primary.dark, 0.3)
+            : alpha(theme.palette.primary.light, 0.25),
+        }
+      },
+
+      '&.MuiIconButton-colorInfo': {
+        backgroundColor: isDark
+          ? alpha(theme.palette.info.dark, 0.2)
+          : alpha(theme.palette.info.light, 0.15),
+        '&:hover': {
+          backgroundColor: isDark
+            ? alpha(theme.palette.info.dark, 0.3)
+            : alpha(theme.palette.info.light, 0.25),
+        }
+      },
+
+      '&.MuiIconButton-colorError': {
+        backgroundColor: isDark
+          ? alpha(theme.palette.error.dark, 0.2)
+          : alpha(theme.palette.error.light, 0.15),
+        '&:hover': {
+          backgroundColor: isDark
+            ? alpha(theme.palette.error.dark, 0.3)
+            : alpha(theme.palette.error.light, 0.25),
+        }
+      },
+
+      '&:hover': {
+        transform: 'scale(1.1)',
+      }
+    },
+  };
+});
+
+// FadeIn transition component
+const FadeInTransition = styled(m.div)(({ theme }) => ({
   display: 'flex',
-  gap: theme.spacing(1),
-  zIndex: 10,
+  flexDirection: 'column',
+  width: '100%',
 }));
 
-const StyledRelationChip = styled(Chip)(({ theme }) => ({
-  height: 'auto',
-  fontSize: '0.75rem',
-  marginRight: 4,
-  marginTop: 2,
-  marginBottom: 2,
-  backgroundColor: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.info.dark, 0.2)
-    : alpha(theme.palette.info.light, 0.2),
-  borderRadius: 4,
-  whiteSpace: 'normal',
-  '& .MuiChip-label': {
-    paddingLeft: 6,
-    paddingRight: 6,
+// Relation chip with improved styling
+const StyledRelationChip = styled(Chip)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated color variables
+  const backgroundColor = isDark
+    ? alpha(theme.palette.info.dark, 0.15)
+    : alpha(theme.palette.info.light, 0.12);
+
+  const textColor = isDark
+    ? alpha(theme.palette.info.light, 0.9)
+    : theme.palette.info.dark;
+
+  const borderColor = isDark
+    ? alpha(theme.palette.info.dark, 0.3)
+    : alpha(theme.palette.info.light, 0.3);
+
+  const hoverBackgroundColor = isDark
+    ? alpha(theme.palette.info.dark, 0.25)
+    : alpha(theme.palette.info.light, 0.25);
+
+  const shadowColor = alpha(theme.palette.common.black, isDark ? 0.25 : 0.07);
+  const hoverShadowColor = alpha(theme.palette.common.black, isDark ? 0.3 : 0.1);
+
+  const iconColor = isDark
+    ? alpha(theme.palette.info.light, 0.8)
+    : theme.palette.info.dark;
+
+  const deleteIconColor = isDark
+    ? alpha(theme.palette.error.light, 0.7)
+    : theme.palette.error.dark;
+
+  const deleteIconHoverColor = isDark
+    ? theme.palette.error.light
+    : theme.palette.error.main;
+
+  return {
+    height: 'auto',
+    fontSize: '0.75rem',
+    marginRight: 4,
+    marginTop: 2,
+    marginBottom: 2,
+    backgroundColor,
+    color: textColor,
+    borderRadius: 12,
     whiteSpace: 'normal',
-    wordBreak: 'break-word',
-    lineHeight: 1.2,
-  },
-}));
+    transition: 'all 0.2s ease',
+    border: `1px solid ${borderColor}`,
+    backdropFilter: 'blur(4px)',
+    boxShadow: `0 2px 4px ${shadowColor}`,
+    '&:hover': {
+      backgroundColor: hoverBackgroundColor,
+      transform: 'translateY(-1px)',
+      boxShadow: `0 4px 8px ${hoverShadowColor}`,
+    },
+    '& .MuiChip-label': {
+      paddingLeft: 6,
+      paddingRight: 6,
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      lineHeight: 1.3,
+      fontWeight: 500,
+    },
+    '& .MuiChip-icon': {
+      color: iconColor,
+    },
+    '& .MuiChip-deleteIcon': {
+      color: deleteIconColor,
+      borderRadius: 12,
+      '&:hover': {
+        color: deleteIconHoverColor,
+        backgroundColor: isDark
+          ? alpha(theme.palette.error.dark, 0.2)
+          : alpha(theme.palette.error.light, 0.2),
+      },
+    },
+  };
+});
 
-const StyledColumnTypeChip = styled(Chip)(({ theme }) => ({
-  height: 20,
-  fontSize: '0.7rem',
-  backgroundColor: theme.palette.mode === 'dark'
+// Column type chip with improved styling
+const StyledColumnTypeChip = styled(Chip)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated color variables
+  const backgroundColor = isDark
+    ? alpha(theme.palette.grey[800], 0.7)
+    : alpha(theme.palette.grey[100], 0.9);
+
+  const textColor = isDark
+    ? alpha(theme.palette.common.white, 0.85)
+    : theme.palette.grey[700];
+
+  const borderColor = isDark
     ? alpha(theme.palette.grey[700], 0.5)
-    : alpha(theme.palette.grey[200], 0.8),
-  borderRadius: 4,
-  '& .MuiChip-label': {
-    paddingLeft: 4,
-    paddingRight: 4,
-  },
-}));
+    : alpha(theme.palette.grey[300], 0.8);
 
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    right: -10,
-    top: 8,
-    border: `2px solid ${theme.palette.background.paper}`,
-    padding: '0 4px',
-  },
-}));
+  const innerShadow = isDark
+    ? `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.05)}`
+    : `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.9)}`;
 
+  const hoverBackground = isDark
+    ? alpha(theme.palette.grey[700], 0.8)
+    : alpha(theme.palette.grey[200], 0.9);
+
+  return {
+    height: 22,
+    fontSize: '0.7rem',
+    fontWeight: 500,
+    backgroundColor,
+    color: textColor,
+    borderRadius: 12,
+    border: `1px solid ${borderColor}`,
+    transition: 'all 0.2s ease',
+    boxShadow: innerShadow,
+    '& .MuiChip-label': {
+      paddingLeft: 6,
+      paddingRight: 6,
+      lineHeight: 1.2,
+      letterSpacing: '0.01em',
+    },
+    '&:hover': {
+      backgroundColor: hoverBackground,
+      transform: 'translateY(-1px)',
+    },
+  };
+});
+
+// Badge with improved styling
+const StyledBadge = styled(Badge)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    '& .MuiBadge-badge': {
+      right: -10,
+      top: 8,
+      border: `2px solid ${theme.palette.background.paper}`,
+      padding: '0 4px',
+      borderRadius: 12,
+      fontSize: '0.7rem',
+      minWidth: 18,
+      height: 18,
+      boxShadow: isDark
+        ? `0 0 0 1px ${alpha(theme.palette.common.black, 0.3)}`
+        : `0 0 0 1px ${alpha(theme.palette.common.white, 0.3)}`,
+    },
+  };
+});
+
+// Icon styling
 const StyledPrimaryKeyIcon = styled(KeyIcon)(({ theme }) => ({
   fontSize: 16,
   color: theme.palette.warning.main,
@@ -227,9 +517,10 @@ const StyledRelationIcon = styled(LinkIcon)(({ theme }) => ({
   marginRight: theme.spacing(0.5),
 }));
 
+// Motion table row
 const MotionTableRow = m(TableRow);
 
-// Relations container with improved scrolling
+// Relations container
 const RelationsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexWrap: 'nowrap',
@@ -250,103 +541,261 @@ const RelationsContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-const DescriptionTextField = styled(TextField)(({ theme }) => ({
-  '& .MuiInputBase-root': {
-    minHeight: 48,
-    alignItems: 'start',
-  },
-  '& .MuiInputBase-inputMultiline': {
-    padding: theme.spacing(1),
-  },
-}));
+// Description text field
+const DescriptionTextField = styled(TextField)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
 
-// Animation for AI button
+  return {
+    '& .MuiInputBase-root': {
+      minHeight: 48,
+      alignItems: 'start',
+      borderRadius: 16,
+    },
+    '& .MuiInputBase-inputMultiline': {
+      padding: theme.spacing(1),
+    },
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 16,
+      overflow: 'hidden',
+      transition: 'all 0.2s ease',
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: isDark
+          ? alpha(theme.palette.primary.light, 0.5)
+          : alpha(theme.palette.primary.main, 0.5),
+      },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: 2,
+        boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.1)}`,
+      }
+    }
+  };
+});
+
+// Pulse animation for AI button
 const pulseAnimation = keyframes`
   0% {
-    box-shadow: 0 0 0 0 ${alpha('#3f51b5', 0.7)};
+    box-shadow: 0 0 0 0 var(--pulse-color-start);
   }
-  70% {
-    box-shadow: 0 0 0 10px ${alpha('#3f51b5', 0)};
+  50% {
+    box-shadow: 0 0 0 12px var(--pulse-color-mid);
   }
   100% {
-    box-shadow: 0 0 0 0 ${alpha('#3f51b5', 0)};
+    box-shadow: 0 0 0 0 var(--pulse-color-end);
   }
 `;
 
-// AI Fill Button with glow effect
+// AI Button wrapper
 interface AIButtonWrapperProps {
   isAnimating: boolean;
-  children: React.ReactNode;
 }
 
-const AIButtonWrapper = styled('div')<AIButtonWrapperProps>(({ theme, isAnimating }) => ({
-  position: 'relative',
-  display: 'inline-flex',
-  borderRadius: 8,
-  ...(isAnimating && {
-    '&::after': {
+const AIButtonWrapper = styled('div')<AIButtonWrapperProps>(({ theme, isAnimating }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    position: 'relative',
+    display: 'inline-flex',
+    borderRadius: 12,
+    '--pulse-color-start': isDark
+      ? alpha(theme.palette.primary.dark, 0.7)
+      : alpha(theme.palette.primary.main, 0.7),
+    '--pulse-color-mid': isDark
+      ? alpha(theme.palette.primary.dark, 0)
+      : alpha(theme.palette.primary.main, 0),
+    '--pulse-color-end': isDark
+      ? alpha(theme.palette.primary.dark, 0)
+      : alpha(theme.palette.primary.main, 0),
+    ...(isAnimating && {
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: 12,
+        animation: `${pulseAnimation} 1.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95)`,
+      }
+    })
+  };
+});
+
+// AI Fill Button
+const AIFillButton = styled(Button)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated gradient variables
+  const background = isDark
+    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.9)} 0%, ${theme.palette.primary.main} 50%, ${alpha(theme.palette.primary.dark, 0.85)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${theme.palette.primary.dark} 50%, ${alpha(theme.palette.primary.main, 0.85)} 100%)`;
+
+  const hoverBackground = isDark
+    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.95)} 0%, ${theme.palette.primary.main} 60%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`
+    : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 60%, ${theme.palette.primary.main} 100%)`;
+
+  // Shadow variables
+  const boxShadow = isDark
+    ? `0 4px 12px ${alpha(theme.palette.primary.dark, 0.5)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`
+    : `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`;
+
+  const hoverBoxShadow = isDark
+    ? `0 6px 16px ${alpha(theme.palette.primary.dark, 0.6)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.4)}`
+    : `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.15)}`;
+
+  const activeBoxShadow = isDark
+    ? `0 2px 8px ${alpha(theme.palette.primary.dark, 0.4)}, 0 1px 3px ${alpha(theme.palette.common.black, 0.3)}`
+    : `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}, 0 1px 3px ${alpha(theme.palette.common.black, 0.08)}`;
+
+  // Border and disabled styles
+  const border = isDark
+    ? `1px solid ${alpha(theme.palette.primary.light, 0.2)}`
+    : `1px solid ${alpha(theme.palette.primary.dark, 0.1)}`;
+
+  const disabledBackground = isDark
+    ? `linear-gradient(135deg, ${alpha(theme.palette.grey[800], 0.7)} 0%, ${alpha(theme.palette.grey[700], 0.7)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.grey[300], 0.8)} 0%, ${alpha(theme.palette.grey[400], 0.8)} 100%)`;
+
+  const disabledColor = isDark
+    ? theme.palette.grey[500]
+    : theme.palette.grey[400];
+
+  const disabledBorder = isDark
+    ? `1px solid ${alpha(theme.palette.common.white, 0.05)}`
+    : `1px solid ${alpha(theme.palette.common.black, 0.05)}`;
+
+  return {
+    color: theme.palette.common.white,
+    padding: theme.spacing(0.75, 2),
+    height: 40,
+    fontSize: '0.8125rem',
+    fontWeight: 600,
+    textTransform: 'none',
+    whiteSpace: 'nowrap',
+    letterSpacing: '0.03em',
+    borderRadius: 16,
+    transition: 'all 0.2s ease-in-out',
+    position: 'relative',
+    overflow: 'hidden',
+    background,
+    backdropFilter: 'blur(10px)',
+    boxShadow,
+    border,
+
+    '&::before': {
       content: '""',
       position: 'absolute',
       top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      borderRadius: 8,
-      animation: `${pulseAnimation} 1.5s infinite`,
-    }
-  })
-}));
+      left: '-100%',
+      width: '100%',
+      height: '100%',
+      background: `linear-gradient(to right, ${alpha(theme.palette.common.white, 0)} 0%, ${alpha(theme.palette.common.white, 0.2)} 50%, ${alpha(theme.palette.common.white, 0)} 100%)`,
+      transform: 'skewX(-25deg)',
+      transition: 'all 0.75s ease',
+    },
 
-// AI Fill Button
-const AIFillButton = styled(Button)(({ theme }) => ({
-  color: theme.palette.common.white,
-  padding: theme.spacing(0.75, 2),
-  height: 40,
-  fontSize: '0.8125rem',
-  fontWeight: 600,
-  textTransform: 'none',
-  whiteSpace: 'nowrap',
-  letterSpacing: 0.5,
-  boxShadow: theme.shadows[3],
-  borderRadius: 8,
-  transition: 'all 0.2s ease-in-out',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${theme.palette.primary.dark} 100%)`,
-  '&:hover': {
-    boxShadow: theme.shadows[6],
-    transform: 'translateY(-2px)',
-    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-  },
-  '&:active': {
-    boxShadow: theme.shadows[2],
-    transform: 'translateY(0)',
-  },
-  '&.Mui-disabled': {
-    background: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.grey[700], 0.5)
-      : alpha(theme.palette.grey[300], 0.5),
-    color: theme.palette.mode === 'dark'
-      ? theme.palette.grey[500]
-      : theme.palette.grey[400],
-  }
-}));
+    '&:hover': {
+      boxShadow: hoverBoxShadow,
+      transform: 'translateY(-2px)',
+      background: hoverBackground,
+
+      '&::before': {
+        left: '100%',
+        transition: 'all 0.75s ease',
+      },
+    },
+
+    '&:active': {
+      boxShadow: activeBoxShadow,
+      transform: 'translateY(0)',
+    },
+
+    '&.Mui-disabled': {
+      background: disabledBackground,
+      color: disabledColor,
+      boxShadow: 'none',
+      border: disabledBorder,
+    },
+
+    '& .MuiButton-startIcon, & .MuiButton-endIcon': {
+      filter: `drop-shadow(0 1px 1px ${alpha(theme.palette.common.black, 0.5)})`,
+    },
+  };
+});
 
 // Empty state component
-const EmptyStateMessage = styled(Paper)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: theme.spacing(4),
-  borderRadius: 12,
-  backgroundColor: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.background.paper, 0.4)
-    : alpha(theme.palette.background.paper, 0.7),
-  textAlign: 'center',
-  height: '100%',
-  minHeight: 200,
-}));
+const EmptyStateMessage = styled(Paper)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
 
-// Define proper types for the RelationTypeSelector component
+  // Background gradient
+  const background = isDark
+    ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.5)} 100%)`
+    : `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.grey[50], 0.9)} 100%)`;
+
+  // Border color
+  const borderColor = isDark
+    ? alpha(theme.palette.grey[700], 0.3)
+    : alpha(theme.palette.grey[300], 0.7);
+
+  // Shadow
+  const boxShadow = isDark
+    ? `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.05)}, 0 6px 12px -6px ${alpha(theme.palette.common.black, 0.4)}`
+    : `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.9)}, 0 6px 12px -6px ${alpha(theme.palette.common.black, 0.1)}`;
+
+  // Typography colors  
+  const titleColor = isDark
+    ? alpha(theme.palette.common.white, 0.85)
+    : theme.palette.grey[800];
+
+  const bodyColor = isDark
+    ? alpha(theme.palette.common.white, 0.6)
+    : theme.palette.grey[600];
+
+  // Icon color
+  const iconColor = isDark
+    ? alpha(theme.palette.primary.main, 0.3)
+    : alpha(theme.palette.primary.light, 0.4);
+
+  const iconShadow = `drop-shadow(0 2px 4px ${alpha(theme.palette.common.black, isDark ? 0.4 : 0.1)})`;
+
+  return {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing(4),
+    borderRadius: 20,
+    background,
+    border: `1px solid ${borderColor}`,
+    backdropFilter: 'blur(8px)',
+    boxShadow,
+    textAlign: 'center',
+    height: '100%',
+    minHeight: 240,
+
+    '& .MuiTypography-subtitle1': {
+      marginTop: theme.spacing(2),
+      fontWeight: 600,
+      color: titleColor,
+      letterSpacing: '0.01em',
+    },
+
+    '& .MuiTypography-body2': {
+      marginTop: theme.spacing(1),
+      color: bodyColor,
+      maxWidth: '80%',
+    },
+
+    '& .MuiSvgIcon-root, & .iconify': {
+      fontSize: 48,
+      marginBottom: theme.spacing(2),
+      color: iconColor,
+      filter: iconShadow,
+    }
+  };
+});
+
+// RelationTypeSelector component
 interface RelationTypeSelectorProps {
   value: RelationType;
   onChange: (newType: RelationType) => void;
@@ -360,10 +809,10 @@ const RelationTypeSelector: React.FC<RelationTypeSelectorProps> = ({
   disabled = false
 }) => {
   const relationTypes = [
-    { value: 'OTO' as const, label: '1:1', tooltip: 'One-to-One' },
-    { value: 'OTM' as const, label: '1:n', tooltip: 'One-to-Many' },
-    { value: 'MTO' as const, label: 'n:1', tooltip: 'Many-to-One' },
-    { value: 'MTM' as const, label: 'n:n', tooltip: 'Many-to-Many' }
+    { value: 'OTO' as RelationType, label: '1:1', tooltip: 'One-to-One' },
+    { value: 'OTM' as RelationType, label: '1:n', tooltip: 'One-to-Many' },
+    { value: 'MTO' as RelationType, label: 'n:1', tooltip: 'Many-to-One' },
+    { value: 'MTM' as RelationType, label: 'n:n', tooltip: 'Many-to-Many' }
   ];
 
   return (
@@ -372,13 +821,22 @@ const RelationTypeSelector: React.FC<RelationTypeSelectorProps> = ({
       aria-label="relation type selector"
       disabled={disabled}
       sx={{
-        borderRadius: 1,
+        borderRadius: 24,
+        overflow: 'hidden',
         '.MuiButtonGroup-grouped': {
           minWidth: 36,
           px: 0.5,
           py: 0.25,
           fontSize: '0.7rem',
-          fontWeight: 'medium'
+          fontWeight: 'medium',
+          '&:first-of-type': {
+            borderTopLeftRadius: 24,
+            borderBottomLeftRadius: 24,
+          },
+          '&:last-of-type': {
+            borderTopRightRadius: 24,
+            borderBottomRightRadius: 24,
+          }
         }
       }}
     >
@@ -397,140 +855,328 @@ const RelationTypeSelector: React.FC<RelationTypeSelectorProps> = ({
   );
 };
 
-interface Props {
+// Animation variants
+const toastVariants = {
+  hidden: {
+    opacity: 0,
+    y: 50,
+    scale: 0.8,
+    filter: 'blur(8px)',
+    x: 20
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    x: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 400,
+      damping: 25,
+      mass: 1.2,
+      delayChildren: 0.1,
+      staggerChildren: 0.05
+    }
+  },
+  exit: {
+    opacity: 0,
+    y: 20,
+    scale: 0.9,
+    filter: 'blur(4px)',
+    transition: {
+      duration: 0.3,
+      ease: [0.43, 0.13, 0.23, 0.96]
+    }
+  }
+};
+
+const toastChildVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -5 }
+};
+
+const tableVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+    scale: 0.98,
+    filter: 'blur(4px)'
+  },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: {
+      delay: i * 0.05,
+      duration: 0.4,
+      ease: [0.25, 0.1, 0.25, 1.0],
+      scale: {
+        duration: 0.5,
+        ease: [0.34, 1.56, 0.64, 1]
+      }
+    }
+  }),
+  exit: {
+    opacity: 0,
+    y: -20,
+    scale: 0.95,
+    filter: 'blur(4px)',
+    transition: {
+      duration: 0.3,
+      ease: [0.43, 0.13, 0.23, 0.96]
+    }
+  }
+};
+
+const rowVariants = {
+  hidden: {
+    opacity: 0,
+    x: -5
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.3,
+      ease: [0.25, 0.1, 0.25, 1.0]
+    }
+  },
+  exit: {
+    opacity: 0,
+    x: -10,
+    transition: {
+      duration: 0.2,
+      ease: [0.43, 0.13, 0.23, 0.96]
+    }
+  }
+};
+
+// State type definitions
+interface ToastState {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  visible: boolean;
+}
+
+interface RelationDialogState {
+  open: boolean;
+  sourceTableId: string;
+  sourceColumnId: string;
+  targetTableId: string;
+  targetColumnId: string;
+  relationType: RelationType;
+}
+
+interface AppState {
+  expandedTables: Record<string, boolean>;
+  selectedTable: string | null;
+  editingTableId: string | null;
+  editingColumnId: string | null;
+  searchQuery: string;
+  filteredTables: TableDefinition[];
+  editableTables: TableDefinition[];
+  aiLoading: boolean;
+  aiButtonTooltipOpen: boolean;
+  hoveredTableId: string | null;
+  hoveredColumnId: string | null;
+  toast: ToastState;
+  relationDialog: RelationDialogState;
+}
+
+// Main component interface
+interface TableDefinitionViewProps {
   tables: TableDefinition[];
   onTablesUpdate?: (updatedTables: TableDefinition[]) => void;
 }
 
-export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
+// Main component
+export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionViewProps): JSX.Element {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  // const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({});
-  const [selectedTable, setSelectedTable] = useState<string | null>(null);
-  const [editingTableId, setEditingTableId] = useState<string | null>(null);
-  const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredTables, setFilteredTables] = useState<TableDefinition[]>([]);
-  const [editableTables, setEditableTables] = useState<TableDefinition[]>([]);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiButtonTooltipOpen, setAiButtonTooltipOpen] = useState(false);
+  // Enhanced responsive grid layout
+  const gridSizes = useMemo(() => ({
+    tableList: { xs: 12, sm: 12, md: 6, lg: 6, xl: 6 }, // 50%
+    diagram: { xs: 12, sm: 12, md: 6, lg: 6, xl: 6 },   // 50%
+  }), []);
 
+  // Unified state management
+  const [state, setState] = useState<AppState>({
+    expandedTables: {},
+    selectedTable: null,
+    editingTableId: null,
+    editingColumnId: null,
+    searchQuery: '',
+    filteredTables: [],
+    editableTables: [],
+    aiLoading: false,
+    aiButtonTooltipOpen: false,
+    hoveredTableId: null,
+    hoveredColumnId: null,
+    toast: {
+      message: '',
+      type: 'info',
+      visible: false,
+    },
+    relationDialog: {
+      open: false,
+      sourceTableId: '',
+      sourceColumnId: '',
+      targetTableId: '',
+      targetColumnId: '',
+      relationType: 'OTO',
+    }
+  });
+
+  // Destructured state for easier access
+  const {
+    expandedTables, selectedTable, editingTableId, editingColumnId,
+    searchQuery, filteredTables, editableTables, aiLoading,
+    aiButtonTooltipOpen, hoveredTableId, hoveredColumnId,
+    toast, relationDialog
+  } = state;
+
+  // Refs
+  const tableListRef = useRef<HTMLDivElement>(null);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Initialize editable tables when component mounts or tables prop changes
+  // Initialize tables on component mount
   useEffect(() => {
-    if (tables && tables.length > 0) {
-      setEditableTables(JSON.parse(JSON.stringify(tables)));
+    if (tables?.length > 0) {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(tables));
 
-      // Auto-expand the first table if none is expanded
-      if (Object.keys(expandedTables).length === 0 && !selectedTable) {
-        setExpandedTables({ [tables[0].tableIdentifier]: true });
-        setSelectedTable(tables[0].tableIdentifier);
-      }
+      setState(prev => ({
+        ...prev,
+        editableTables: tablesDeepCopy,
+        filteredTables: tablesDeepCopy,
+        // Auto-expand first table if none selected
+        ...(Object.keys(expandedTables).length === 0 && !selectedTable && {
+          expandedTables: { [tables[0].tableIdentifier]: true },
+          selectedTable: tables[0].tableIdentifier
+        })
+      }));
     }
   }, [tables, expandedTables, selectedTable]);
 
   // Filter tables based on search query
   useEffect(() => {
     if (!debouncedSearchQuery.trim()) {
-      setFilteredTables(editableTables);
+      setState(prev => ({ ...prev, filteredTables: prev.editableTables }));
       return;
     }
 
     const query = debouncedSearchQuery.toLowerCase();
-    const filtered = editableTables.filter(
-      (table) =>
-        table.tableIdentifier.toLowerCase().includes(query) ||
-        table.columns.some(
-          (col) =>
-            col.columnIdentifier.toLowerCase().includes(query) ||
-            (col.columnDescription && col.columnDescription.toLowerCase().includes(query)) ||
-            col.columnType.toLowerCase().includes(query)
-        )
+    const filtered = editableTables.filter(table =>
+      table.tableIdentifier.toLowerCase().includes(query) ||
+      table.columns.some(col =>
+        col.columnIdentifier.toLowerCase().includes(query) ||
+        (col.columnDescription && col.columnDescription.toLowerCase().includes(query)) ||
+        col.columnType.toLowerCase().includes(query)
+      )
     );
-    setFilteredTables(filtered);
+
+    setState(prev => ({ ...prev, filteredTables: filtered }));
   }, [debouncedSearchQuery, editableTables]);
 
-  // Toggle table expansion and selection
+  // Core helper functions
+  const showToast = useCallback((message: string, type: ToastState['type']) => {
+    setState(prev => ({ ...prev, toast: { message, type, visible: true } }));
+    setTimeout(() => {
+      setState(prev => ({ ...prev, toast: { ...prev.toast, visible: false } }));
+    }, 3000);
+  }, []);
+
   const toggleTable = useCallback((tableId: string) => {
-    setExpandedTables(prev => ({
+    setState(prev => ({
       ...prev,
-      [tableId]: !prev[tableId]
+      expandedTables: { ...prev.expandedTables, [tableId]: !prev.expandedTables[tableId] },
+      selectedTable: tableId
     }));
-    setSelectedTable(tableId);
+
+    // Scroll to the selected table
+    setTimeout(() => {
+      const tableElement = document.getElementById(`table-${tableId}`);
+      if (tableElement && tableListRef.current) {
+        const containerRect = tableListRef.current.getBoundingClientRect();
+        const tableRect = tableElement.getBoundingClientRect();
+
+        if (tableRect.top < containerRect.top || tableRect.bottom > containerRect.bottom) {
+          tableElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }, 100);
   }, []);
 
-  // Start editing a column
   const startEditing = useCallback((tableId: string, columnId: string) => {
-    setEditingTableId(tableId);
-    setEditingColumnId(columnId);
+    setState(prev => ({ ...prev, editingTableId: tableId, editingColumnId: columnId }));
   }, []);
 
-  // Cancel editing for a specific column
   const cancelEditing = useCallback(() => {
-    setEditingTableId(null);
-    setEditingColumnId(null);
+    setState(prev => ({
+      ...prev,
+      editingTableId: null,
+      editingColumnId: null,
+      editableTables: JSON.parse(JSON.stringify(tables))
+    }));
+    showToast('Editing canceled', 'info');
+  }, [tables, showToast]);
 
-    // Reset the editable tables to their original state
-    setEditableTables(JSON.parse(JSON.stringify(tables)));
-  }, [tables]);
-
-  // Save changes for a specific column
   const saveColumnChanges = useCallback((
     tableId: string,
     columnId: string,
     updatedColumn: ColumnDefinition
   ) => {
-    // Update the tables state
-    const updatedTables = editableTables.map(table => {
-      if (table.tableIdentifier === tableId) {
-        return {
-          ...table,
-          columns: table.columns.map(column =>
-            column.columnIdentifier === columnId ? updatedColumn : column
-          )
-        };
+    try {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
+        if (table.tableIdentifier === tableId) {
+          return {
+            ...table,
+            columns: table.columns.map((column: ColumnDefinition) =>
+              column.columnIdentifier === columnId ? updatedColumn : column
+            )
+          };
+        }
+        return table;
+      });
+
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables,
+        editingTableId: null,
+        editingColumnId: null
+      }));
+
+      if (onTablesUpdate) {
+        onTablesUpdate(updatedTables);
       }
-      return table;
-    });
 
-    // Update the editable tables state
-    setEditableTables(updatedTables);
-
-    // Call the onTablesUpdate callback if provided
-    if (onTablesUpdate) {
-      onTablesUpdate(updatedTables);
+      showToast('Column updated successfully!', 'success');
+    } catch (error) {
+      console.error('Error saving column changes:', error);
+      showToast('Failed to save changes', 'error');
     }
+  }, [editableTables, onTablesUpdate, showToast]);
 
-    // Clear editing state
-    setEditingTableId(null);
-    setEditingColumnId(null);
-
-    // Show success notification
-    enqueueSnackbar('Column updated successfully!', {
-      variant: 'success',
-      anchorOrigin: {
-        vertical: 'bottom',
-        horizontal: 'right',
-      }
-    });
-  }, [editableTables, onTablesUpdate]);
-
-  // Handle column changes
   const handleColumnChange = useCallback((
     tableId: string,
     columnId: string,
     field: keyof ColumnDefinition,
     value: any
   ) => {
-    setEditableTables(prevTables =>
-      prevTables.map(table => {
+    setState(prev => {
+      const updatedTables = JSON.parse(JSON.stringify(prev.editableTables));
+
+      const result = updatedTables.map((table: TableDefinition) => {
         if (table.tableIdentifier === tableId) {
           return {
             ...table,
-            columns: table.columns.map(column =>
+            columns: table.columns.map((column: ColumnDefinition) =>
               column.columnIdentifier === columnId
                 ? { ...column, [field]: value }
                 : column
@@ -538,171 +1184,291 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
           };
         }
         return table;
-      })
-    );
+      });
+
+      return {
+        ...prev,
+        editableTables: result
+      };
+    });
   }, []);
 
-  // Get column count for a table
+  // Data processing functions
   const getColumnCount = useCallback((tableId: string): number => {
     const table = editableTables.find(t => t.tableIdentifier === tableId);
     return table?.columns.length || 0;
   }, [editableTables]);
 
-  // Get primary key count for a table
   const getPrimaryKeyCount = useCallback((tableId: string): number => {
     const table = editableTables.find(t => t.tableIdentifier === tableId);
     return table?.columns.filter(c => c.isPrimaryKey).length || 0;
   }, [editableTables]);
 
-  // Get relation count for a table
   const getRelationCount = useCallback((tableId: string): number => {
     const table = editableTables.find(t => t.tableIdentifier === tableId);
     return table?.columns.reduce((count, column) =>
       count + (column.relations ? column.relations.length : 0), 0) || 0;
   }, [editableTables]);
 
-  // Get relation type display
   const getRelationTypeDisplay = useCallback((relationType: string): string => {
-    switch (relationType) {
-      case 'OTM': return '1:n';
-      case 'MTO': return 'n:1';
-      case 'OTO': return '1:1';
-      case 'MTM': return 'n:n';
-      default: return relationType;
-    }
+    const map: Record<string, string> = { 'OTM': '1:n', 'MTO': 'n:1', 'OTO': '1:1', 'MTM': 'n:n' };
+    return map[relationType] || relationType;
   }, []);
 
-  // Get relation name
   const getRelationshipName = useCallback((key: string): string => {
-    if (key === 'OTM') return 'One-to-Many';
-    if (key === 'MTO') return 'Many-to-One';
-    if (key === 'OTO') return 'One-to-One';
-    return 'Many-to-Many';
+    const map: Record<string, string> = {
+      'OTM': 'One-to-Many',
+      'MTO': 'Many-to-One',
+      'OTO': 'One-to-One',
+      'MTM': 'Many-to-Many'
+    };
+    return map[key] || key;
   }, []);
 
-  // Animation variants for tables
-  const tableVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.05,
-        duration: 0.3,
-        ease: "easeOut"
-      }
-    }),
-    exit: { opacity: 0, y: -20, transition: { duration: 0.2 } }
+  // AI description generation
+  const generateAIDescription = async (column: ColumnDefinition, table: TableDefinition): Promise<string> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // Context-aware descriptions
+    const isForeignKey = column.relations && column.relations.length > 0;
+    const colName = column.columnIdentifier.toLowerCase();
+
+    if (column.isPrimaryKey) {
+      return `Unique identifier for each record in the ${table.tableIdentifier} table`;
+    }
+
+    if (isForeignKey) {
+      const relations = column.relations || [];
+      const targetTables = relations.map(r => r.tableIdentifier).join(', ');
+      return `Foreign key referencing ${targetTables} ${relations.length > 1 ? 'tables' : 'table'}`;
+    }
+
+    if (colName.includes('id') && colName.endsWith('id')) {
+      return `Reference to ${colName.replace(/_?id$/, '')} record`;
+    }
+
+    if (colName.includes('name')) {
+      return `Name or title of the ${table.tableIdentifier} record`;
+    }
+
+    if (colName.includes('date') || colName.includes('time')) {
+      let action = 'event occurred';
+      if (colName.includes('created')) action = 'record was created';
+      else if (colName.includes('updated')) action = 'record was last modified';
+      else if (colName.includes('deleted')) action = 'record was removed';
+
+      return `Timestamp indicating when the ${action}`;
+    }
+
+    if (/price|cost|amount/.test(colName)) {
+      return `Monetary value representing the ${colName.replace(/_/g, ' ')}`;
+    }
+
+    if (colName.includes('status')) {
+      return `Current state of the ${table.tableIdentifier} record`;
+    }
+
+    if (colName.includes('description')) {
+      return `Detailed description of the ${table.tableIdentifier} record`;
+    }
+
+    if (/bool|flag/.test(column.columnType.toLowerCase())) {
+      const flagDescription = colName
+        .replace(/^is_|^has_/, '')
+        .replace(/_/g, ' ');
+      return `Flag indicating whether the ${table.tableIdentifier} ${flagDescription}`;
+    }
+
+    return `Stores ${column.columnType} data for ${table.tableIdentifier} records`;
   };
 
-  // Generate AI description for a column
-  // const generateAIDescription = async (column: ColumnDefinition, table: TableDefinition): Promise<string> => {
-  //   // Simulate API call delay
-  //   await new Promise(resolve => setTimeout(resolve, 800));
-
-  //   // Generate more context-aware descriptions based on column type and name
-  //   let baseDescription = '';
-
-  //   // Check if column is a foreign key (has relations)
-  //   const isForeignKey = column.relations && column.relations.length > 0;
-
-  //   // Check common column name patterns
-  //   const colName = column.columnIdentifier.toLowerCase();
-
-  //   if (column.isPrimaryKey) {
-  //     baseDescription = `Unique identifier for each record in the ${table.tableIdentifier} table`;
-  //   } else if (isForeignKey) {
-  //     const relations = column.relations || [];
-  //     const targetTables = relations.map(r => r.tableIdentifier).join(', ');
-  //     baseDescription = `Foreign key referencing ${targetTables} ${relations.length > 1 ? 'tables' : 'table'}`;
-  //   } else if (colName.includes('id') && colName.endsWith('id')) {
-  //     baseDescription = `Reference to ${colName.replace('_id', '').replace('id', '')} record`;
-  //   } else if (colName.includes('name')) {
-  //     baseDescription = `Name or title of the ${table.tableIdentifier} record`;
-  //   } else if (colName.includes('date') || colName.includes('time')) {
-  //     baseDescription = `Timestamp indicating when the ${colName.includes('created') ? 'record was created' :
-  //       colName.includes('updated') ? 'record was last modified' :
-  //         colName.includes('deleted') ? 'record was removed' :
-  //           'event occurred'}`;
-  //   } else if (colName.includes('price') || colName.includes('cost') || colName.includes('amount')) {
-  //     baseDescription = `Monetary value representing the ${colName.replace('_', ' ')}`;
-  //   } else if (colName.includes('status')) {
-  //     baseDescription = `Current state of the ${table.tableIdentifier} record`;
-  //   } else if (colName.includes('description')) {
-  //     baseDescription = `Detailed description of the ${table.tableIdentifier} record`;
-  //   } else if (column.columnType.toLowerCase().includes('bool')) {
-  //     baseDescription = `Flag indicating whether the ${table.tableIdentifier} ${colName.replace('is_', '').replace('has_', '')}`;
-  //   } else {
-  //     baseDescription = `Stores ${column.columnType} data for ${table.tableIdentifier} records`;
-  //   }
-
-  //   return baseDescription;
-  // };
-
-  // Fill all column descriptions with AI
   const fillAllDescriptionsWithAI = async () => {
     try {
-      setAiLoading(true);
-      setAiButtonTooltipOpen(false);
+      setState(prev => ({ ...prev, aiLoading: true, aiButtonTooltipOpen: false }));
 
-      const updatedTables = [...editableTables];
-      const generatedCount = 0;
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+      let generatedCount = 0;
 
-      // for (const table of updatedTables) {
-      //   for (const column of table.columns) {
-      //     // Skip if description already exists
-      //     // if (column.columnDescription) continue;
+      await Promise.all(
+        tablesDeepCopy.flatMap((table: TableDefinition) =>
+          table.columns.map(async (column: ColumnDefinition) => {
+            if (!column.columnDescription) {
+              column.columnDescription = await generateAIDescription(column, table);
+              generatedCount += 1;
+            }
+          })
+        )
+      );
 
-      //     // Generate AI description
-      //     // const aiDescription = await generateAIDescription(column, table);
+      setState(prev => ({
+        ...prev,
+        editableTables: tablesDeepCopy,
+        filteredTables: tablesDeepCopy,
+        aiLoading: false
+      }));
 
-      //     // Update column description
-      //     column.columnDescription = aiDescription;
-      //     generatedCount += 1;
-      //   }
-      // }
-
-      // Update state with new descriptions
-      setEditableTables(updatedTables);
-
-      // Show different messages based on how many descriptions were generated
-      if (generatedCount > 0) {
-      //   enqueueSnackbar(`Successfully generated ${generatedCount} column descriptions!`, {
-      //     variant: 'success',
-      //     anchorOrigin: {
-      //       vertical: 'bottom',
-      //       horizontal: 'center',
-      //     }
-      //   });
-
-        // Notify the parent component of the changes
-        if (onTablesUpdate) {
-          onTablesUpdate(updatedTables);
-        }
-      } else {
-        enqueueSnackbar('All columns already have descriptions', {
-          variant: 'info',
-          anchorOrigin: {
-            vertical: 'bottom',
-            horizontal: 'center',
-          }
-        });
+      if (onTablesUpdate && generatedCount > 0) {
+        onTablesUpdate(tablesDeepCopy);
       }
+
+      showToast(
+        generatedCount > 0
+          ? `Successfully generated ${generatedCount} column descriptions!`
+          : 'All columns already have descriptions',
+        generatedCount > 0 ? 'success' : 'info'
+      );
     } catch (error) {
-      enqueueSnackbar('Failed to generate AI descriptions', {
-        variant: 'error',
-        anchorOrigin: {
-          vertical: 'bottom',
-          horizontal: 'center',
-        }
-      });
       console.error('AI description generation failed:', error);
-    } finally {
-      setAiLoading(false);
+      showToast('Failed to generate AI descriptions', 'error');
+      setState(prev => ({ ...prev, aiLoading: false }));
     }
   };
 
-  // Get the current editing column
+  // Relation management
+  const openRelationDialog = useCallback((tableId: string, columnId: string) => {
+    setState(prev => ({
+      ...prev,
+      relationDialog: {
+        ...prev.relationDialog,
+        open: true,
+        sourceTableId: tableId,
+        sourceColumnId: columnId,
+        targetTableId: '',
+        targetColumnId: '',
+        relationType: 'OTO'
+      }
+    }));
+  }, []);
+
+  const handleRelationDialogClose = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      relationDialog: { ...prev.relationDialog, open: false }
+    }));
+  }, []);
+
+  const updateRelationDialog = useCallback((field: keyof RelationDialogState, value: string) => {
+    setState(prev => ({
+      ...prev,
+      relationDialog: { ...prev.relationDialog, [field]: value }
+    }));
+  }, []);
+
+  const addNewRelation = useCallback(() => {
+    try {
+      const { sourceTableId, sourceColumnId, targetTableId, targetColumnId, relationType } = relationDialog;
+
+      if (!sourceTableId || !sourceColumnId || !targetTableId || !targetColumnId) {
+        showToast('Please fill all relation fields', 'error');
+        return;
+      }
+
+      const relationToAdd: RelationDefinition = {
+        tableIdentifier: targetTableId,
+        columnIdentifier: sourceColumnId,
+        toColumn: targetColumnId,
+        type: relationType,
+      };
+
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      // Check if relation already exists
+      const sourceTable = tablesDeepCopy.find((t: TableDefinition) => t.tableIdentifier === sourceTableId);
+      const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === sourceColumnId);
+
+      if (sourceColumn?.relations?.some((r: RelationDefinition) =>
+        r.tableIdentifier === relationToAdd.tableIdentifier &&
+        r.toColumn === relationToAdd.toColumn
+      )) {
+        showToast('This relation already exists', 'error');
+        return;
+      }
+
+      // Add relation
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
+        if (table.tableIdentifier === sourceTableId) {
+          return {
+            ...table,
+            columns: table.columns.map((column: ColumnDefinition) => {
+              if (column.columnIdentifier === sourceColumnId) {
+                return {
+                  ...column,
+                  relations: [...(column.relations || []), relationToAdd]
+                };
+              }
+              return column;
+            })
+          };
+        }
+        return table;
+      });
+
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables,
+        relationDialog: { ...prev.relationDialog, open: false }
+      }));
+
+      if (onTablesUpdate) {
+        onTablesUpdate(updatedTables);
+      }
+
+      showToast('Relation added successfully!', 'success');
+    } catch (error) {
+      console.error('Error adding relation:', error);
+      showToast('Failed to add relation', 'error');
+    }
+  }, [relationDialog, editableTables, onTablesUpdate, showToast]);
+
+  const deleteRelation = useCallback((
+    tableId: string,
+    columnId: string,
+    targetTableId: string,
+    targetColumnId: string
+  ) => {
+    try {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
+        if (table.tableIdentifier === tableId) {
+          return {
+            ...table,
+            columns: table.columns.map((column: ColumnDefinition) => {
+              if (column.columnIdentifier === columnId) {
+                return {
+                  ...column,
+                  relations: (column.relations || []).filter(
+                    (r: RelationDefinition) => !(r.tableIdentifier === targetTableId && r.toColumn === targetColumnId)
+                  )
+                };
+              }
+              return column;
+            })
+          };
+        }
+        return table;
+      });
+
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables
+      }));
+
+      if (onTablesUpdate) {
+        onTablesUpdate(updatedTables);
+      }
+
+      showToast('Relation deleted successfully!', 'success');
+    } catch (error) {
+      console.error('Error deleting relation:', error);
+      showToast('Failed to delete relation', 'error');
+    }
+  }, [editableTables, onTablesUpdate, showToast]);
+
+  // Get current editing column
   const getEditingColumn = useCallback(() => {
     if (!editingTableId || !editingColumnId) return null;
 
@@ -712,47 +1478,52 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
     return table.columns.find(c => c.columnIdentifier === editingColumnId) || null;
   }, [editingTableId, editingColumnId, editableTables]);
 
-  // Render a column row
-  const renderColumnRow = useCallback((table: TableDefinition, column: ColumnDefinition) => {
-    const isEditing =
-      editingTableId === table.tableIdentifier && editingColumnId === column.columnIdentifier;
-  
-    // Get the current editing column to save
+  // Render column row
+  const renderColumnRow = useCallback((table: TableDefinition, column: ColumnDefinition, index: number) => {
+    const isEditing = editingTableId === table.tableIdentifier && editingColumnId === column.columnIdentifier;
+    const isHovered = hoveredTableId === table.tableIdentifier && hoveredColumnId === column.columnIdentifier;
     const currentEditingColumn = isEditing ? getEditingColumn() : null;
-  
-    // Handle Enter key press
+
     const handleKeyPress = (event: React.KeyboardEvent) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
         if (currentEditingColumn) {
-          saveColumnChanges(
-            table.tableIdentifier,
-            column.columnIdentifier,
-            currentEditingColumn
-          );
+          saveColumnChanges(table.tableIdentifier, column.columnIdentifier, currentEditingColumn);
         }
       }
     };
-  
+
     return (
       <MotionTableRow
         key={column.columnIdentifier}
-        initial={{ opacity: 0, y: -5 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -5 }}
-        transition={{ duration: 0.2 }}
-        onDoubleClick={() => !isEditing && startEditing(table.tableIdentifier, column.columnIdentifier)}
+        custom={index}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={rowVariants}
+        onMouseEnter={() => {
+          setState(prev => ({
+            ...prev,
+            hoveredTableId: table.tableIdentifier,
+            hoveredColumnId: column.columnIdentifier
+          }));
+        }}
+        onMouseLeave={() => {
+          setState(prev => ({
+            ...prev,
+            hoveredTableId: null,
+            hoveredColumnId: null
+          }));
+        }}
         sx={{
-          position: 'relative', // Essential for absolute positioned children
+          position: 'relative',
           cursor: 'pointer',
           '&:hover': {
             backgroundColor: (t) => alpha(t.palette.primary.main, 0.05),
-            '& .MuiTableCell-root': {
-              color: 'primary.main'
-            }
+            '& .MuiTableCell-root': { color: 'primary.main' }
           },
           '& .MuiTableCell-root': {
-            py: 1.5, // Increased vertical padding to accommodate the buttons
+            py: 1.5,
             px: { xs: 1, sm: 1.5 },
             ...(isEditing && {
               backgroundColor: alpha(theme.palette.primary.main, 0.04),
@@ -768,18 +1539,16 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
               <TextField
                 size="small"
                 value={column.columnIdentifier}
-                onChange={(e) =>
-                  handleColumnChange(
-                    table.tableIdentifier,
-                    column.columnIdentifier,
-                    'columnIdentifier',
-                    e.target.value
-                  )
-                }
+                onChange={(e) => handleColumnChange(
+                  table.tableIdentifier,
+                  column.columnIdentifier,
+                  'columnIdentifier',
+                  e.target.value
+                )}
                 onKeyPress={handleKeyPress}
                 fullWidth
                 autoFocus
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 aria-label="Edit column name"
               />
             ) : (
@@ -790,51 +1559,46 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
             )}
           </Stack>
         </TableCell>
-  
+
         {/* Column Type Cell */}
         <TableCell className="column-type">
           {isEditing ? (
             <TextField
               size="small"
               value={column.columnType}
-              onChange={(e) =>
-                handleColumnChange(
-                  table.tableIdentifier,
-                  column.columnIdentifier,
-                  'columnType',
-                  e.target.value
-                )
-              }
+              onChange={(e) => handleColumnChange(
+                table.tableIdentifier,
+                column.columnIdentifier,
+                'columnType',
+                e.target.value
+              )}
               onKeyPress={handleKeyPress}
               fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               aria-label="Edit column type"
             />
           ) : (
             <StyledColumnTypeChip label={column.columnType} size="small" />
           )}
         </TableCell>
-  
+
         {/* Description Cell */}
         <TableCell className="column-description">
           {isEditing ? (
             <DescriptionTextField
               size="small"
               value={column.columnDescription || ''}
-              onChange={(e) =>
-                handleColumnChange(
-                  table.tableIdentifier,
-                  column.columnIdentifier,
-                  'columnDescription',
-                  e.target.value
-                )
-              }
+              onChange={(e) => handleColumnChange(
+                table.tableIdentifier,
+                column.columnIdentifier,
+                'columnDescription',
+                e.target.value
+              )}
               onKeyPress={handleKeyPress}
               fullWidth
               multiline
               rows={2}
               placeholder="Enter column description..."
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
               aria-label="Edit column description"
             />
           ) : (
@@ -850,25 +1614,24 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
             </Typography>
           )}
         </TableCell>
-  
-        {/* Relations Cell with Relationship Type Editor */}
+
+        {/* Relations Cell */}
         <TableCell className="column-relations">
           <RelationsContainer>
             {column.relations?.length ? (
               column.relations.map((relation, relationIndex) => (
-                <Box key={`${relation.tableIdentifier}-${relation.toColumn}`} sx={{ mb: 1 }}>
+                <Box key={`${relation.tableIdentifier}-${relation.toColumn}-${relationIndex}`} sx={{ mb: 1 }}>
                   {isEditing ? (
                     <Stack direction="column" spacing={1} alignItems="center">
                       <RelationTypeSelector
                         value={relation.type as RelationType}
                         onChange={(newType) => {
-                          // Create a deep copy of relations
                           const updatedRelations = [...(column.relations || [])];
                           updatedRelations[relationIndex] = {
                             ...updatedRelations[relationIndex],
                             type: newType
                           };
-  
+
                           handleColumnChange(
                             table.tableIdentifier,
                             column.columnIdentifier,
@@ -878,9 +1641,31 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                         }}
                         disabled={false}
                       />
-                      <Typography variant="caption">
-                        {relation.tableIdentifier}.{relation.toColumn}
-                      </Typography>
+                      <Stack direction="row" spacing={0.5} alignItems="center">
+                        <Typography variant="caption">
+                          {relation.tableIdentifier}.{relation.toColumn}
+                        </Typography>
+                        <Tooltip title="Remove relation">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const updatedRelations = [...(column.relations || [])];
+                              updatedRelations.splice(relationIndex, 1);
+                              handleColumnChange(
+                                table.tableIdentifier,
+                                column.columnIdentifier,
+                                'relations',
+                                updatedRelations
+                              );
+                            }}
+                            sx={{ p: 0.25 }}
+                          >
+                            <CloseIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
                     </Stack>
                   ) : (
                     <Tooltip
@@ -891,7 +1676,16 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                         <StyledRelationChip
                           size="small"
                           icon={<StyledRelationIcon />}
-                          label={`${getRelationTypeDisplay(relation.type)} → ${relation.tableIdentifier}`}
+                          label={`${getRelationTypeDisplay(relation.type)} → ${relation.tableIdentifier}.${relation.toColumn}`}
+                          onDelete={
+                            isHovered ?
+                              () => deleteRelation(
+                                table.tableIdentifier,
+                                column.columnIdentifier,
+                                relation.tableIdentifier,
+                                relation.toColumn
+                              ) : undefined
+                          }
                         />
                       </span>
                     </Tooltip>
@@ -904,9 +1698,48 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
               </Typography>
             )}
           </RelationsContainer>
+
+          {/* Row action buttons */}
+          {!isEditing && isHovered && (
+            <RowActionButtons>
+              <Tooltip title="Edit column">
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={() => startEditing(table.tableIdentifier, column.columnIdentifier)}
+                  sx={{
+                    bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+                    '&:hover': {
+                      bgcolor: (t) => alpha(t.palette.primary.main, 0.2),
+                    },
+                  }}
+                >
+                  <EditOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Add relation">
+                <IconButton
+                  size="small"
+                  color="info"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openRelationDialog(table.tableIdentifier, column.columnIdentifier);
+                  }}
+                  sx={{
+                    bgcolor: (t) => alpha(t.palette.info.main, 0.1),
+                    '&:hover': {
+                      bgcolor: (t) => alpha(t.palette.info.main, 0.2),
+                    },
+                  }}
+                >
+                  <AddLinkIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </RowActionButtons>
+          )}
         </TableCell>
-        
-        {/* Add the save/cancel buttons when editing */}
+
+        {/* Save/cancel buttons when editing */}
         {isEditing && (
           <EditActionsContainer>
             <Tooltip title="Save changes">
@@ -944,7 +1777,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                   },
                 }}
               >
-                <CancelIcon fontSize="small" />
+                <CloseIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </EditActionsContainer>
@@ -953,104 +1786,278 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
     );
   }, [
     theme,
-    startEditing,
     editingTableId,
     editingColumnId,
+    hoveredTableId,
+    hoveredColumnId,
     getEditingColumn,
     handleColumnChange,
     saveColumnChanges,
     cancelEditing,
     getRelationTypeDisplay,
-    getRelationshipName
+    getRelationshipName,
+    deleteRelation,
+    openRelationDialog,
+    startEditing
   ]);
 
-  useEffect(() => {
-    if (!editingTableId || !editingColumnId) {
-      return () => {};
-    }
-  
-    const handleClickOutside = (event: MouseEvent) => {
-      const isClickedOutside = !(
-        (event.target as Element).closest('input') ||
-        (event.target as Element).closest('textarea') ||
-        (event.target as Element).closest('button') ||
-        (event.target as Element).closest('.MuiButtonGroup-root') ||
-        (event.target as Element).closest('.EditActionsContainer')
-      );
-  
-      if (isClickedOutside) {
-        cancelEditing();
-      }
-    };
-  
-    document.addEventListener('mousedown', handleClickOutside);
-  
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [editingTableId, editingColumnId, cancelEditing]);
-
-  // Initialize filtered tables
-  useEffect(() => {
-    setFilteredTables(editableTables);
-  }, [editableTables]);
-
-  // Adjust grid layout based on screen size
-  const gridSizes = useMemo(() => ({
-    tableList: { xs: 12, sm: 12, md: 5.5, lg: 4.5 },  // Slightly wider table list
-    diagram: { xs: 12, sm: 12, md: 6.5, lg: 7.5 },    // Slightly narrower diagram
-  }), []);
-
+  // Render component
   return (
-    <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-      <Grid container spacing={3} sx={{ overflow: 'hidden' }}>
-        {/* Table List Column */}
+    <Box sx={{ position: 'relative', overflow: 'hidden', width: '100%' }}>
+      {/* Toast notification */}
+      <AnimatePresence>
+        {toast.visible && (
+          <m.div
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={toastVariants}
+            style={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              zIndex: 9999,
+            }}
+          >
+            <Paper
+              elevation={4}
+              sx={{
+                px: 2.5,
+                py: 1.75,
+                borderRadius: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? alpha(theme.palette[toast.type].dark, 0.95)
+                  : alpha(theme.palette[toast.type].light, 0.95),
+                color: theme.palette[toast.type].contrastText,
+                maxWidth: { xs: '90vw', sm: 400 },
+              }}
+            >
+              <m.div variants={toastChildVariants}>
+                <Iconify
+                  icon={(() => {
+                    if (toast.type === 'success') return 'eva:checkmark-circle-2-fill';
+                    if (toast.type === 'error') return 'eva:alert-circle-fill';
+                    return 'eva:info-fill';
+                  })()}
+                  width={24}
+                  height={24}
+                  sx={{
+                    filter: `drop-shadow(0 1px 2px ${alpha(theme.palette.common.black, 0.3)})`,
+                  }}
+                />
+              </m.div>
+              <m.div variants={toastChildVariants} style={{ flex: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  {toast.message}
+                </Typography>
+              </m.div>
+            </Paper>
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/* Relation dialog */}
+      <Dialog
+        open={relationDialog.open}
+        onClose={handleRelationDialogClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            overflow: 'hidden',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 12px 24px rgba(0, 0, 0, 0.4)'
+              : '0 12px 24px rgba(0, 0, 0, 0.1)',
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          bgcolor: theme.palette.mode === 'dark'
+            ? alpha(theme.palette.primary.dark, 0.1)
+            : alpha(theme.palette.primary.lighter, 0.2),
+          py: 2.5,
+          '& .MuiTypography-root': {
+            fontSize: '1.25rem',
+            fontWeight: 600,
+          }
+        }}>
+          Add New Relation
+        </DialogTitle>
+
+        <DialogContent sx={{ py: 3.5, px: { xs: 2.5, sm: 3 } }}>
+          <DialogContentText sx={{ mb: 3 }}>
+            Create a new relationship between columns in your database schema.
+          </DialogContentText>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Source
+              </Typography>
+              <Paper variant="outlined" sx={{
+                p: 2.5,
+                borderRadius: 3,
+                mb: 2,
+                border: `1px solid ${alpha(theme.palette.grey[theme.palette.mode === 'dark' ? 700 : 300], 0.7)}`,
+              }}>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Table:</strong> {relationDialog.sourceTableId}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Column:</strong> {relationDialog.sourceColumnId}
+                </Typography>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel id="target-table-label">Target Table</InputLabel>
+                <Select
+                  labelId="target-table-label"
+                  value={relationDialog.targetTableId}
+                  label="Target Table"
+                  onChange={(e) => updateRelationDialog('targetTableId', e.target.value as string)}
+                  sx={{ borderRadius: 3 }}
+                >
+                  {editableTables.map((table) => (
+                    <MenuItem key={table.tableIdentifier} value={table.tableIdentifier}>
+                      {table.tableIdentifier}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth disabled={!relationDialog.targetTableId}>
+                <InputLabel id="target-column-label">Target Column</InputLabel>
+                <Select
+                  labelId="target-column-label"
+                  value={relationDialog.targetColumnId}
+                  label="Target Column"
+                  onChange={(e) => updateRelationDialog('targetColumnId', e.target.value as string)}
+                  sx={{ borderRadius: 3 }}
+                >
+                  {editableTables
+                    .find((t) => t.tableIdentifier === relationDialog.targetTableId)
+                    ?.columns.map((column) => (
+                      <MenuItem key={column.columnIdentifier} value={column.columnIdentifier}>
+                        {column.columnIdentifier} ({column.columnType})
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" gutterBottom>
+                Relation Type
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <RelationTypeSelector
+                  value={relationDialog.relationType}
+                  onChange={(type) => updateRelationDialog('relationType', type)}
+                  disabled={!relationDialog.targetTableId || !relationDialog.targetColumnId}
+                />
+
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 1.5,
+                  p: 2,
+                  borderRadius: 3,
+                  bgcolor: alpha(theme.palette.info.main, 0.1)
+                }}>
+                  <InfoOutlinedIcon color="info" fontSize="small" sx={{ mt: 0.25 }} />
+                  <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+                    {relationDialog.relationType === 'OTO' && 'One record in the source table corresponds to exactly one record in the target table.'}
+                    {relationDialog.relationType === 'OTM' && 'One record in the source table corresponds to many records in the target table.'}
+                    {relationDialog.relationType === 'MTO' && 'Many records in the source table correspond to one record in the target table.'}
+                    {relationDialog.relationType === 'MTM' && 'Many records in the source table correspond to many records in the target table.'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, py: 2.5 }}>
+          <Button
+            onClick={handleRelationDialogClose}
+            color="inherit"
+            variant="outlined"
+            sx={{ borderRadius: 3 }}
+            startIcon={<CloseIcon />}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={addNewRelation}
+            color="primary"
+            variant="contained"
+            sx={{ borderRadius: 3 }}
+            startIcon={<AddLinkIcon />}
+            disabled={!relationDialog.targetTableId || !relationDialog.targetColumnId}
+          >
+            Add Relation
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Main layout grid */}
+      <Grid
+        container
+        spacing={{ xs: 2, sm: 3 }}
+        sx={{ alignItems: 'stretch' }}
+      >
+        {/* Table List Panel */}
         <Grid item {...gridSizes.tableList}>
           <Box sx={{
             display: 'flex',
             flexDirection: 'column',
-            height: 700, // Fixed height for the container
+            height: { xs: 'auto', md: 700 },
+            minHeight: { xs: 500, sm: 600, md: 700 },
           }}>
-            {/* Search Box and AI Button Row */}
+            {/* Search and AI Button row */}
             <Box sx={{
-              mb: 2,
+              mb: 2.5,
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
+              gap: 1.5,
               width: '100%',
             }}>
-              <Box sx={{ flexGrow: 1, position: 'relative' }}>
+              <Box sx={{ flexGrow: 1 }}>
                 <StyledSearchInput
                   placeholder="Search tables or columns..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  startAdornment={<Search fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />}
+                  onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
+                  startAdornment={<SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />}
                   fullWidth
                   aria-label="Search tables or columns"
                 />
               </Box>
 
-              {/* AI Button - Now next to search box */}
               <Tooltip
                 title={aiLoading ? "Generating descriptions..." : "Auto-generate descriptions for all columns"}
                 arrow
+                placement="top-end"
                 open={aiButtonTooltipOpen}
-                onOpen={() => setAiButtonTooltipOpen(true)}
-                onClose={() => setAiButtonTooltipOpen(false)}
+                onOpen={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: true }))}
+                onClose={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: false }))}
               >
                 <AIButtonWrapper isAnimating={aiLoading}>
                   <AIFillButton
                     onClick={fillAllDescriptionsWithAI}
-                    onMouseEnter={() => setAiButtonTooltipOpen(true)}
-                    onMouseLeave={() => setAiButtonTooltipOpen(false)}
+                    onMouseEnter={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: true }))}
+                    onMouseLeave={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: false }))}
                     disabled={aiLoading || !editableTables.length}
                     startIcon={aiLoading ? <CircularProgress size={16} color="inherit" /> : <AutoFixHighIcon />}
                     aria-label="Auto-generate descriptions"
-                    sx={{
-                      boxShadow: aiLoading ?
-                        `0 0 12px ${alpha(theme.palette.primary.main, 0.4)}` :
-                        undefined,
-                    }}
+                    sx={{ px: { xs: 1.5, sm: 2 } }}
                   >
                     {isMobile ? "Auto-fill" : "Auto-fill Descriptions"}
                   </AIFillButton>
@@ -1058,18 +2065,33 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
               </Tooltip>
             </Box>
 
-            {/* Scrollable Table List */}
+            {/* Table list with scrolling */}
             <Box
+              ref={tableListRef}
               sx={{
                 flexGrow: 1,
                 overflow: 'auto',
+                pt: 2,
                 pr: 1,
-                height: 'calc(700px - 60px)', // Fixed height minus search bar
+                height: { xs: '500px', sm: '600px', md: 'calc(700px - 64px)' },
+                scrollbarWidth: 'thin',
+                '&::-webkit-scrollbar': { width: 6 },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: alpha(theme.palette.common.black, 0.05),
+                  borderRadius: 3,
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.3),
+                  borderRadius: 3,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.5),
+                  }
+                },
               }}
             >
               <AnimatePresence>
                 {filteredTables.length === 0 ? (
-                  <m.div
+                  <FadeInTransition
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -1077,13 +2099,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                     <EmptyStateMessage>
                       <Iconify
                         icon="eva:search-outline"
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          color: 'text.secondary',
-                          opacity: 0.5,
-                          mb: 1
-                        }}
+                        sx={{ width: 40, height: 40, color: 'text.secondary', opacity: 0.5, mb: 1 }}
                       />
                       <Typography variant="subtitle1" color="text.secondary">
                         No tables found
@@ -1092,12 +2108,13 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                         Try adjusting your search query
                       </Typography>
                     </EmptyStateMessage>
-                  </m.div>
+                  </FadeInTransition>
                 ) : (
-                  <Stack spacing={2}>
+                  <Stack spacing={2.5}>
                     {filteredTables.map((table, index) => (
                       <m.div
                         key={table.tableIdentifier}
+                        id={`table-${table.tableIdentifier}`}
                         custom={index}
                         initial="hidden"
                         animate="visible"
@@ -1120,39 +2137,35 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                       onClick={() => toggleTable(table.tableIdentifier)}
                                       sx={{
                                         transition: 'transform 0.3s ease',
-                                        transform: expandedTables[table.tableIdentifier]
-                                          ? 'rotate(-180deg)'
-                                          : 'rotate(0deg)',
+                                        transform: expandedTables[table.tableIdentifier] ? 'rotate(-180deg)' : 'rotate(0deg)',
                                         color: 'primary.main',
                                         bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
-                                        '&:hover': {
-                                          bgcolor: (t) => alpha(t.palette.primary.main, 0.2),
-                                        }
                                       }}
                                       aria-label={`Toggle table ${table.tableIdentifier}`}
+                                      aria-expanded={expandedTables[table.tableIdentifier]}
                                     >
-                                      <Iconify icon="eva:arrow-ios-downward-fill" />
+                                      <KeyboardArrowDownIcon />
                                     </IconButton>
                                     <Typography
                                       variant="subtitle1"
                                       sx={{
-                                        fontWeight: selectedTable === table.tableIdentifier
-                                          ? 'bold'
-                                          : 'medium',
-                                        color: selectedTable === table.tableIdentifier
-                                          ? 'primary.main'
-                                          : 'text.primary',
+                                        fontWeight: selectedTable === table.tableIdentifier ? 'bold' : 'medium',
+                                        color: selectedTable === table.tableIdentifier ? 'primary.main' : 'text.primary',
                                       }}
                                     >
                                       {table.tableIdentifier}
                                     </Typography>
                                   </Stack>
-                                  <Stack direction="row" spacing={4}>
+
+                                  <Stack
+                                    direction="row"
+                                    spacing={{ xs: 2, sm: 3, md: 4 }}
+                                    alignItems="center"
+                                  >
                                     <StyledBadge
                                       badgeContent={getPrimaryKeyCount(table.tableIdentifier)}
                                       color="warning"
                                       showZero
-                                      aria-label={`Primary keys: ${getPrimaryKeyCount(table.tableIdentifier)}`}
                                     >
                                       <Tooltip title="Primary keys">
                                         <KeyIcon
@@ -1168,7 +2181,6 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                       badgeContent={getRelationCount(table.tableIdentifier)}
                                       color="info"
                                       showZero
-                                      aria-label={`Relations: ${getRelationCount(table.tableIdentifier)}`}
                                     >
                                       <Tooltip title="Relations">
                                         <LinkIcon
@@ -1186,26 +2198,18 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                       color={selectedTable === table.tableIdentifier ? 'primary' : 'default'}
                                       sx={{
                                         height: 20,
-                                        '& .MuiChip-label': {
-                                          px: 1,
-                                          fontSize: '0.75rem'
-                                        }
+                                        borderRadius: 10,
+                                        '& .MuiChip-label': { px: 1, fontSize: '0.75rem' }
                                       }}
-                                      aria-label={`Columns: ${getColumnCount(table.tableIdentifier)}`}
                                     />
                                   </Stack>
                                 </Stack>
-                                {/* Additional information row */}
+
                                 {!expandedTables[table.tableIdentifier] && (
                                   <Typography
                                     variant="caption"
                                     color="text.secondary"
-                                    sx={{
-                                      display: 'block',
-                                      mt: 0.5,
-                                      ml: 4,
-                                      fontSize: '0.7rem'
-                                    }}
+                                    sx={{ display: 'block', mt: 0.5, ml: 4, fontSize: '0.7rem' }}
                                   >
                                     {getColumnCount(table.tableIdentifier)} columns,{' '}
                                     {getPrimaryKeyCount(table.tableIdentifier)} keys,{' '}
@@ -1217,16 +2221,14 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                             sx={{
                               p: 2,
                               pb: expandedTables[table.tableIdentifier] ? 1 : 2,
-                              '& .MuiCardHeader-action': { alignSelf: 'center' },
                               ...(expandedTables[table.tableIdentifier] && {
                                 borderBottom: (t) => `1px dashed ${t.palette.divider}`,
                               }),
                               background: (t) => {
                                 if (selectedTable === table.tableIdentifier) {
-                                  if (t.palette.mode === 'dark') {
-                                    return alpha(t.palette.primary.dark, 0.1);
-                                  }
-                                  return alpha(t.palette.primary.lighter, 0.2);
+                                  return t.palette.mode === 'dark'
+                                    ? alpha(t.palette.primary.dark, 0.1)
+                                    : alpha(t.palette.primary.lighter, 0.2);
                                 }
                                 return 'transparent';
                               }
@@ -1241,12 +2243,38 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                                       <TableCell scope="col" className="column-name">Column</TableCell>
                                       <TableCell scope="col" className="column-type">Type</TableCell>
                                       <TableCell scope="col" className="column-description">Description</TableCell>
-                                      <TableCell scope="col" className="column-relations">Relations</TableCell>
+                                      <TableCell scope="col" className="column-relations">
+                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                          <span>Relations</span>
+                                          <Tooltip title="Add a new relation">
+                                            <IconButton
+                                              size="small"
+                                              color="primary"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                const firstColumn = table.columns[0];
+                                                if (firstColumn) {
+                                                  openRelationDialog(table.tableIdentifier, firstColumn.columnIdentifier);
+                                                }
+                                              }}
+                                              sx={{
+                                                bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+                                                width: 24,
+                                                height: 24,
+                                              }}
+                                            >
+                                              <AddIcon fontSize="small" />
+                                            </IconButton>
+                                          </Tooltip>
+                                        </Stack>
+                                      </TableCell>
                                     </TableRow>
                                   </TableHead>
                                   <TableBody>
                                     <AnimatePresence>
-                                      {table.columns.map((column) => renderColumnRow(table, column))}
+                                      {table.columns.map((column, colIndex) =>
+                                        renderColumnRow(table, column, colIndex)
+                                      )}
                                     </AnimatePresence>
                                   </TableBody>
                                 </Table>
@@ -1263,25 +2291,34 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
           </Box>
         </Grid>
 
-        {/* Diagram Preview Column - NO SCROLL HERE */}
+        {/* Schema Diagram Panel */}
         <Grid item {...gridSizes.diagram}>
           <Paper
-            elevation={3}
+            elevation={4}
             sx={{
-              height: 700, // Fixed height to match table list
-              overflow: 'hidden', // Prevent any scrolling
+              height: { xs: 'auto', md: 700 },
+              minHeight: { xs: 500, sm: 600, md: 700 },
+              overflow: 'hidden',
               p: { xs: 2, sm: 3 },
               display: 'flex',
               flexDirection: 'column',
-              borderRadius: 2,
+              borderRadius: 3,
               position: 'relative',
-              background: (t) =>
-                t.palette.mode === 'dark'
-                  ? alpha(t.palette.background.paper, 0.8)
-                  : t.palette.background.paper,
+              background: theme.palette.mode === 'dark'
+                ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.grey[900], 0.8)} 100%)`
+                : `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.grey[50], 0.85)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.grey[theme.palette.mode === 'dark' ? 700 : 300], theme.palette.mode === 'dark' ? 0.3 : 0.7)}`,
+              backdropFilter: 'blur(10px)',
             }}
           >
-            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{
+              mb: 2,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1
+            }}>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Iconify
                   icon="eva:diagram-fill"
@@ -1291,55 +2328,54 @@ export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
                 />
                 <Typography variant="h6">Schema Diagram</Typography>
               </Stack>
+
               {selectedTable && (
                 <Chip
                   label={selectedTable}
                   color="primary"
                   size="small"
-                  onDelete={() => setSelectedTable(null)}
-                  sx={{ height: 24 }}
-                  aria-label={`Selected table: ${selectedTable}`}
+                  onDelete={() => setState(prev => ({ ...prev, selectedTable: null }))}
+                  sx={{ height: 28, borderRadius: 8 }}
                 />
               )}
             </Box>
+
             <Divider sx={{ mb: 2 }} />
+
             <Box
               sx={{
                 flexGrow: 1,
                 position: 'relative',
-                borderRadius: 1.5,
-                border: (t) => `1px solid ${t.palette.divider}`,
-                height: 'calc(700px - 100px)', // Fixed height minus header and padding
-                overflow: 'hidden'
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.2 : 0.5)}`,
+                height: { xs: '400px', sm: '500px', md: 'calc(700px - 100px)' },
+                overflow: 'hidden',
+                background: theme.palette.mode === 'dark'
+                  ? `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.5)} 0%, ${alpha(theme.palette.grey[900], 0.4)} 100%)`
+                  : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.3)} 0%, ${alpha(theme.palette.grey[100], 0.2)} 100%)`,
+                backgroundImage: theme.palette.mode === 'dark'
+                  ? `radial-gradient(${alpha(theme.palette.grey[800], 0.4)} 1px, transparent 1px), 
+                     radial-gradient(${alpha(theme.palette.grey[800], 0.3)} 1px, transparent 1px)`
+                  : `radial-gradient(${alpha(theme.palette.grey[400], 0.2)} 1px, transparent 1px), 
+                     radial-gradient(${alpha(theme.palette.grey[400], 0.15)} 1px, transparent 1px)`,
+                backgroundSize: '20px 20px',
+                backgroundPosition: '0 0, 10px 10px',
+                backdropFilter: 'blur(2px)',
               }}
             >
               {filteredTables.length > 0 ? (
-                <Box sx={{
-                  width: '92%',
-                  height: '92%',
-                  margin: 'auto',
-                  position: 'relative',
-                  top: '4%'
-                }}>
+                <Box sx={{ width: '92%', height: '92%', margin: 'auto', position: 'relative', top: '4%' }}>
                   <SchemaVisualization
                     tables={editableTables}
                     selectedTable={selectedTable}
-                    onTableClick={(tableId: string) => {
-                      toggleTable(tableId);
-                    }}
+                    onTableClick={toggleTable}
                   />
                 </Box>
               ) : (
                 <EmptyStateMessage>
                   <Iconify
                     icon="eva:layers-outline"
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      color: 'text.secondary',
-                      opacity: 0.5,
-                      mb: 2
-                    }}
+                    sx={{ width: 48, height: 48, color: 'text.secondary', opacity: 0.5, mb: 2 }}
                   />
                   <Typography variant="subtitle1" color="text.secondary">
                     No schema to visualize

@@ -22,7 +22,10 @@ public enum ResponseEnum {
     TABLE_NOT_FOUND(4, "Table not found"),
     COLUMN_NOT_FOUND(5, "Column not found"),
     RELATION_NOT_FOUND(6, "Relation not found"),
-    RELATION_NOT_BELONG_TO_COLUMN(7, "Relation does not belong to column"),;
+    RELATION_NOT_BELONG_TO_COLUMN(7, "Relation does not belong to column"),
+    DATASOURCE_CONNECT_FAILED(8, "Data source connection failed"),
+    CHAT_SESSION_NOT_FOUND(9, "Chat session not found"),
+    CHAT_SESSION_NOT_BELONG_TO_USER(10, "Chat session does not belong to user");
 
     private final int code;
     private final String message;

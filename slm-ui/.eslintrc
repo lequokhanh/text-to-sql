@@ -52,6 +52,11 @@
     "@typescript-eslint/naming-convention": 0,
     "jsx-a11y/control-has-associated-label": 0,
     "@typescript-eslint/no-use-before-define": 0,
+    "import/no-extraneous-dependencies": ["error", {
+      "devDependencies": ["**/*.test.{js,jsx,ts,tsx}", "**/*.spec.{js,jsx,ts,tsx}", "**/test/**", "**/tests/**"],
+      "optionalDependencies": false,
+      "peerDependencies": false
+    }],
     "react/jsx-no-useless-fragment": [
       1,
       {
