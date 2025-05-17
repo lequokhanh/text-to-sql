@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
@@ -285,4 +282,14 @@ public class DataSourceConfigurationController {
         dataSourceConfigurationService.removeUserFromGroup(getAuthenticatedUser(), id, groupId, userId);
         return ResponseWrapper.success();
     }
+
+    @Operation(summary = "Test connection",
+            description = "Tests the connection to a data source")
+    @ApiResponse(responseCode = "200", description = "Connection successful")
+    @PostMapping("/{id}/test-connection")
+    public ResponseWrapper<Void> testConnection(@Parameter(description = "ID of the data source") @PathVariable Integer id) {
+        dataSourceConfigurationService.testConnection(getAuthenticatedUser(), id);
+        return ResponseWrapper.success();
+    }
+    
 }

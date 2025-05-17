@@ -16,6 +16,6 @@ public class ChatMessage {
 
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
-    private String queryText;
+    private String message;
     private String responseData;
 }

@@ -3,8 +3,6 @@ package com.slm.slmbackend.dto.datasource;
 import com.slm.slmbackend.enums.DatabaseType;
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * DTO for updating an existing data source configuration
  */

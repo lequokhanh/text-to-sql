@@ -33,7 +33,12 @@ export const fetcher = async (args: string | [string, AxiosRequestConfig]) => {
 // ----------------------------------------------------------------------
 
 export const endpoints = {
-  chat: '/api/chat',
+  chat: {
+    session: '/api/v1/chat/session',
+    ask: '/api/v1/chat/ask',
+    sessions: '/api/v1/chat/sessions',
+    messages: (sessionId: string) => `/api/v1/chat/sessions/${sessionId}/messages`,
+  },
   kanban: '/api/kanban',
   calendar: '/api/calendar',
   auth: {
@@ -44,5 +49,9 @@ export const endpoints = {
   dataSource: {
     create: '/api/v1/data-sources',
     owned: '/api/v1/data-sources/owned',
+  },
+  embed: {
+    testConnection: `/api/proxy/embed/api/v1/db/test-connection`,
+    connect: `/api/proxy/embed/api/v1/db/get-schema`,
   },
 };

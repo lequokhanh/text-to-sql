@@ -76,8 +76,8 @@ services:
             - MYSQL_HOST=mysql/slm
             - MYSQL_USER=root
             - MYSQL_PASSWORD=root123
-            - EMBED_HOST_API=embed
-            - ENGINE_HOST_API=engine
+            - EMBED_HOST_API=http://embed:8080
+            - ENGINE_HOST_API=http://engine:5000
         networks:
             - slm
         healthcheck:

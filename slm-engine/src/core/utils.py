@@ -305,7 +305,7 @@ def schema_parser(tables: list, type: str, include_sample_data: bool = False):
                 if "relations" in column and column["relations"]:
                     for relation in column["relations"]:
                         if relation.get("type") == "OTM":  # One-to-Many relationship
-                            fk_relation = f"{table_name}.{column['columnIdentifier']} →  {relation['tableIdentifier']}.{relation['toColumn']}"
+                            fk_relation = f"-- {table_name}.{column['columnIdentifier']} can be joined with  {relation['tableIdentifier']}.{relation['toColumn']}"
                             fk_relationships.append(fk_relation)
 
             # Remove trailing comma from the last column definition
@@ -319,13 +319,13 @@ def schema_parser(tables: list, type: str, include_sample_data: bool = False):
             
             # Add sample data if available and requested
             if include_sample_data and "sample_data" in table and table["sample_data"]:
-                ddl_statements.append("\n-- Sample Data:")
+                ddl_statements.append("-- Sample Data:")
                 # Add column headers
                 column_headers = ", ".join([column["columnIdentifier"] for column in columns])
-                ddl_statements.append(f"{column_headers}")
+                ddl_statements.append(f"--\t{column_headers}")
                 # Add data rows
                 for data_row in table["sample_data"]:
-                    ddl_statements.append(f"{data_row}")
+                    ddl_statements.append(f"--\t{data_row}")
                 ddl_statements.append("")  # Empty line for better readability
 
         # Add all foreign key relationships at the end
@@ -352,7 +352,7 @@ def schema_parser(tables: list, type: str, include_sample_data: bool = False):
                 # Collect foreign key relationships separately
                 if "relations" in column and column["relations"]:
                     for relation in column["relations"]:
-                        fk_relation = f"{table_name}.{column['columnIdentifier']} → {relation['tableIdentifier']}.{relation['toColumn']}"
+                        fk_relation = f"{table_name}.{column['columnIdentifier']} can be joined with {relation['tableIdentifier']}.{relation['toColumn']}"
                         fk_relationships.append(fk_relation)
                 
                 if description:
@@ -367,19 +367,19 @@ def schema_parser(tables: list, type: str, include_sample_data: bool = False):
             
             # Add sample data if available and requested
             if include_sample_data and "sample_data" in table and table["sample_data"]:
-                synthesis_statements.append("\nSample Data:")
+                synthesis_statements.append("- Sample Data:")
                 # Add column headers
                 column_headers = ", ".join([column["columnIdentifier"] for column in columns])
-                synthesis_statements.append(f"    {column_headers}")
+                synthesis_statements.append(f"\t{column_headers}")
                 # Add data rows
                 for data_row in table["sample_data"]:
-                    synthesis_statements.append(f"    {data_row}")
+                    synthesis_statements.append(f"\t{data_row}")
                 synthesis_statements.append("")  # Empty line for better readability
 
         # Add all foreign key relationships at the end
         if fk_relationships:
-            synthesis_statements.append("\n\nForeign Key Relationships:")
-            synthesis_statements.append("\n".join(fk_relationships))
+            synthesis_statements.append("# Foreign Key Relationships:")
+            synthesis_statements.append("\n".join([f"\t- {relation}" for relation in fk_relationships]))
 
         return "\n".join(synthesis_statements)
     

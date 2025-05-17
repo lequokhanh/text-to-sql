@@ -18,3 +18,7 @@ security:
 embed-service:
   base-url: ${EMBED_HOST_API:http://localhost:8181}
   connection-timeout: 5000
+
+engine-service:
+  base-url: ${ENGINE_HOST_API:http://localhost:8383}
+  connection-timeout: 5000

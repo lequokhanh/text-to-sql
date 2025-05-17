@@ -259,6 +259,16 @@ class Query(Resource):
             logger.info("Workflow completed successfully")
             
             return ResponseWrapper.success(response)
+            logger.info("Executing workflow")
+            response = await workflow.run(
+                query=query,
+                table_details=table_details,
+                database_description=database_description,
+                connection_payload=connection_payload
+            )
+            logger.info("Workflow completed successfully")
+            
+            return ResponseWrapper.success(response)
 
         except Exception as e:
             logger.error(f"Error processing query: {str(e)}", exc_info=True)
@@ -359,7 +369,18 @@ class SchemaEnrichment(Resource):
             logger.info("Workflow completed successfully")
             response["original_schema"] = get_schema(connection_payload)
             return ResponseWrapper.success(response)
+            logger.info("Executing workflow")
+            response = await schema_workflow.run(
+                connection_payload=connection_payload,
+                database_schema=table_details
+            )
+            logger.info("Workflow completed successfully")
+            response["original_schema"] = get_schema(connection_payload)
+            return ResponseWrapper.success(response)
 
+        except Exception as e:
+            logger.error(f"Error processing schema enrichment: {str(e)}", exc_info=True)
+            raise AppException(str(e), 500)
         except Exception as e:
             logger.error(f"Error processing schema enrichment: {str(e)}", exc_info=True)
             raise AppException(str(e), 500)

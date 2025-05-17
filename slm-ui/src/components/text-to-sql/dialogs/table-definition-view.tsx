@@ -1,325 +1,2394 @@
-import { useState, useEffect } from 'react';
+import { m, AnimatePresence } from 'framer-motion';
+import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
-import Collapse from '@mui/material/Collapse';
-import TableRow from '@mui/material/TableRow';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TextField from '@mui/material/TextField';
-import SaveIcon from '@mui/icons-material/Save';
-import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import CardHeader from '@mui/material/CardHeader';
-import CancelIcon from '@mui/icons-material/Close';
-import TableContainer from '@mui/material/TableContainer';
+// MUI Icons (consolidated imports)
+import {
+  Key as KeyIcon,
+  Add as AddIcon,
+  Link as LinkIcon,
+  Save as SaveIcon,
+  Close as CloseIcon,
+  Search as SearchIcon,
+  AddLink as AddLinkIcon,
+  AutoFixHigh as AutoFixHighIcon,
+  InfoOutlined as InfoOutlinedIcon,
+  EditOutlined as EditOutlinedIcon,
+  KeyboardArrowDown as KeyboardArrowDownIcon
+} from '@mui/icons-material';
+// MUI Core components
+import {
+  Box, Card, Chip, Grid,
+  alpha, Badge, Paper, Stack, Table, styled, Button,
+  Dialog, Select, Divider, Tooltip, useTheme, Collapse,
+  TableRow, MenuItem, keyframes, InputBase, TableBody,
+  TableCell, TableHead, TextField, CardHeader,
+  IconButton, Typography, InputLabel, DialogTitle,
+  ButtonGroup, FormControl, DialogActions, DialogContent,
+  useMediaQuery, TableContainer, CircularProgress,
+  DialogContentText
+} from '@mui/material';
+
+import { useDebounce } from 'src/hooks/use-debounce';
 
 import Iconify from 'src/components/iconify';
-import Scrollbar from 'src/components/scrollbar';
 
 import { TableDefinition, ColumnDefinition } from 'src/types/database';
 
 import { SchemaVisualization } from './schema-visualization';
 
-// ----------------------------------------------------------------------
+// Define relation type constants
+type RelationType = 'OTO' | 'OTM' | 'MTO' | 'MTM';
 
-type Props = {
-  tables: TableDefinition[];
-  onTablesUpdate?: (updatedTables: TableDefinition[]) => void;
+// Define relation interface with improved typing
+interface RelationDefinition {
+  tableIdentifier: string;
+  columnIdentifier?: string;
+  toColumn: string;
+  type: RelationType;
+}
+
+// Styled components
+interface StyledCardProps {
+  selected?: boolean;
+}
+
+// Styled Card with optimized theming logic
+const StyledCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== 'selected',
+})<StyledCardProps>(({ theme, selected }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated shadow variables
+  const baseBoxShadow = isDark
+    ? `0 8px 16px -8px ${alpha(theme.palette.common.black, 0.3)}, 0 4px 8px -4px ${alpha(theme.palette.common.black, 0.2)}`
+    : `0 8px 16px -8px ${alpha(theme.palette.common.black, 0.1)}, 0 4px 8px -4px ${alpha(theme.palette.common.black, 0.06)}`;
+
+  const selectedBoxShadow = isDark
+    ? `0 0 0 4px ${alpha(theme.palette.primary.dark, 0.3)}, 0 8px 24px -4px ${alpha(theme.palette.primary.dark, 0.5)}`
+    : `0 0 0 4px ${alpha(theme.palette.primary.light, 0.2)}, 0 8px 24px -4px ${alpha(theme.palette.primary.light, 0.4)}`;
+
+  let hoverBoxShadow = '';
+
+  if (selected) {
+    if (isDark) {
+      hoverBoxShadow = `0 0 0 4px ${alpha(theme.palette.primary.dark, 0.4)}, 0 12px 32px -4px ${alpha(theme.palette.primary.dark, 0.6)}`;
+    } else {
+      hoverBoxShadow = `0 0 0 4px ${alpha(theme.palette.primary.light, 0.3)}, 0 12px 32px -4px ${alpha(theme.palette.primary.light, 0.5)}`;
+    }
+  } else if (isDark) {
+      hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.5)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.4)}`;
+    } else {
+      hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.15)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.1)}`;
+    }
+  
+  const background = isDark ? alpha(theme.palette.background.paper, 0.7) : theme.palette.background.paper;
+
+  return {
+    transition: 'all 0.3s ease',
+    marginBottom: theme.spacing(2),
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 20,
+    background,
+    backdropFilter: 'blur(8px)',
+    boxShadow: selected ? selectedBoxShadow : baseBoxShadow,
+    '&:hover': {
+      boxShadow: hoverBoxShadow,
+      transform: 'translateY(-3px)',
+    },
+    ...(selected && {
+      borderColor: theme.palette.primary.main,
+      borderWidth: 2,
+      borderStyle: 'solid',
+    }),
+  };
+});
+
+// Table container with improved styling
+const StyledTableContainer = styled(TableContainer)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    borderRadius: 16,
+    overflow: 'hidden',
+    border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.3 : 0.7)}`,
+    boxShadow: isDark
+      ? `0 4px 12px -2px ${alpha(theme.palette.common.black, 0.3)}`
+      : `0 4px 12px -2px ${alpha(theme.palette.common.black, 0.05)}`,
+    backdropFilter: 'blur(4px)',
+
+    '& .MuiTableCell-root': {
+      borderColor: alpha(theme.palette.divider, isDark ? 0.2 : 0.5),
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      overflowWrap: 'break-word',
+      transition: 'background-color 0.2s ease, color 0.2s ease',
+    },
+
+    '& .MuiTableCell-head': {
+      fontSize: '0.8rem',
+      fontWeight: 600,
+      backgroundColor: isDark
+        ? alpha(theme.palette.background.paper, 0.7)
+        : alpha(theme.palette.grey[50], 0.9),
+      color: isDark
+        ? alpha(theme.palette.common.white, 0.85)
+        : theme.palette.grey[800],
+      letterSpacing: '0.03em',
+      textTransform: 'uppercase',
+      paddingTop: 12,
+      paddingBottom: 12,
+    },
+
+    '& .MuiTableCell-body': {
+      fontSize: '0.875rem',
+      color: isDark
+        ? alpha(theme.palette.common.white, 0.75)
+        : theme.palette.grey[700],
+    },
+
+    '& .MuiTableRow-root:nth-of-type(even)': {
+      backgroundColor: isDark
+        ? alpha(theme.palette.common.black, 0.15)
+        : alpha(theme.palette.grey[50], 0.5),
+    },
+
+    width: '100%',
+    maxWidth: '100%',
+
+    '@media (min-width: 960px)': {
+      maxWidth: 820,
+    },
+
+    '@media (min-width: 1200px)': {
+      maxWidth: 920,
+    },
+
+    margin: '0 auto',
+
+    '& .column-name': {
+      width: '25%',
+      minWidth: 120,
+      maxWidth: 200,
+    },
+
+    '& .column-type': {
+      width: '15%',
+      minWidth: 80,
+      maxWidth: 120,
+    },
+
+    '& .column-description': {
+      width: '35%',
+      minWidth: 180,
+      maxWidth: 300,
+    },
+
+    '& .column-relations': {
+      width: '25%',
+      minWidth: 150,
+      maxWidth: 250,
+      position: 'relative',
+    },
+  };
+});
+
+// Search input with improved styling
+const StyledSearchInput = styled(InputBase)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    borderRadius: 16,
+    backgroundColor: isDark
+      ? alpha(theme.palette.common.white, 0.06)
+      : alpha(theme.palette.common.black, 0.03),
+    padding: theme.spacing(0.75, 2),
+    width: '100%',
+    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: isDark
+        ? alpha(theme.palette.common.white, 0.08)
+        : alpha(theme.palette.common.black, 0.05),
+      borderColor: alpha(theme.palette.primary.main, 0.3),
+    },
+    '&.Mui-focused': {
+      backgroundColor: isDark
+        ? alpha(theme.palette.common.white, 0.1)
+        : alpha(theme.palette.common.black, 0.06),
+      borderColor: theme.palette.primary.main,
+      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+    },
+  };
+});
+
+// Edit actions container with improved styling
+const EditActionsContainer = styled(Box)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    position: 'absolute',
+    bottom: theme.spacing(0.5),
+    right: theme.spacing(0.5),
+    display: 'flex',
+    gap: theme.spacing(0.25),
+    padding: theme.spacing(0.5),
+    zIndex: 10,
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: 12,
+    boxShadow: isDark
+      ? `0 4px 8px ${alpha(theme.palette.common.black, 0.3)}`
+      : `0 4px 8px ${alpha(theme.palette.common.black, 0.15)}`,
+    border: `1px solid ${isDark
+      ? alpha(theme.palette.common.white, 0.1)
+      : alpha(theme.palette.grey[300], 0.7)}`,
+    backdropFilter: 'blur(4px)',
+    fontSize: '0.65rem',
+    lineHeight: 1,
+    minHeight: 'auto',
+    opacity: 0.2,
+    transform: 'scale(0.6)',
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    '&:hover': {
+      opacity: 1,
+      transform: 'scale(1)',
+    },
+    '& .MuiIconButton-root': {
+      borderRadius: 12,
+      transition: 'transform 0.2s ease',
+      '&:hover': {
+        transform: 'scale(1.1)',
+      }
+    }
+  };
+});
+
+// Row action buttons with improved styling
+const RowActionButtons = styled(Box)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated color variables
+  const backgroundColor = isDark
+    ? alpha(theme.palette.grey[900], 0.85)
+    : alpha(theme.palette.background.paper, 0.95);
+
+  const borderColor = isDark
+    ? alpha(theme.palette.common.white, 0.1)
+    : alpha(theme.palette.grey[300], 0.7);
+
+  const boxShadow = isDark
+    ? `0 4px 8px ${alpha(theme.palette.common.black, 0.5)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`
+    : `0 4px 8px ${alpha(theme.palette.common.black, 0.1)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`;
+
+  return {
+    position: 'absolute',
+    bottom: '50%',
+    right: theme.spacing(0.5),
+    transform: 'translateY(50%) scale(0.8)',
+    display: 'flex',
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(0.5),
+    zIndex: 5,
+    backgroundColor,
+    backdropFilter: 'blur(8px)',
+    border: `1px solid ${borderColor}`,
+    borderRadius: 8,
+    boxShadow,
+    opacity: 0,
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+
+    '.MuiTableRow-root:hover &': {
+      opacity: 1,
+      transform: 'translateY(50%) scale(1) translateX(0)',
+    },
+
+    '& .MuiIconButton-root': {
+      transition: 'all 0.2s ease',
+      margin: '0 2px',
+      borderRadius: 8,
+
+      '&.MuiIconButton-colorPrimary': {
+        backgroundColor: isDark
+          ? alpha(theme.palette.primary.dark, 0.2)
+          : alpha(theme.palette.primary.light, 0.15),
+        '&:hover': {
+          backgroundColor: isDark
+            ? alpha(theme.palette.primary.dark, 0.3)
+            : alpha(theme.palette.primary.light, 0.25),
+        }
+      },
+
+      '&.MuiIconButton-colorInfo': {
+        backgroundColor: isDark
+          ? alpha(theme.palette.info.dark, 0.2)
+          : alpha(theme.palette.info.light, 0.15),
+        '&:hover': {
+          backgroundColor: isDark
+            ? alpha(theme.palette.info.dark, 0.3)
+            : alpha(theme.palette.info.light, 0.25),
+        }
+      },
+
+      '&.MuiIconButton-colorError': {
+        backgroundColor: isDark
+          ? alpha(theme.palette.error.dark, 0.2)
+          : alpha(theme.palette.error.light, 0.15),
+        '&:hover': {
+          backgroundColor: isDark
+            ? alpha(theme.palette.error.dark, 0.3)
+            : alpha(theme.palette.error.light, 0.25),
+        }
+      },
+
+      '&:hover': {
+        transform: 'scale(1.1)',
+      }
+    },
+  };
+});
+
+// FadeIn transition component
+const FadeInTransition = styled(m.div)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+}));
+
+// Relation chip with improved styling
+const StyledRelationChip = styled(Chip)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated color variables
+  const backgroundColor = isDark
+    ? alpha(theme.palette.info.dark, 0.15)
+    : alpha(theme.palette.info.light, 0.12);
+
+  const textColor = isDark
+    ? alpha(theme.palette.info.light, 0.9)
+    : theme.palette.info.dark;
+
+  const borderColor = isDark
+    ? alpha(theme.palette.info.dark, 0.3)
+    : alpha(theme.palette.info.light, 0.3);
+
+  const hoverBackgroundColor = isDark
+    ? alpha(theme.palette.info.dark, 0.25)
+    : alpha(theme.palette.info.light, 0.25);
+
+  const shadowColor = alpha(theme.palette.common.black, isDark ? 0.25 : 0.07);
+  const hoverShadowColor = alpha(theme.palette.common.black, isDark ? 0.3 : 0.1);
+
+  const iconColor = isDark
+    ? alpha(theme.palette.info.light, 0.8)
+    : theme.palette.info.dark;
+
+  const deleteIconColor = isDark
+    ? alpha(theme.palette.error.light, 0.7)
+    : theme.palette.error.dark;
+
+  const deleteIconHoverColor = isDark
+    ? theme.palette.error.light
+    : theme.palette.error.main;
+
+  return {
+    height: 'auto',
+    fontSize: '0.75rem',
+    marginRight: 4,
+    marginTop: 2,
+    marginBottom: 2,
+    backgroundColor,
+    color: textColor,
+    borderRadius: 12,
+    whiteSpace: 'normal',
+    transition: 'all 0.2s ease',
+    border: `1px solid ${borderColor}`,
+    backdropFilter: 'blur(4px)',
+    boxShadow: `0 2px 4px ${shadowColor}`,
+    '&:hover': {
+      backgroundColor: hoverBackgroundColor,
+      transform: 'translateY(-1px)',
+      boxShadow: `0 4px 8px ${hoverShadowColor}`,
+    },
+    '& .MuiChip-label': {
+      paddingLeft: 6,
+      paddingRight: 6,
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      lineHeight: 1.3,
+      fontWeight: 500,
+    },
+    '& .MuiChip-icon': {
+      color: iconColor,
+    },
+    '& .MuiChip-deleteIcon': {
+      color: deleteIconColor,
+      borderRadius: 12,
+      '&:hover': {
+        color: deleteIconHoverColor,
+        backgroundColor: isDark
+          ? alpha(theme.palette.error.dark, 0.2)
+          : alpha(theme.palette.error.light, 0.2),
+      },
+    },
+  };
+});
+
+// Column type chip with improved styling
+const StyledColumnTypeChip = styled(Chip)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated color variables
+  const backgroundColor = isDark
+    ? alpha(theme.palette.grey[800], 0.7)
+    : alpha(theme.palette.grey[100], 0.9);
+
+  const textColor = isDark
+    ? alpha(theme.palette.common.white, 0.85)
+    : theme.palette.grey[700];
+
+  const borderColor = isDark
+    ? alpha(theme.palette.grey[700], 0.5)
+    : alpha(theme.palette.grey[300], 0.8);
+
+  const innerShadow = isDark
+    ? `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.05)}`
+    : `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.9)}`;
+
+  const hoverBackground = isDark
+    ? alpha(theme.palette.grey[700], 0.8)
+    : alpha(theme.palette.grey[200], 0.9);
+
+  return {
+    height: 22,
+    fontSize: '0.7rem',
+    fontWeight: 500,
+    backgroundColor,
+    color: textColor,
+    borderRadius: 12,
+    border: `1px solid ${borderColor}`,
+    transition: 'all 0.2s ease',
+    boxShadow: innerShadow,
+    '& .MuiChip-label': {
+      paddingLeft: 6,
+      paddingRight: 6,
+      lineHeight: 1.2,
+      letterSpacing: '0.01em',
+    },
+    '&:hover': {
+      backgroundColor: hoverBackground,
+      transform: 'translateY(-1px)',
+    },
+  };
+});
+
+// Badge with improved styling
+const StyledBadge = styled(Badge)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    '& .MuiBadge-badge': {
+      right: -10,
+      top: 8,
+      border: `2px solid ${theme.palette.background.paper}`,
+      padding: '0 4px',
+      borderRadius: 12,
+      fontSize: '0.7rem',
+      minWidth: 18,
+      height: 18,
+      boxShadow: isDark
+        ? `0 0 0 1px ${alpha(theme.palette.common.black, 0.3)}`
+        : `0 0 0 1px ${alpha(theme.palette.common.white, 0.3)}`,
+    },
+  };
+});
+
+// Icon styling
+const StyledPrimaryKeyIcon = styled(KeyIcon)(({ theme }) => ({
+  fontSize: 16,
+  color: theme.palette.warning.main,
+  verticalAlign: 'middle',
+  marginRight: theme.spacing(0.5),
+}));
+
+const StyledRelationIcon = styled(LinkIcon)(({ theme }) => ({
+  fontSize: 14,
+  color: theme.palette.info.main,
+  verticalAlign: 'middle',
+  marginRight: theme.spacing(0.5),
+}));
+
+// Motion table row
+const MotionTableRow = m(TableRow);
+
+// Relations container
+const RelationsContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'nowrap',
+  gap: theme.spacing(0.5),
+  overflowX: 'auto',
+  padding: theme.spacing(0.5, 0),
+  scrollbarWidth: 'thin',
+  '&::-webkit-scrollbar': {
+    height: 4,
+  },
+  '&::-webkit-scrollbar-track': {
+    backgroundColor: alpha(theme.palette.common.black, 0.05),
+    borderRadius: 3,
+  },
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.3),
+    borderRadius: 3,
+  },
+}));
+
+// Description text field
+const DescriptionTextField = styled(TextField)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    '& .MuiInputBase-root': {
+      minHeight: 48,
+      alignItems: 'start',
+      borderRadius: 16,
+    },
+    '& .MuiInputBase-inputMultiline': {
+      padding: theme.spacing(1),
+    },
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 16,
+      overflow: 'hidden',
+      transition: 'all 0.2s ease',
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: isDark
+          ? alpha(theme.palette.primary.light, 0.5)
+          : alpha(theme.palette.primary.main, 0.5),
+      },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: 2,
+        boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.1)}`,
+      }
+    }
+  };
+});
+
+// Pulse animation for AI button
+const pulseAnimation = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 var(--pulse-color-start);
+  }
+  50% {
+    box-shadow: 0 0 0 12px var(--pulse-color-mid);
+  }
+  100% {
+    box-shadow: 0 0 0 0 var(--pulse-color-end);
+  }
+`;
+
+// AI Button wrapper
+interface AIButtonWrapperProps {
+  isAnimating: boolean;
+}
+
+const AIButtonWrapper = styled('div')<AIButtonWrapperProps>(({ theme, isAnimating }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  return {
+    position: 'relative',
+    display: 'inline-flex',
+    borderRadius: 12,
+    '--pulse-color-start': isDark
+      ? alpha(theme.palette.primary.dark, 0.7)
+      : alpha(theme.palette.primary.main, 0.7),
+    '--pulse-color-mid': isDark
+      ? alpha(theme.palette.primary.dark, 0)
+      : alpha(theme.palette.primary.main, 0),
+    '--pulse-color-end': isDark
+      ? alpha(theme.palette.primary.dark, 0)
+      : alpha(theme.palette.primary.main, 0),
+    ...(isAnimating && {
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: 12,
+        animation: `${pulseAnimation} 1.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95)`,
+      }
+    })
+  };
+});
+
+// AI Fill Button
+const AIFillButton = styled(Button)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Consolidated gradient variables
+  const background = isDark
+    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.9)} 0%, ${theme.palette.primary.main} 50%, ${alpha(theme.palette.primary.dark, 0.85)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${theme.palette.primary.dark} 50%, ${alpha(theme.palette.primary.main, 0.85)} 100%)`;
+
+  const hoverBackground = isDark
+    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.95)} 0%, ${theme.palette.primary.main} 60%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`
+    : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 60%, ${theme.palette.primary.main} 100%)`;
+
+  // Shadow variables
+  const boxShadow = isDark
+    ? `0 4px 12px ${alpha(theme.palette.primary.dark, 0.5)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`
+    : `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`;
+
+  const hoverBoxShadow = isDark
+    ? `0 6px 16px ${alpha(theme.palette.primary.dark, 0.6)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.4)}`
+    : `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.15)}`;
+
+  const activeBoxShadow = isDark
+    ? `0 2px 8px ${alpha(theme.palette.primary.dark, 0.4)}, 0 1px 3px ${alpha(theme.palette.common.black, 0.3)}`
+    : `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}, 0 1px 3px ${alpha(theme.palette.common.black, 0.08)}`;
+
+  // Border and disabled styles
+  const border = isDark
+    ? `1px solid ${alpha(theme.palette.primary.light, 0.2)}`
+    : `1px solid ${alpha(theme.palette.primary.dark, 0.1)}`;
+
+  const disabledBackground = isDark
+    ? `linear-gradient(135deg, ${alpha(theme.palette.grey[800], 0.7)} 0%, ${alpha(theme.palette.grey[700], 0.7)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.grey[300], 0.8)} 0%, ${alpha(theme.palette.grey[400], 0.8)} 100%)`;
+
+  const disabledColor = isDark
+    ? theme.palette.grey[500]
+    : theme.palette.grey[400];
+
+  const disabledBorder = isDark
+    ? `1px solid ${alpha(theme.palette.common.white, 0.05)}`
+    : `1px solid ${alpha(theme.palette.common.black, 0.05)}`;
+
+  return {
+    color: theme.palette.common.white,
+    padding: theme.spacing(0.75, 2),
+    height: 40,
+    fontSize: '0.8125rem',
+    fontWeight: 600,
+    textTransform: 'none',
+    whiteSpace: 'nowrap',
+    letterSpacing: '0.03em',
+    borderRadius: 16,
+    transition: 'all 0.2s ease-in-out',
+    position: 'relative',
+    overflow: 'hidden',
+    background,
+    backdropFilter: 'blur(10px)',
+    boxShadow,
+    border,
+
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: '-100%',
+      width: '100%',
+      height: '100%',
+      background: `linear-gradient(to right, ${alpha(theme.palette.common.white, 0)} 0%, ${alpha(theme.palette.common.white, 0.2)} 50%, ${alpha(theme.palette.common.white, 0)} 100%)`,
+      transform: 'skewX(-25deg)',
+      transition: 'all 0.75s ease',
+    },
+
+    '&:hover': {
+      boxShadow: hoverBoxShadow,
+      transform: 'translateY(-2px)',
+      background: hoverBackground,
+
+      '&::before': {
+        left: '100%',
+        transition: 'all 0.75s ease',
+      },
+    },
+
+    '&:active': {
+      boxShadow: activeBoxShadow,
+      transform: 'translateY(0)',
+    },
+
+    '&.Mui-disabled': {
+      background: disabledBackground,
+      color: disabledColor,
+      boxShadow: 'none',
+      border: disabledBorder,
+    },
+
+    '& .MuiButton-startIcon, & .MuiButton-endIcon': {
+      filter: `drop-shadow(0 1px 1px ${alpha(theme.palette.common.black, 0.5)})`,
+    },
+  };
+});
+
+// Empty state component
+const EmptyStateMessage = styled(Paper)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Background gradient
+  const background = isDark
+    ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.5)} 100%)`
+    : `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.grey[50], 0.9)} 100%)`;
+
+  // Border color
+  const borderColor = isDark
+    ? alpha(theme.palette.grey[700], 0.3)
+    : alpha(theme.palette.grey[300], 0.7);
+
+  // Shadow
+  const boxShadow = isDark
+    ? `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.05)}, 0 6px 12px -6px ${alpha(theme.palette.common.black, 0.4)}`
+    : `inset 0 1px 1px ${alpha(theme.palette.common.white, 0.9)}, 0 6px 12px -6px ${alpha(theme.palette.common.black, 0.1)}`;
+
+  // Typography colors  
+  const titleColor = isDark
+    ? alpha(theme.palette.common.white, 0.85)
+    : theme.palette.grey[800];
+
+  const bodyColor = isDark
+    ? alpha(theme.palette.common.white, 0.6)
+    : theme.palette.grey[600];
+
+  // Icon color
+  const iconColor = isDark
+    ? alpha(theme.palette.primary.main, 0.3)
+    : alpha(theme.palette.primary.light, 0.4);
+
+  const iconShadow = `drop-shadow(0 2px 4px ${alpha(theme.palette.common.black, isDark ? 0.4 : 0.1)})`;
+
+  return {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing(4),
+    borderRadius: 20,
+    background,
+    border: `1px solid ${borderColor}`,
+    backdropFilter: 'blur(8px)',
+    boxShadow,
+    textAlign: 'center',
+    height: '100%',
+    minHeight: 240,
+
+    '& .MuiTypography-subtitle1': {
+      marginTop: theme.spacing(2),
+      fontWeight: 600,
+      color: titleColor,
+      letterSpacing: '0.01em',
+    },
+
+    '& .MuiTypography-body2': {
+      marginTop: theme.spacing(1),
+      color: bodyColor,
+      maxWidth: '80%',
+    },
+
+    '& .MuiSvgIcon-root, & .iconify': {
+      fontSize: 48,
+      marginBottom: theme.spacing(2),
+      color: iconColor,
+      filter: iconShadow,
+    }
+  };
+});
+
+// RelationTypeSelector component
+interface RelationTypeSelectorProps {
+  value: RelationType;
+  onChange: (newType: RelationType) => void;
+  disabled?: boolean;
+}
+
+/* eslint-disable react/prop-types */
+const RelationTypeSelector: React.FC<RelationTypeSelectorProps> = ({
+  value,
+  onChange,
+  disabled = false
+}) => {
+  const relationTypes = [
+    { value: 'OTO' as RelationType, label: '1:1', tooltip: 'One-to-One' },
+    { value: 'OTM' as RelationType, label: '1:n', tooltip: 'One-to-Many' },
+    { value: 'MTO' as RelationType, label: 'n:1', tooltip: 'Many-to-One' },
+    { value: 'MTM' as RelationType, label: 'n:n', tooltip: 'Many-to-Many' }
+  ];
+
+  return (
+    <ButtonGroup
+      size="small"
+      aria-label="relation type selector"
+      disabled={disabled}
+      sx={{
+        borderRadius: 24,
+        overflow: 'hidden',
+        '.MuiButtonGroup-grouped': {
+          minWidth: 36,
+          px: 0.5,
+          py: 0.25,
+          fontSize: '0.7rem',
+          fontWeight: 'medium',
+          '&:first-of-type': {
+            borderTopLeftRadius: 24,
+            borderBottomLeftRadius: 24,
+          },
+          '&:last-of-type': {
+            borderTopRightRadius: 24,
+            borderBottomRightRadius: 24,
+          }
+        }
+      }}
+    >
+      {relationTypes.map(type => (
+        <Tooltip key={type.value} title={type.tooltip} arrow>
+          <Button
+            variant={value === type.value ? "contained" : "outlined"}
+            color={value === type.value ? "primary" : "inherit"}
+            onClick={() => onChange(type.value)}
+          >
+            {type.label}
+          </Button>
+        </Tooltip>
+      ))}
+    </ButtonGroup>
+  );
 };
 
-export function TableDefinitionView({ tables, onTablesUpdate }: Props) {
-  const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({});
-  const [selectedTable, setSelectedTable] = useState<string | null>(null);
-  const [editingTableId, setEditingTableId] = useState<string | null>(null);
-  const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
-
-  // Deep copy tables for editing
-  const [editableTables, setEditableTables] = useState<TableDefinition[]>([]);
-
-  useEffect(() => {
-    setEditableTables(JSON.parse(JSON.stringify(tables)));
-  }, [tables]);
-
-  const toggleTable = (tableId: string) => {
-    setExpandedTables((prev) => ({
-      ...prev,
-      [tableId]: !prev[tableId],
-    }));
-    setSelectedTable(tableId);
-  };
-
-  const startEditing = (tableId: string, columnId: string) => {
-    setEditingTableId(tableId);
-    setEditingColumnId(columnId);
-  };
-
-  const cancelEditing = () => {
-    setEditingTableId(null);
-    setEditingColumnId(null);
-    // Revert to original data
-    setEditableTables(JSON.parse(JSON.stringify(tables)));
-  };
-
-  const saveChanges = () => {
-    if (onTablesUpdate) {
-      onTablesUpdate(editableTables);
+// Animation variants
+const toastVariants = {
+  hidden: {
+    opacity: 0,
+    y: 50,
+    scale: 0.8,
+    filter: 'blur(8px)',
+    x: 20
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    x: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 400,
+      damping: 25,
+      mass: 1.2,
+      delayChildren: 0.1,
+      staggerChildren: 0.05
     }
-    setEditingTableId(null);
-    setEditingColumnId(null);
-  };
+  },
+  exit: {
+    opacity: 0,
+    y: 20,
+    scale: 0.9,
+    filter: 'blur(4px)',
+    transition: {
+      duration: 0.3,
+      ease: [0.43, 0.13, 0.23, 0.96]
+    }
+  }
+};
 
-  const handleColumnChange = (
+const toastChildVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -5 }
+};
+
+const tableVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+    scale: 0.98,
+    filter: 'blur(4px)'
+  },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: {
+      delay: i * 0.05,
+      duration: 0.4,
+      ease: [0.25, 0.1, 0.25, 1.0],
+      scale: {
+        duration: 0.5,
+        ease: [0.34, 1.56, 0.64, 1]
+      }
+    }
+  }),
+  exit: {
+    opacity: 0,
+    y: -20,
+    scale: 0.95,
+    filter: 'blur(4px)',
+    transition: {
+      duration: 0.3,
+      ease: [0.43, 0.13, 0.23, 0.96]
+    }
+  }
+};
+
+const rowVariants = {
+  hidden: {
+    opacity: 0,
+    x: -5
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.3,
+      ease: [0.25, 0.1, 0.25, 1.0]
+    }
+  },
+  exit: {
+    opacity: 0,
+    x: -10,
+    transition: {
+      duration: 0.2,
+      ease: [0.43, 0.13, 0.23, 0.96]
+    }
+  }
+};
+
+// State type definitions
+interface ToastState {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  visible: boolean;
+}
+
+interface RelationDialogState {
+  open: boolean;
+  sourceTableId: string;
+  sourceColumnId: string;
+  targetTableId: string;
+  targetColumnId: string;
+  relationType: RelationType;
+}
+
+interface AppState {
+  expandedTables: Record<string, boolean>;
+  selectedTable: string | null;
+  editingTableId: string | null;
+  editingColumnId: string | null;
+  searchQuery: string;
+  filteredTables: TableDefinition[];
+  editableTables: TableDefinition[];
+  aiLoading: boolean;
+  aiButtonTooltipOpen: boolean;
+  hoveredTableId: string | null;
+  hoveredColumnId: string | null;
+  toast: ToastState;
+  relationDialog: RelationDialogState;
+}
+
+// Main component interface
+interface TableDefinitionViewProps {
+  tables: TableDefinition[];
+  onTablesUpdate?: (updatedTables: TableDefinition[]) => void;
+}
+
+// Main component
+export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionViewProps): JSX.Element {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Enhanced responsive grid layout
+  const gridSizes = useMemo(() => ({
+    tableList: { xs: 12, sm: 12, md: 6, lg: 6, xl: 6 }, // 50%
+    diagram: { xs: 12, sm: 12, md: 6, lg: 6, xl: 6 },   // 50%
+  }), []);
+
+  // Unified state management
+  const [state, setState] = useState<AppState>({
+    expandedTables: {},
+    selectedTable: null,
+    editingTableId: null,
+    editingColumnId: null,
+    searchQuery: '',
+    filteredTables: [],
+    editableTables: [],
+    aiLoading: false,
+    aiButtonTooltipOpen: false,
+    hoveredTableId: null,
+    hoveredColumnId: null,
+    toast: {
+      message: '',
+      type: 'info',
+      visible: false,
+    },
+    relationDialog: {
+      open: false,
+      sourceTableId: '',
+      sourceColumnId: '',
+      targetTableId: '',
+      targetColumnId: '',
+      relationType: 'OTO',
+    }
+  });
+
+  // Destructured state for easier access
+  const {
+    expandedTables, selectedTable, editingTableId, editingColumnId,
+    searchQuery, filteredTables, editableTables, aiLoading,
+    aiButtonTooltipOpen, hoveredTableId, hoveredColumnId,
+    toast, relationDialog
+  } = state;
+
+  // Refs
+  const tableListRef = useRef<HTMLDivElement>(null);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Initialize tables on component mount
+  useEffect(() => {
+    if (tables?.length > 0) {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(tables));
+
+      setState(prev => ({
+        ...prev,
+        editableTables: tablesDeepCopy,
+        filteredTables: tablesDeepCopy,
+        // Auto-expand first table if none selected
+        ...(Object.keys(expandedTables).length === 0 && !selectedTable && {
+          expandedTables: { [tables[0].tableIdentifier]: true },
+          selectedTable: tables[0].tableIdentifier
+        })
+      }));
+    }
+  }, [tables, expandedTables, selectedTable]);
+
+  // Filter tables based on search query
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      setState(prev => ({ ...prev, filteredTables: prev.editableTables }));
+      return;
+    }
+
+    const query = debouncedSearchQuery.toLowerCase();
+    const filtered = editableTables.filter(table =>
+      table.tableIdentifier.toLowerCase().includes(query) ||
+      table.columns.some(col =>
+        col.columnIdentifier.toLowerCase().includes(query) ||
+        (col.columnDescription && col.columnDescription.toLowerCase().includes(query)) ||
+        col.columnType.toLowerCase().includes(query)
+      )
+    );
+
+    setState(prev => ({ ...prev, filteredTables: filtered }));
+  }, [debouncedSearchQuery, editableTables]);
+
+  // Core helper functions
+  const showToast = useCallback((message: string, type: ToastState['type']) => {
+    setState(prev => ({ ...prev, toast: { message, type, visible: true } }));
+    setTimeout(() => {
+      setState(prev => ({ ...prev, toast: { ...prev.toast, visible: false } }));
+    }, 3000);
+  }, []);
+
+  const toggleTable = useCallback((tableId: string) => {
+    setState(prev => ({
+      ...prev,
+      expandedTables: { ...prev.expandedTables, [tableId]: !prev.expandedTables[tableId] },
+      selectedTable: tableId
+    }));
+
+    // Scroll to the selected table
+    setTimeout(() => {
+      const tableElement = document.getElementById(`table-${tableId}`);
+      if (tableElement && tableListRef.current) {
+        const containerRect = tableListRef.current.getBoundingClientRect();
+        const tableRect = tableElement.getBoundingClientRect();
+
+        if (tableRect.top < containerRect.top || tableRect.bottom > containerRect.bottom) {
+          tableElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }, 100);
+  }, []);
+
+  const startEditing = useCallback((tableId: string, columnId: string) => {
+    setState(prev => ({ ...prev, editingTableId: tableId, editingColumnId: columnId }));
+  }, []);
+
+  const cancelEditing = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      editingTableId: null,
+      editingColumnId: null,
+      editableTables: JSON.parse(JSON.stringify(tables))
+    }));
+    showToast('Editing canceled', 'info');
+  }, [tables, showToast]);
+
+  const saveColumnChanges = useCallback((
+    tableId: string,
+    columnId: string,
+    updatedColumn: ColumnDefinition
+  ) => {
+    try {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
+        if (table.tableIdentifier === tableId) {
+          return {
+            ...table,
+            columns: table.columns.map((column: ColumnDefinition) =>
+              column.columnIdentifier === columnId ? updatedColumn : column
+            )
+          };
+        }
+        return table;
+      });
+
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables,
+        editingTableId: null,
+        editingColumnId: null
+      }));
+
+      if (onTablesUpdate) {
+        onTablesUpdate(updatedTables);
+      }
+
+      showToast('Column updated successfully!', 'success');
+    } catch (error) {
+      console.error('Error saving column changes:', error);
+      showToast('Failed to save changes', 'error');
+    }
+  }, [editableTables, onTablesUpdate, showToast]);
+
+  const handleColumnChange = useCallback((
     tableId: string,
     columnId: string,
     field: keyof ColumnDefinition,
     value: any
   ) => {
-    setEditableTables((prevTables) =>
-      prevTables.map((table) => {
+    setState(prev => {
+      const updatedTables = JSON.parse(JSON.stringify(prev.editableTables));
+
+      const result = updatedTables.map((table: TableDefinition) => {
         if (table.tableIdentifier === tableId) {
           return {
             ...table,
-            columns: table.columns.map((column) => {
-              if (column.columnIdentifier === columnId) {
-                return { ...column, [field]: value };
-              }
-              return column;
-            }),
+            columns: table.columns.map((column: ColumnDefinition) =>
+              column.columnIdentifier === columnId
+                ? { ...column, [field]: value }
+                : column
+            )
           };
         }
         return table;
-      })
-    );
+      });
+
+      return {
+        ...prev,
+        editableTables: result
+      };
+    });
+  }, []);
+
+  // Data processing functions
+  const getColumnCount = useCallback((tableId: string): number => {
+    const table = editableTables.find(t => t.tableIdentifier === tableId);
+    return table?.columns.length || 0;
+  }, [editableTables]);
+
+  const getPrimaryKeyCount = useCallback((tableId: string): number => {
+    const table = editableTables.find(t => t.tableIdentifier === tableId);
+    return table?.columns.filter(c => c.isPrimaryKey).length || 0;
+  }, [editableTables]);
+
+  const getRelationCount = useCallback((tableId: string): number => {
+    const table = editableTables.find(t => t.tableIdentifier === tableId);
+    return table?.columns.reduce((count, column) =>
+      count + (column.relations ? column.relations.length : 0), 0) || 0;
+  }, [editableTables]);
+
+  const getRelationTypeDisplay = useCallback((relationType: string): string => {
+    const map: Record<string, string> = { 'OTM': '1:n', 'MTO': 'n:1', 'OTO': '1:1', 'MTM': 'n:n' };
+    return map[relationType] || relationType;
+  }, []);
+
+  const getRelationshipName = useCallback((key: string): string => {
+    const map: Record<string, string> = {
+      'OTM': 'One-to-Many',
+      'MTO': 'Many-to-One',
+      'OTO': 'One-to-One',
+      'MTM': 'Many-to-Many'
+    };
+    return map[key] || key;
+  }, []);
+
+  // AI description generation
+  const generateAIDescription = async (column: ColumnDefinition, table: TableDefinition): Promise<string> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // Context-aware descriptions
+    const isForeignKey = column.relations && column.relations.length > 0;
+    const colName = column.columnIdentifier.toLowerCase();
+
+    if (column.isPrimaryKey) {
+      return `Unique identifier for each record in the ${table.tableIdentifier} table`;
+    }
+
+    if (isForeignKey) {
+      const relations = column.relations || [];
+      const targetTables = relations.map(r => r.tableIdentifier).join(', ');
+      return `Foreign key referencing ${targetTables} ${relations.length > 1 ? 'tables' : 'table'}`;
+    }
+
+    if (colName.includes('id') && colName.endsWith('id')) {
+      return `Reference to ${colName.replace(/_?id$/, '')} record`;
+    }
+
+    if (colName.includes('name')) {
+      return `Name or title of the ${table.tableIdentifier} record`;
+    }
+
+    if (colName.includes('date') || colName.includes('time')) {
+      let action = 'event occurred';
+      if (colName.includes('created')) action = 'record was created';
+      else if (colName.includes('updated')) action = 'record was last modified';
+      else if (colName.includes('deleted')) action = 'record was removed';
+
+      return `Timestamp indicating when the ${action}`;
+    }
+
+    if (/price|cost|amount/.test(colName)) {
+      return `Monetary value representing the ${colName.replace(/_/g, ' ')}`;
+    }
+
+    if (colName.includes('status')) {
+      return `Current state of the ${table.tableIdentifier} record`;
+    }
+
+    if (colName.includes('description')) {
+      return `Detailed description of the ${table.tableIdentifier} record`;
+    }
+
+    if (/bool|flag/.test(column.columnType.toLowerCase())) {
+      const flagDescription = colName
+        .replace(/^is_|^has_/, '')
+        .replace(/_/g, ' ');
+      return `Flag indicating whether the ${table.tableIdentifier} ${flagDescription}`;
+    }
+
+    return `Stores ${column.columnType} data for ${table.tableIdentifier} records`;
   };
 
-  const renderColumnRow = (table: TableDefinition, column: ColumnDefinition) => {
-    const isEditing =
-      editingTableId === table.tableIdentifier && editingColumnId === column.columnIdentifier;
+  const fillAllDescriptionsWithAI = async () => {
+    try {
+      setState(prev => ({ ...prev, aiLoading: true, aiButtonTooltipOpen: false }));
+
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+      let generatedCount = 0;
+
+      await Promise.all(
+        tablesDeepCopy.flatMap((table: TableDefinition) =>
+          table.columns.map(async (column: ColumnDefinition) => {
+            if (!column.columnDescription) {
+              column.columnDescription = await generateAIDescription(column, table);
+              generatedCount += 1;
+            }
+          })
+        )
+      );
+
+      setState(prev => ({
+        ...prev,
+        editableTables: tablesDeepCopy,
+        filteredTables: tablesDeepCopy,
+        aiLoading: false
+      }));
+
+      if (onTablesUpdate && generatedCount > 0) {
+        onTablesUpdate(tablesDeepCopy);
+      }
+
+      showToast(
+        generatedCount > 0
+          ? `Successfully generated ${generatedCount} column descriptions!`
+          : 'All columns already have descriptions',
+        generatedCount > 0 ? 'success' : 'info'
+      );
+    } catch (error) {
+      console.error('AI description generation failed:', error);
+      showToast('Failed to generate AI descriptions', 'error');
+      setState(prev => ({ ...prev, aiLoading: false }));
+    }
+  };
+
+  // Relation management
+  const openRelationDialog = useCallback((tableId: string, columnId: string) => {
+    setState(prev => ({
+      ...prev,
+      relationDialog: {
+        ...prev.relationDialog,
+        open: true,
+        sourceTableId: tableId,
+        sourceColumnId: columnId,
+        targetTableId: '',
+        targetColumnId: '',
+        relationType: 'OTO'
+      }
+    }));
+  }, []);
+
+  const handleRelationDialogClose = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      relationDialog: { ...prev.relationDialog, open: false }
+    }));
+  }, []);
+
+  const updateRelationDialog = useCallback((field: keyof RelationDialogState, value: string) => {
+    setState(prev => ({
+      ...prev,
+      relationDialog: { ...prev.relationDialog, [field]: value }
+    }));
+  }, []);
+
+  const addNewRelation = useCallback(() => {
+    try {
+      const { sourceTableId, sourceColumnId, targetTableId, targetColumnId, relationType } = relationDialog;
+
+      if (!sourceTableId || !sourceColumnId || !targetTableId || !targetColumnId) {
+        showToast('Please fill all relation fields', 'error');
+        return;
+      }
+
+      const relationToAdd: RelationDefinition = {
+        tableIdentifier: targetTableId,
+        columnIdentifier: sourceColumnId,
+        toColumn: targetColumnId,
+        type: relationType,
+      };
+
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      // Check if relation already exists
+      const sourceTable = tablesDeepCopy.find((t: TableDefinition) => t.tableIdentifier === sourceTableId);
+      const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === sourceColumnId);
+
+      if (sourceColumn?.relations?.some((r: RelationDefinition) =>
+        r.tableIdentifier === relationToAdd.tableIdentifier &&
+        r.toColumn === relationToAdd.toColumn
+      )) {
+        showToast('This relation already exists', 'error');
+        return;
+      }
+
+      // Add relation
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
+        if (table.tableIdentifier === sourceTableId) {
+          return {
+            ...table,
+            columns: table.columns.map((column: ColumnDefinition) => {
+              if (column.columnIdentifier === sourceColumnId) {
+                return {
+                  ...column,
+                  relations: [...(column.relations || []), relationToAdd]
+                };
+              }
+              return column;
+            })
+          };
+        }
+        return table;
+      });
+
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables,
+        relationDialog: { ...prev.relationDialog, open: false }
+      }));
+
+      if (onTablesUpdate) {
+        onTablesUpdate(updatedTables);
+      }
+
+      showToast('Relation added successfully!', 'success');
+    } catch (error) {
+      console.error('Error adding relation:', error);
+      showToast('Failed to add relation', 'error');
+    }
+  }, [relationDialog, editableTables, onTablesUpdate, showToast]);
+
+  const deleteRelation = useCallback((
+    tableId: string,
+    columnId: string,
+    targetTableId: string,
+    targetColumnId: string
+  ) => {
+    try {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
+        if (table.tableIdentifier === tableId) {
+          return {
+            ...table,
+            columns: table.columns.map((column: ColumnDefinition) => {
+              if (column.columnIdentifier === columnId) {
+                return {
+                  ...column,
+                  relations: (column.relations || []).filter(
+                    (r: RelationDefinition) => !(r.tableIdentifier === targetTableId && r.toColumn === targetColumnId)
+                  )
+                };
+              }
+              return column;
+            })
+          };
+        }
+        return table;
+      });
+
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables
+      }));
+
+      if (onTablesUpdate) {
+        onTablesUpdate(updatedTables);
+      }
+
+      showToast('Relation deleted successfully!', 'success');
+    } catch (error) {
+      console.error('Error deleting relation:', error);
+      showToast('Failed to delete relation', 'error');
+    }
+  }, [editableTables, onTablesUpdate, showToast]);
+
+  // Get current editing column
+  const getEditingColumn = useCallback(() => {
+    if (!editingTableId || !editingColumnId) return null;
+
+    const table = editableTables.find(t => t.tableIdentifier === editingTableId);
+    if (!table) return null;
+
+    return table.columns.find(c => c.columnIdentifier === editingColumnId) || null;
+  }, [editingTableId, editingColumnId, editableTables]);
+
+  // Render column row
+  const renderColumnRow = useCallback((table: TableDefinition, column: ColumnDefinition, index: number) => {
+    const isEditing = editingTableId === table.tableIdentifier && editingColumnId === column.columnIdentifier;
+    const isHovered = hoveredTableId === table.tableIdentifier && hoveredColumnId === column.columnIdentifier;
+    const currentEditingColumn = isEditing ? getEditingColumn() : null;
+
+    const handleKeyPress = (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        if (currentEditingColumn) {
+          saveColumnChanges(table.tableIdentifier, column.columnIdentifier, currentEditingColumn);
+        }
+      }
+    };
 
     return (
-      <TableRow key={column.columnIdentifier}>
-        <TableCell sx={{ pl: 4 }}>
+      <MotionTableRow
+        key={column.columnIdentifier}
+        custom={index}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={rowVariants}
+        onMouseEnter={() => {
+          setState(prev => ({
+            ...prev,
+            hoveredTableId: table.tableIdentifier,
+            hoveredColumnId: column.columnIdentifier
+          }));
+        }}
+        onMouseLeave={() => {
+          setState(prev => ({
+            ...prev,
+            hoveredTableId: null,
+            hoveredColumnId: null
+          }));
+        }}
+        sx={{
+          position: 'relative',
+          cursor: 'pointer',
+          '&:hover': {
+            backgroundColor: (t) => alpha(t.palette.primary.main, 0.05),
+            '& .MuiTableCell-root': { color: 'primary.main' }
+          },
+          '& .MuiTableCell-root': {
+            py: 1.5,
+            px: { xs: 1, sm: 1.5 },
+            ...(isEditing && {
+              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+            }),
+          },
+          transition: 'all 0.15s ease-in-out',
+        }}
+      >
+        {/* Column Name Cell */}
+        <TableCell className="column-name" sx={{ pl: { xs: 1, sm: 2 } }}>
           <Stack direction="row" alignItems="center" spacing={1}>
             {isEditing ? (
               <TextField
                 size="small"
                 value={column.columnIdentifier}
-                onChange={(e) =>
-                  handleColumnChange(
-                    table.tableIdentifier,
-                    column.columnIdentifier,
-                    'columnIdentifier',
-                    e.target.value
-                  )
-                }
+                onChange={(e) => handleColumnChange(
+                  table.tableIdentifier,
+                  column.columnIdentifier,
+                  'columnIdentifier',
+                  e.target.value
+                )}
+                onKeyPress={handleKeyPress}
                 fullWidth
+                autoFocus
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                aria-label="Edit column name"
               />
             ) : (
-              <Typography variant="body2">{column.columnIdentifier}</Typography>
-            )}
-            {column.isPrimaryKey && (
-              <Iconify
-                icon="mdi:key-variant"
-                sx={{ color: 'warning.main', width: 16, height: 16 }}
-              />
+              <Typography variant="body2" fontWeight={column.isPrimaryKey ? 'medium' : 'normal'}>
+                {column.isPrimaryKey && <StyledPrimaryKeyIcon />}
+                {column.columnIdentifier}
+              </Typography>
             )}
           </Stack>
         </TableCell>
-        <TableCell>
+
+        {/* Column Type Cell */}
+        <TableCell className="column-type">
           {isEditing ? (
             <TextField
               size="small"
               value={column.columnType}
-              onChange={(e) =>
-                handleColumnChange(
-                  table.tableIdentifier,
-                  column.columnIdentifier,
-                  'columnType',
-                  e.target.value
-                )
-              }
+              onChange={(e) => handleColumnChange(
+                table.tableIdentifier,
+                column.columnIdentifier,
+                'columnType',
+                e.target.value
+              )}
+              onKeyPress={handleKeyPress}
               fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              aria-label="Edit column type"
             />
           ) : (
-            column.columnType
+            <StyledColumnTypeChip label={column.columnType} size="small" />
           )}
         </TableCell>
-        <TableCell sx={{ maxWidth: 200, overflowWrap: 'break-word' }}>
+
+        {/* Description Cell */}
+        <TableCell className="column-description">
           {isEditing ? (
-            <TextField
+            <DescriptionTextField
               size="small"
               value={column.columnDescription || ''}
-              onChange={(e) =>
-                handleColumnChange(
-                  table.tableIdentifier,
-                  column.columnIdentifier,
-                  'columnDescription',
-                  e.target.value
-                )
-              }
+              onChange={(e) => handleColumnChange(
+                table.tableIdentifier,
+                column.columnIdentifier,
+                'columnDescription',
+                e.target.value
+              )}
+              onKeyPress={handleKeyPress}
               fullWidth
               multiline
+              rows={2}
+              placeholder="Enter column description..."
+              aria-label="Edit column description"
             />
           ) : (
-            column.columnDescription || '-'
-          )}
-        </TableCell>
-        <TableCell sx={{ maxWidth: 200, overflowWrap: 'break-word' }}>
-          {column.relations?.map((relation) => (
             <Typography
-              key={`${relation.tableIdentifier}-${relation.toColumn}`}
-              variant="caption"
-              display="block"
+              variant="body2"
+              color={column.columnDescription ? 'text.primary' : 'text.secondary'}
+              sx={{
+                fontStyle: column.columnDescription ? 'normal' : 'italic',
+                wordBreak: 'break-word',
+              }}
             >
-              {`${relation.type} → ${relation.tableIdentifier}.${relation.toColumn}`}
+              {column.columnDescription || 'No description provided'}
             </Typography>
-          ))}
-        </TableCell>
-        <TableCell align="right">
-          {isEditing ? (
-            <Stack direction="row" spacing={1}>
-              <IconButton size="small" color="primary" onClick={saveChanges}>
-                <SaveIcon fontSize="small" />
-              </IconButton>
-              <IconButton size="small" color="error" onClick={cancelEditing}>
-                <CancelIcon fontSize="small" />
-              </IconButton>
-            </Stack>
-          ) : (
-            <IconButton
-              size="small"
-              onClick={() => startEditing(table.tableIdentifier, column.columnIdentifier)}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
           )}
         </TableCell>
-      </TableRow>
-    );
-  };
 
-  return (
-    <Grid container spacing={2}>
-      {/* Table List */}
-      <Grid item xs={12} md={4}>
-        <Scrollbar>
-          <Stack spacing={3}>
-            {editableTables.map((table) => (
-              <Card
-                key={table.tableIdentifier}
+        {/* Relations Cell */}
+        <TableCell className="column-relations">
+          <RelationsContainer>
+            {column.relations?.length ? (
+              column.relations.map((relation, relationIndex) => (
+                <Box key={`${relation.tableIdentifier}-${relation.toColumn}-${relationIndex}`} sx={{ mb: 1 }}>
+                  {isEditing ? (
+                    <Stack direction="column" spacing={1} alignItems="center">
+                      <RelationTypeSelector
+                        value={relation.type as RelationType}
+                        onChange={(newType) => {
+                          const updatedRelations = [...(column.relations || [])];
+                          updatedRelations[relationIndex] = {
+                            ...updatedRelations[relationIndex],
+                            type: newType
+                          };
+
+                          handleColumnChange(
+                            table.tableIdentifier,
+                            column.columnIdentifier,
+                            'relations',
+                            updatedRelations
+                          );
+                        }}
+                        disabled={false}
+                      />
+                      <Stack direction="row" spacing={0.5} alignItems="center">
+                        <Typography variant="caption">
+                          {relation.tableIdentifier}.{relation.toColumn}
+                        </Typography>
+                        <Tooltip title="Remove relation">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const updatedRelations = [...(column.relations || [])];
+                              updatedRelations.splice(relationIndex, 1);
+                              handleColumnChange(
+                                table.tableIdentifier,
+                                column.columnIdentifier,
+                                'relations',
+                                updatedRelations
+                              );
+                            }}
+                            sx={{ p: 0.25 }}
+                          >
+                            <CloseIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    </Stack>
+                  ) : (
+                    <Tooltip
+                      title={`${getRelationTypeDisplay(relation.type)} → ${relation.tableIdentifier}.${relation.toColumn} (${getRelationshipName(relation.type)})`}
+                      arrow
+                    >
+                      <span>
+                        <StyledRelationChip
+                          size="small"
+                          icon={<StyledRelationIcon />}
+                          label={`${getRelationTypeDisplay(relation.type)} → ${relation.tableIdentifier}.${relation.toColumn}`}
+                          onDelete={
+                            isHovered ?
+                              () => deleteRelation(
+                                table.tableIdentifier,
+                                column.columnIdentifier,
+                                relation.tableIdentifier,
+                                relation.toColumn
+                              ) : undefined
+                          }
+                        />
+                      </span>
+                    </Tooltip>
+                  )}
+                </Box>
+              ))
+            ) : (
+              <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                No relations
+              </Typography>
+            )}
+          </RelationsContainer>
+
+          {/* Row action buttons */}
+          {!isEditing && isHovered && (
+            <RowActionButtons>
+              <Tooltip title="Edit column">
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={() => startEditing(table.tableIdentifier, column.columnIdentifier)}
+                  sx={{
+                    bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+                    '&:hover': {
+                      bgcolor: (t) => alpha(t.palette.primary.main, 0.2),
+                    },
+                  }}
+                >
+                  <EditOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Add relation">
+                <IconButton
+                  size="small"
+                  color="info"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openRelationDialog(table.tableIdentifier, column.columnIdentifier);
+                  }}
+                  sx={{
+                    bgcolor: (t) => alpha(t.palette.info.main, 0.1),
+                    '&:hover': {
+                      bgcolor: (t) => alpha(t.palette.info.main, 0.2),
+                    },
+                  }}
+                >
+                  <AddLinkIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </RowActionButtons>
+          )}
+        </TableCell>
+
+        {/* Save/cancel buttons when editing */}
+        {isEditing && (
+          <EditActionsContainer>
+            <Tooltip title="Save changes">
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={() => {
+                  if (currentEditingColumn) {
+                    saveColumnChanges(
+                      table.tableIdentifier,
+                      column.columnIdentifier,
+                      currentEditingColumn
+                    );
+                  }
+                }}
                 sx={{
-                  ...(selectedTable === table.tableIdentifier && {
-                    borderColor: 'primary.main',
-                    borderWidth: 2,
-                    borderStyle: 'solid',
-                  }),
+                  bgcolor: (t) => alpha(t.palette.success.main, 0.1),
+                  '&:hover': {
+                    bgcolor: (t) => alpha(t.palette.success.main, 0.2),
+                  },
                 }}
               >
-                <CardHeader
-                  title={
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <IconButton
-                        size="small"
-                        onClick={() => toggleTable(table.tableIdentifier)}
-                        sx={{
-                          transform: expandedTables[table.tableIdentifier]
-                            ? 'rotate(-180deg)'
-                            : 'none',
-                        }}
-                      >
-                        <Iconify icon="eva:arrow-ios-downward-fill" />
-                      </IconButton>
-                      <Typography variant="subtitle1">{table.tableIdentifier}</Typography>
-                    </Stack>
-                  }
+                <SaveIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Discard changes">
+              <IconButton
+                size="small"
+                color="error"
+                onClick={cancelEditing}
+                sx={{
+                  bgcolor: (t) => alpha(t.palette.error.main, 0.1),
+                  '&:hover': {
+                    bgcolor: (t) => alpha(t.palette.error.main, 0.2),
+                  },
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </EditActionsContainer>
+        )}
+      </MotionTableRow>
+    );
+  }, [
+    theme,
+    editingTableId,
+    editingColumnId,
+    hoveredTableId,
+    hoveredColumnId,
+    getEditingColumn,
+    handleColumnChange,
+    saveColumnChanges,
+    cancelEditing,
+    getRelationTypeDisplay,
+    getRelationshipName,
+    deleteRelation,
+    openRelationDialog,
+    startEditing
+  ]);
+
+  // Render component
+  return (
+    <Box sx={{ position: 'relative', overflow: 'hidden', width: '100%' }}>
+      {/* Toast notification */}
+      <AnimatePresence>
+        {toast.visible && (
+          <m.div
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={toastVariants}
+            style={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              zIndex: 9999,
+            }}
+          >
+            <Paper
+              elevation={4}
+              sx={{
+                px: 2.5,
+                py: 1.75,
+                borderRadius: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? alpha(theme.palette[toast.type].dark, 0.95)
+                  : alpha(theme.palette[toast.type].light, 0.95),
+                color: theme.palette[toast.type].contrastText,
+                maxWidth: { xs: '90vw', sm: 400 },
+              }}
+            >
+              <m.div variants={toastChildVariants}>
+                <Iconify
+                  icon={(() => {
+                    if (toast.type === 'success') return 'eva:checkmark-circle-2-fill';
+                    if (toast.type === 'error') return 'eva:alert-circle-fill';
+                    return 'eva:info-fill';
+                  })()}
+                  width={24}
+                  height={24}
+                  sx={{
+                    filter: `drop-shadow(0 1px 2px ${alpha(theme.palette.common.black, 0.3)})`,
+                  }}
+                />
+              </m.div>
+              <m.div variants={toastChildVariants} style={{ flex: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  {toast.message}
+                </Typography>
+              </m.div>
+            </Paper>
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/* Relation dialog */}
+      <Dialog
+        open={relationDialog.open}
+        onClose={handleRelationDialogClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            overflow: 'hidden',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 12px 24px rgba(0, 0, 0, 0.4)'
+              : '0 12px 24px rgba(0, 0, 0, 0.1)',
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          bgcolor: theme.palette.mode === 'dark'
+            ? alpha(theme.palette.primary.dark, 0.1)
+            : alpha(theme.palette.primary.lighter, 0.2),
+          py: 2.5,
+          '& .MuiTypography-root': {
+            fontSize: '1.25rem',
+            fontWeight: 600,
+          }
+        }}>
+          Add New Relation
+        </DialogTitle>
+
+        <DialogContent sx={{ py: 3.5, px: { xs: 2.5, sm: 3 } }}>
+          <DialogContentText sx={{ mb: 3 }}>
+            Create a new relationship between columns in your database schema.
+          </DialogContentText>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Source
+              </Typography>
+              <Paper variant="outlined" sx={{
+                p: 2.5,
+                borderRadius: 3,
+                mb: 2,
+                border: `1px solid ${alpha(theme.palette.grey[theme.palette.mode === 'dark' ? 700 : 300], 0.7)}`,
+              }}>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Table:</strong> {relationDialog.sourceTableId}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Column:</strong> {relationDialog.sourceColumnId}
+                </Typography>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel id="target-table-label">Target Table</InputLabel>
+                <Select
+                  labelId="target-table-label"
+                  value={relationDialog.targetTableId}
+                  label="Target Table"
+                  onChange={(e) => updateRelationDialog('targetTableId', e.target.value as string)}
+                  sx={{ borderRadius: 3 }}
+                >
+                  {editableTables.map((table) => (
+                    <MenuItem key={table.tableIdentifier} value={table.tableIdentifier}>
+                      {table.tableIdentifier}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth disabled={!relationDialog.targetTableId}>
+                <InputLabel id="target-column-label">Target Column</InputLabel>
+                <Select
+                  labelId="target-column-label"
+                  value={relationDialog.targetColumnId}
+                  label="Target Column"
+                  onChange={(e) => updateRelationDialog('targetColumnId', e.target.value as string)}
+                  sx={{ borderRadius: 3 }}
+                >
+                  {editableTables
+                    .find((t) => t.tableIdentifier === relationDialog.targetTableId)
+                    ?.columns.map((column) => (
+                      <MenuItem key={column.columnIdentifier} value={column.columnIdentifier}>
+                        {column.columnIdentifier} ({column.columnType})
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" gutterBottom>
+                Relation Type
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <RelationTypeSelector
+                  value={relationDialog.relationType}
+                  onChange={(type) => updateRelationDialog('relationType', type)}
+                  disabled={!relationDialog.targetTableId || !relationDialog.targetColumnId}
                 />
 
-                <Collapse in={expandedTables[table.tableIdentifier]}>
-                  <Box sx={{ p: 2 }}>
-                    <TableContainer>
-                      <Table size="small">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Column</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell>Description</TableCell>
-                            <TableCell>Relations</TableCell>
-                            <TableCell align="right">Actions</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {table.columns.map((column) => renderColumnRow(table, column))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </Box>
-                </Collapse>
-              </Card>
-            ))}
-          </Stack>
-        </Scrollbar>
-      </Grid>
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 1.5,
+                  p: 2,
+                  borderRadius: 3,
+                  bgcolor: alpha(theme.palette.info.main, 0.1)
+                }}>
+                  <InfoOutlinedIcon color="info" fontSize="small" sx={{ mt: 0.25 }} />
+                  <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+                    {relationDialog.relationType === 'OTO' && 'One record in the source table corresponds to exactly one record in the target table.'}
+                    {relationDialog.relationType === 'OTM' && 'One record in the source table corresponds to many records in the target table.'}
+                    {relationDialog.relationType === 'MTO' && 'Many records in the source table correspond to one record in the target table.'}
+                    {relationDialog.relationType === 'MTM' && 'Many records in the source table correspond to many records in the target table.'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
 
-      {/* Diagram Preview */}
-      <Grid item xs={12} md={8}>
-        <Paper
-          elevation={3}
-          sx={{
-            height: '100%',
-            p: 2,
-            minHeight: 600,
+        <DialogActions sx={{ px: 3, py: 2.5 }}>
+          <Button
+            onClick={handleRelationDialogClose}
+            color="inherit"
+            variant="outlined"
+            sx={{ borderRadius: 3 }}
+            startIcon={<CloseIcon />}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={addNewRelation}
+            color="primary"
+            variant="contained"
+            sx={{ borderRadius: 3 }}
+            startIcon={<AddLinkIcon />}
+            disabled={!relationDialog.targetTableId || !relationDialog.targetColumnId}
+          >
+            Add Relation
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Main layout grid */}
+      <Grid
+        container
+        spacing={{ xs: 2, sm: 3 }}
+        sx={{ alignItems: 'stretch' }}
+      >
+        {/* Table List Panel */}
+        <Grid item {...gridSizes.tableList}>
+          <Box sx={{
             display: 'flex',
             flexDirection: 'column',
-          }}
-        >
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Schema Diagram
-          </Typography>
-          <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-            <SchemaVisualization
-              tables={editableTables}
-              selectedTable={selectedTable}
-              onTableClick={(tableId: string) => {
-                toggleTable(tableId);
-              }}
-            />
-          </Box>
-        </Paper>
-      </Grid>
+            height: { xs: 'auto', md: 700 },
+            minHeight: { xs: 500, sm: 600, md: 700 },
+          }}>
+            {/* Search and AI Button row */}
+            <Box sx={{
+              mb: 2.5,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              width: '100%',
+            }}>
+              <Box sx={{ flexGrow: 1 }}>
+                <StyledSearchInput
+                  placeholder="Search tables or columns..."
+                  value={searchQuery}
+                  onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
+                  startAdornment={<SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />}
+                  fullWidth
+                  aria-label="Search tables or columns"
+                />
+              </Box>
 
-      {/* Save Button for All Changes */}
-      {editingTableId && (
-        <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<SaveIcon />}
-                onClick={saveChanges}
+              <Tooltip
+                title={aiLoading ? "Generating descriptions..." : "Auto-generate descriptions for all columns"}
+                arrow
+                placement="top-end"
+                open={aiButtonTooltipOpen}
+                onOpen={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: true }))}
+                onClose={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: false }))}
               >
-                Save All Changes
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<CancelIcon />}
-                onClick={cancelEditing}
-              >
-                Cancel
-              </Button>
-            </Stack>
+                <AIButtonWrapper isAnimating={aiLoading}>
+                  <AIFillButton
+                    onClick={fillAllDescriptionsWithAI}
+                    onMouseEnter={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: true }))}
+                    onMouseLeave={() => setState(prev => ({ ...prev, aiButtonTooltipOpen: false }))}
+                    disabled={aiLoading || !editableTables.length}
+                    startIcon={aiLoading ? <CircularProgress size={16} color="inherit" /> : <AutoFixHighIcon />}
+                    aria-label="Auto-generate descriptions"
+                    sx={{ px: { xs: 1.5, sm: 2 } }}
+                  >
+                    {isMobile ? "Auto-fill" : "Auto-fill Descriptions"}
+                  </AIFillButton>
+                </AIButtonWrapper>
+              </Tooltip>
+            </Box>
+
+            {/* Table list with scrolling */}
+            <Box
+              ref={tableListRef}
+              sx={{
+                flexGrow: 1,
+                overflow: 'auto',
+                pt: 2,
+                pr: 1,
+                height: { xs: '500px', sm: '600px', md: 'calc(700px - 64px)' },
+                scrollbarWidth: 'thin',
+                '&::-webkit-scrollbar': { width: 6 },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: alpha(theme.palette.common.black, 0.05),
+                  borderRadius: 3,
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.3),
+                  borderRadius: 3,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.5),
+                  }
+                },
+              }}
+            >
+              <AnimatePresence>
+                {filteredTables.length === 0 ? (
+                  <FadeInTransition
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <EmptyStateMessage>
+                      <Iconify
+                        icon="eva:search-outline"
+                        sx={{ width: 40, height: 40, color: 'text.secondary', opacity: 0.5, mb: 1 }}
+                      />
+                      <Typography variant="subtitle1" color="text.secondary">
+                        No tables found
+                      </Typography>
+                      <Typography variant="body2" color="text.disabled">
+                        Try adjusting your search query
+                      </Typography>
+                    </EmptyStateMessage>
+                  </FadeInTransition>
+                ) : (
+                  <Stack spacing={2.5}>
+                    {filteredTables.map((table, index) => (
+                      <m.div
+                        key={table.tableIdentifier}
+                        id={`table-${table.tableIdentifier}`}
+                        custom={index}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={tableVariants}
+                        layout
+                      >
+                        <StyledCard selected={selectedTable === table.tableIdentifier}>
+                          <CardHeader
+                            title={
+                              <Box>
+                                <Stack
+                                  direction="row"
+                                  alignItems="center"
+                                  justifyContent="space-between"
+                                >
+                                  <Stack direction="row" alignItems="center" spacing={1}>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => toggleTable(table.tableIdentifier)}
+                                      sx={{
+                                        transition: 'transform 0.3s ease',
+                                        transform: expandedTables[table.tableIdentifier] ? 'rotate(-180deg)' : 'rotate(0deg)',
+                                        color: 'primary.main',
+                                        bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+                                      }}
+                                      aria-label={`Toggle table ${table.tableIdentifier}`}
+                                      aria-expanded={expandedTables[table.tableIdentifier]}
+                                    >
+                                      <KeyboardArrowDownIcon />
+                                    </IconButton>
+                                    <Typography
+                                      variant="subtitle1"
+                                      sx={{
+                                        fontWeight: selectedTable === table.tableIdentifier ? 'bold' : 'medium',
+                                        color: selectedTable === table.tableIdentifier ? 'primary.main' : 'text.primary',
+                                      }}
+                                    >
+                                      {table.tableIdentifier}
+                                    </Typography>
+                                  </Stack>
+
+                                  <Stack
+                                    direction="row"
+                                    spacing={{ xs: 2, sm: 3, md: 4 }}
+                                    alignItems="center"
+                                  >
+                                    <StyledBadge
+                                      badgeContent={getPrimaryKeyCount(table.tableIdentifier)}
+                                      color="warning"
+                                      showZero
+                                    >
+                                      <Tooltip title="Primary keys">
+                                        <KeyIcon
+                                          fontSize="small"
+                                          sx={{
+                                            color: 'warning.main',
+                                            opacity: getPrimaryKeyCount(table.tableIdentifier) > 0 ? 1 : 0.4
+                                          }}
+                                        />
+                                      </Tooltip>
+                                    </StyledBadge>
+                                    <StyledBadge
+                                      badgeContent={getRelationCount(table.tableIdentifier)}
+                                      color="info"
+                                      showZero
+                                    >
+                                      <Tooltip title="Relations">
+                                        <LinkIcon
+                                          fontSize="small"
+                                          sx={{
+                                            color: 'info.main',
+                                            opacity: getRelationCount(table.tableIdentifier) > 0 ? 1 : 0.4
+                                          }}
+                                        />
+                                      </Tooltip>
+                                    </StyledBadge>
+                                    <Chip
+                                      label={getColumnCount(table.tableIdentifier)}
+                                      size="small"
+                                      color={selectedTable === table.tableIdentifier ? 'primary' : 'default'}
+                                      sx={{
+                                        height: 20,
+                                        borderRadius: 10,
+                                        '& .MuiChip-label': { px: 1, fontSize: '0.75rem' }
+                                      }}
+                                    />
+                                  </Stack>
+                                </Stack>
+
+                                {!expandedTables[table.tableIdentifier] && (
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mt: 0.5, ml: 4, fontSize: '0.7rem' }}
+                                  >
+                                    {getColumnCount(table.tableIdentifier)} columns,{' '}
+                                    {getPrimaryKeyCount(table.tableIdentifier)} keys,{' '}
+                                    {getRelationCount(table.tableIdentifier)} relations
+                                  </Typography>
+                                )}
+                              </Box>
+                            }
+                            sx={{
+                              p: 2,
+                              pb: expandedTables[table.tableIdentifier] ? 1 : 2,
+                              ...(expandedTables[table.tableIdentifier] && {
+                                borderBottom: (t) => `1px dashed ${t.palette.divider}`,
+                              }),
+                              background: (t) => {
+                                if (selectedTable === table.tableIdentifier) {
+                                  return t.palette.mode === 'dark'
+                                    ? alpha(t.palette.primary.dark, 0.1)
+                                    : alpha(t.palette.primary.lighter, 0.2);
+                                }
+                                return 'transparent';
+                              }
+                            }}
+                          />
+                          <Collapse in={expandedTables[table.tableIdentifier]}>
+                            <Box sx={{ p: { xs: 1, sm: 2 } }}>
+                              <StyledTableContainer>
+                                <Table size="small" aria-label={`${table.tableIdentifier} columns`}>
+                                  <TableHead>
+                                    <TableRow>
+                                      <TableCell scope="col" className="column-name">Column</TableCell>
+                                      <TableCell scope="col" className="column-type">Type</TableCell>
+                                      <TableCell scope="col" className="column-description">Description</TableCell>
+                                      <TableCell scope="col" className="column-relations">
+                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                          <span>Relations</span>
+                                          <Tooltip title="Add a new relation">
+                                            <IconButton
+                                              size="small"
+                                              color="primary"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                const firstColumn = table.columns[0];
+                                                if (firstColumn) {
+                                                  openRelationDialog(table.tableIdentifier, firstColumn.columnIdentifier);
+                                                }
+                                              }}
+                                              sx={{
+                                                bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+                                                width: 24,
+                                                height: 24,
+                                              }}
+                                            >
+                                              <AddIcon fontSize="small" />
+                                            </IconButton>
+                                          </Tooltip>
+                                        </Stack>
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableHead>
+                                  <TableBody>
+                                    <AnimatePresence>
+                                      {table.columns.map((column, colIndex) =>
+                                        renderColumnRow(table, column, colIndex)
+                                      )}
+                                    </AnimatePresence>
+                                  </TableBody>
+                                </Table>
+                              </StyledTableContainer>
+                            </Box>
+                          </Collapse>
+                        </StyledCard>
+                      </m.div>
+                    ))}
+                  </Stack>
+                )}
+              </AnimatePresence>
+            </Box>
+          </Box>
+        </Grid>
+
+        {/* Schema Diagram Panel */}
+        <Grid item {...gridSizes.diagram}>
+          <Paper
+            elevation={4}
+            sx={{
+              height: { xs: 'auto', md: 700 },
+              minHeight: { xs: 500, sm: 600, md: 700 },
+              overflow: 'hidden',
+              p: { xs: 2, sm: 3 },
+              display: 'flex',
+              flexDirection: 'column',
+              borderRadius: 3,
+              position: 'relative',
+              background: theme.palette.mode === 'dark'
+                ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.grey[900], 0.8)} 100%)`
+                : `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.grey[50], 0.85)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.grey[theme.palette.mode === 'dark' ? 700 : 300], theme.palette.mode === 'dark' ? 0.3 : 0.7)}`,
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <Box sx={{
+              mb: 2,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1
+            }}>
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Iconify
+                  icon="eva:diagram-fill"
+                  width={24}
+                  height={24}
+                  sx={{ color: 'primary.main' }}
+                />
+                <Typography variant="h6">Schema Diagram</Typography>
+              </Stack>
+
+              {selectedTable && (
+                <Chip
+                  label={selectedTable}
+                  color="primary"
+                  size="small"
+                  onDelete={() => setState(prev => ({ ...prev, selectedTable: null }))}
+                  sx={{ height: 28, borderRadius: 8 }}
+                />
+              )}
+            </Box>
+
+            <Divider sx={{ mb: 2 }} />
+
+            <Box
+              sx={{
+                flexGrow: 1,
+                position: 'relative',
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.2 : 0.5)}`,
+                height: { xs: '400px', sm: '500px', md: 'calc(700px - 100px)' },
+                overflow: 'hidden',
+                background: theme.palette.mode === 'dark'
+                  ? `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.5)} 0%, ${alpha(theme.palette.grey[900], 0.4)} 100%)`
+                  : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.3)} 0%, ${alpha(theme.palette.grey[100], 0.2)} 100%)`,
+                backgroundImage: theme.palette.mode === 'dark'
+                  ? `radial-gradient(${alpha(theme.palette.grey[800], 0.4)} 1px, transparent 1px), 
+                     radial-gradient(${alpha(theme.palette.grey[800], 0.3)} 1px, transparent 1px)`
+                  : `radial-gradient(${alpha(theme.palette.grey[400], 0.2)} 1px, transparent 1px), 
+                     radial-gradient(${alpha(theme.palette.grey[400], 0.15)} 1px, transparent 1px)`,
+                backgroundSize: '20px 20px',
+                backgroundPosition: '0 0, 10px 10px',
+                backdropFilter: 'blur(2px)',
+              }}
+            >
+              {filteredTables.length > 0 ? (
+                <Box sx={{ width: '92%', height: '92%', margin: 'auto', position: 'relative', top: '4%' }}>
+                  <SchemaVisualization
+                    tables={editableTables}
+                    selectedTable={selectedTable}
+                    onTableClick={toggleTable}
+                  />
+                </Box>
+              ) : (
+                <EmptyStateMessage>
+                  <Iconify
+                    icon="eva:layers-outline"
+                    sx={{ width: 48, height: 48, color: 'text.secondary', opacity: 0.5, mb: 2 }}
+                  />
+                  <Typography variant="subtitle1" color="text.secondary">
+                    No schema to visualize
+                  </Typography>
+                  <Typography variant="body2" color="text.disabled">
+                    Tables will appear here when available
+                  </Typography>
+                </EmptyStateMessage>
+              )}
+            </Box>
           </Paper>
         </Grid>
-      )}
-    </Grid>
+      </Grid>
+    </Box>
   );
 }
