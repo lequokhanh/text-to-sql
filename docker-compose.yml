@@ -48,15 +48,8 @@ services:
         build:
             context: ./slm-engine
         restart: always
-        environment:
-            - EMBED_HOST_API=embed:8080
-            - OLLAMA_HOST=http://ftisu.ddns.net:9293/ollama/
-            - OLLAMA_MODEL=qwen2.5-coder:14b
-            - LLM_PROMPT=1 # 0 for traditional prompt, 1 for fine-tuned prompt
-            # qwen2.5-coder:14b
-            # gemma3:12b
-            # phi4
-            # llama3.1:8b-instruct-q8_0
+        env_file:
+            - ./slm-engine/.env
         networks:
             - slm
         healthcheck:
@@ -95,8 +88,8 @@ services:
         depends_on:
             mysql:
                 condition: service_healthy
-            engine:
-                condition: service_healthy
+            # engine:
+            #     condition: service_healthy
             embed:
                 condition: service_healthy
         logging:
