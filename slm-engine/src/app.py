@@ -18,6 +18,8 @@ import logging
 from pathlib import Path
 import asyncio
 from functools import wraps
+from langfuse import Langfuse
+from langfuse.llama_index import LlamaIndexInstrumentor
 
 # Configure logging with a more detailed format
 logging.basicConfig(
@@ -78,6 +80,28 @@ settings_model = api.model('Settings', {
 # Register error handlers
 register_error_handlers(app)
 logger.info("Error handlers registered")
+
+# Initialize Langfuse for observability
+LANGFUSE_PUBLIC_KEY = os.getenv("LANGFUSE_PUBLIC_KEY")
+LANGFUSE_SECRET_KEY = os.getenv("LANGFUSE_SECRET_KEY")
+LANGFUSE_HOST = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
+
+# Initialize Langfuse client
+langfuse = Langfuse(
+    public_key=LANGFUSE_PUBLIC_KEY,
+    secret_key=LANGFUSE_SECRET_KEY,
+    host=LANGFUSE_HOST
+)
+logger.info("Langfuse client initialized")
+
+# Initialize Langfuse LlamaIndex instrumentor
+llama_index_instrumentor = LlamaIndexInstrumentor(
+    public_key=LANGFUSE_PUBLIC_KEY,
+    secret_key=LANGFUSE_SECRET_KEY,
+    host=LANGFUSE_HOST
+)
+llama_index_instrumentor.start()
+logger.info("Langfuse LlamaIndex instrumentor started")
 
 # Initialize workflows with the centralized LLM
 TEXT_TO_SQL_PROMPT_TMPL = text2sql_prompt_routing(llm_config.settings["prompt_routing"])
@@ -228,15 +252,39 @@ class Query(Resource):
             connection_payload = data.get("connection_payload")
             logger.info(f"Processing query: {query}")
 
+            # Create a Langfuse trace for this query
+            trace = langfuse.trace(
+                name="text_to_sql_query",
+                user_id=connection_payload.get("username", "unknown"),
+                metadata={
+                    "query": query,
+                    "db_type": connection_payload.get("dbType", "unknown")
+                }
+            )
+
             if not query or not connection_payload:
                 logger.warning("Missing required parameters in request")
+                trace.update(
+                    status="failed",
+                    metadata={"error": "Missing 'query' or 'connection_payload'"}
+                )
                 return jsonify({"error": "Missing 'query' or 'connection_payload'"}), 400
             
             is_valid, error_message = validate_connection_payload(connection_payload)
             if not is_valid:
                 logger.warning(f"Invalid connection payload: {error_message}")
+                trace.update(
+                    status="failed",
+                    metadata={"error": error_message}
+                )
                 return jsonify({"error": error_message}), 400
 
+            # Create a span for schema retrieval
+            schema_span = langfuse.span(
+                name="schema_retrieval",
+                parent_id=trace.id
+            )
+            
             logger.info("Retrieving schema from database")
             table_details = get_schema(connection_payload)
             for table in table_details:
@@ -248,30 +296,53 @@ class Query(Resource):
             # Enrich schema with additional information
             table_details, database_description = enrich_schema_with_info(table_details, connection_payload)
             logger.info(f"Retrieved schema with {len(table_details)} tables")
-
-            logger.info("Executing workflow")
-            response = await workflow.run(
-                query=query,
-                table_details=table_details,
-                database_description=database_description,
-                connection_payload=connection_payload
-            )
-            logger.info("Workflow completed successfully")
             
-            return ResponseWrapper.success(response)
-            logger.info("Executing workflow")
-            response = await workflow.run(
-                query=query,
-                table_details=table_details,
-                database_description=database_description,
-                connection_payload=connection_payload
+            schema_span.update(
+                metadata={
+                    "table_count": len(table_details),
+                    "has_database_description": bool(database_description)
+                }
             )
+
+            # Trace the query processing using LlamaIndex instrumentor
+            logger.info("Executing workflow")
+            with llama_index_instrumentor.observe(trace_id=trace.id):
+                response = await workflow.run(
+                    query=query,
+                    table_details=table_details,
+                    database_description=database_description,
+                    connection_payload=connection_payload
+                )
+                logger.info(f"Trace ID: {trace.id}")
+            
+            # Score the query and update the trace with the result
+            if response:
+                trace.span(
+                    output=response
+                )
+                trace.update(
+                    status="success",
+                    metadata={
+                        "generated_sql": response
+                    }
+                )
+            else:
+                trace.update(
+                    status="failed",
+                    metadata={"error": "Failed to generate SQL or execute query"}
+                )
+            
             logger.info("Workflow completed successfully")
             
             return ResponseWrapper.success(response)
 
         except Exception as e:
             logger.error(f"Error processing query: {str(e)}", exc_info=True)
+            if 'trace' in locals():
+                trace.update(
+                    status="failed",
+                    metadata={"error": str(e)}
+                )
             raise AppException(str(e), 500)
 
 @api.route('/query-baseline')
@@ -294,14 +365,39 @@ class QueryBaseline(Resource):
             connection_payload = data.get("connection_payload")
             logger.info(f"Processing query: {query}")
             
+            # Create a Langfuse trace for this baseline query
+            trace = langfuse.trace(
+                name="baseline_text_to_sql_query",
+                user_id=connection_payload.get("username", "unknown"),
+                metadata={
+                    "query": query,
+                    "db_type": connection_payload.get("dbType", "unknown"),
+                    "workflow": "baseline"
+                }
+            )
+            
             if not query or not connection_payload:
                 logger.warning("Missing required parameters in request")
+                trace.update(
+                    status="failed",
+                    metadata={"error": "Missing 'query' or 'connection_payload'"}
+                )
                 return jsonify({"error": "Missing 'query' or 'connection_payload'"}), 400
             
             is_valid, error_message = validate_connection_payload(connection_payload)
             if not is_valid:
                 logger.warning(f"Invalid connection payload: {error_message}")
+                trace.update(
+                    status="failed",
+                    metadata={"error": error_message}
+                )
                 return jsonify({"error": error_message}), 400
+            
+            # Create a span for schema retrieval
+            schema_span = langfuse.span(
+                name="schema_retrieval",
+                parent_id=trace.id
+            )
             
             logger.info("Retrieving schema from database")
             table_details = get_schema(connection_payload)
@@ -314,20 +410,49 @@ class QueryBaseline(Resource):
             # Enrich schema with additional information
             table_details, database_description = enrich_schema_with_info(table_details, connection_payload)
             logger.info(f"Retrieved schema with {len(table_details)} tables")
-
-            logger.info("Executing workflow")
-            response = await baseline_workflow.run(
-                query=query,
-                table_details=table_details,
-                database_description=database_description,
-                connection_payload=connection_payload
+            
+            schema_span.update(
+                metadata={
+                    "table_count": len(table_details),
+                    "has_database_description": bool(database_description)
+                }
             )
+            
+            # Trace the query processing using LlamaIndex instrumentor
+            logger.info("Executing workflow")
+            with llama_index_instrumentor.observe(trace_id=trace.id):
+                response = await baseline_workflow.run(
+                    query=query,
+                    table_details=table_details,
+                    database_description=database_description,
+                    connection_payload=connection_payload
+                )
+
+
+            if response:
+                trace.update(
+                    status="success",
+                    metadata={
+                        "generated_sql": response
+                    }
+                )
+            else:
+                trace.update(
+                    status="failed",
+                    metadata={"error": "Failed to generate SQL or execute query"}
+                )
+            
             logger.info("Workflow completed successfully")
             
             return ResponseWrapper.success(response)
 
         except Exception as e:
             logger.error(f"Error processing query: {str(e)}", exc_info=True)
+            if 'trace' in locals():
+                trace.update(
+                    status="failed",
+                    metadata={"error": str(e)}
+                )
             raise AppException(str(e), 500)
 
 @api.route('/schema-enrichment')
@@ -346,43 +471,84 @@ class SchemaEnrichment(Resource):
         logger.info("Received request to /schema-enrichment endpoint")
         try:
             data = request.json
-            connection_payload = data.get("connection_payload")     
+            connection_payload = data.get("connection_payload")
+            
+            # Create a Langfuse trace for schema enrichment
+            trace = langfuse.trace(
+                name="schema_enrichment",
+                user_id=connection_payload.get("username", "unknown"),
+                metadata={
+                    "db_type": connection_payload.get("dbType", "unknown")
+                }
+            )
 
             if not connection_payload:
                 logger.warning("Missing required parameters in request")
+                trace.update(
+                    status="failed",
+                    metadata={"error": "Missing 'connection_payload' or 'database_schema'"}
+                )
                 return jsonify({"error": "Missing 'connection_payload' or 'database_schema'"}), 400
             
             is_valid, error_message = validate_connection_payload(connection_payload)
             if not is_valid:
                 logger.warning(f"Invalid connection payload: {error_message}")
+                trace.update(
+                    status="failed",
+                    metadata={"error": error_message}
+                )
                 return jsonify({"error": error_message}), 400
+            
+            # Create a span for schema retrieval
+            schema_span = langfuse.span(
+                name="schema_retrieval",
+                parent_id=trace.id
+            )
             
             logger.info("Retrieving database schema...")
             table_details = get_schema(connection_payload)
+            
+            schema_span.update(
+                metadata={
+                    "table_count": len(table_details)
+                }
+            )
+            
             logger.info(f"Retrieved schema with {len(table_details)} tables")
 
+            # Trace the enrichment workflow using LlamaIndex instrumentor
             logger.info("Executing workflow")
-            response = await schema_workflow.run(
-                connection_payload=connection_payload,
-                database_schema=table_details
-            )
-            logger.info("Workflow completed successfully")
+            with llama_index_instrumentor.observe(trace_id=trace.id):
+                response = await schema_workflow.run(
+                    connection_payload=connection_payload,
+                    database_schema=table_details
+                )
+            
             response["original_schema"] = get_schema(connection_payload)
-            return ResponseWrapper.success(response)
-            logger.info("Executing workflow")
-            response = await schema_workflow.run(
-                connection_payload=connection_payload,
-                database_schema=table_details
-            )
-            logger.info("Workflow completed successfully")
-            response["original_schema"] = get_schema(connection_payload)
+            
+            # Update trace with enrichment results
+            if response:
+                trace.update(
+                    status="success",
+                    metadata={
+                        "data": response
+                    }
+                )
+            else:
+                trace.update(
+                    status="failed",
+                    metadata={"error": "Failed to enrich schema"}
+                )
+            
             return ResponseWrapper.success(response)
 
         except Exception as e:
             logger.error(f"Error processing schema enrichment: {str(e)}", exc_info=True)
-            raise AppException(str(e), 500)
-        except Exception as e:
-            logger.error(f"Error processing schema enrichment: {str(e)}", exc_info=True)
+            if 'trace' in locals():
+                trace.update(
+                    status="failed",
+                    metadata={"error": str(e)}
+                )
             raise AppException(str(e), 500)
 
 @api.route('/settings')
@@ -419,6 +585,14 @@ class Settings(Resource):
         try:
             data = request.json
             
+            # Create a Langfuse trace for settings update
+            trace = langfuse.trace(
+                name="settings_update",
+                metadata={
+                    "settings": data
+                }
+            )
+            
             # Get current provider and check if it's being changed
             current_provider = os.getenv("LLM_PROVIDER", "ollama").lower()
             new_provider = data.get("provider", current_provider).lower()
@@ -426,6 +600,10 @@ class Settings(Resource):
             # If provider is changing, validate the new provider
             if new_provider != current_provider:
                 if new_provider not in ["ollama", "google"]:
+                    trace.update(
+                        status="failed",
+                        metadata={"error": f"Unsupported LLM provider: {new_provider}"}
+                    )
                     raise ValueError(f"Unsupported LLM provider: {new_provider}")
                 
                 # Update the environment variable
@@ -462,6 +640,10 @@ class Settings(Resource):
             # Validate that at least one setting is provided
             if all(v is None for v in settings.values()):
                 logger.warning("No settings provided in request")
+                trace.update(
+                    status="failed",
+                    metadata={"error": "At least one setting must be provided"}
+                )
                 return jsonify({"error": "At least one setting must be provided"}), 400
             
             # Update settings using the centralized LLM config
@@ -474,6 +656,15 @@ class Settings(Resource):
             baseline_workflow.llm = llm_config.get_llm()
             
             logger.info("LLM settings updated successfully")
+            
+            trace.update(
+                status="success",
+                metadata={
+                    "provider": new_provider,
+                    "updated_settings": settings
+                }
+            )
+            
             return ResponseWrapper.success({
                 "message": "Settings updated successfully",
                 "current_settings": llm_config.get_settings(),
@@ -481,6 +672,11 @@ class Settings(Resource):
             })
         except Exception as e:
             logger.error(f"Error updating settings: {str(e)}", exc_info=True)
+            if 'trace' in locals():
+                trace.update(
+                    status="failed",
+                    metadata={"error": str(e)}
+                )
             raise AppException(str(e), 500)
 
 @api.route('/health-check')
@@ -494,6 +690,14 @@ class HealthCheck(Resource):
         """Health check endpoint"""
         logger.debug("Health check request received")
         return jsonify({"status": "ok"})
+
+# Register shutdown handler to flush Langfuse events
+def on_shutdown():
+    logger.info("Flushing Langfuse events before shutdown")
+    langfuse.flush()
+    llama_index_instrumentor.flush()
+
+atexit.register(on_shutdown)
 
 if __name__ == '__main__':
     print_banner()
