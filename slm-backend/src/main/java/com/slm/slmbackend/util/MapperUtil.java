@@ -5,7 +5,6 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class MapperUtil {
@@ -28,7 +27,7 @@ public class MapperUtil {
         return source
                 .stream()
                 .map(element -> modelMapper.map(element, targetClass))
-                .collect(Collectors.toList());
+                .toList();
     }
 
 }

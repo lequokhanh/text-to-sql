@@ -25,7 +25,9 @@ public enum ResponseEnum {
     RELATION_NOT_BELONG_TO_COLUMN(7, "Relation does not belong to column"),
     DATASOURCE_CONNECT_FAILED(8, "Data source connection failed"),
     CHAT_SESSION_NOT_FOUND(9, "Chat session not found"),
-    CHAT_SESSION_NOT_BELONG_TO_USER(10, "Chat session does not belong to user");
+    CHAT_SESSION_NOT_BELONG_TO_USER(10, "Chat session does not belong to user"),
+    INVALID_REQUEST(11, "Invalid request"),
+    REQUEST_TIMEOUT(12, "Request timeout"),;
 
     private final int code;
     private final String message;

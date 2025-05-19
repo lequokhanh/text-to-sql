@@ -1,13 +1,12 @@
-// File: src/sections/database-management/components/chat/ChatMessageInput.tsx
-
+// File: src/components/text-to-sql/chat/enhanced-chat-input.tsx
 import { useRef, useState, useEffect } from 'react';
 
+import { alpha, styled } from '@mui/material/styles';
 import {
   Box,
+  Chip,
   Paper,
   Stack,
-  alpha,
-  Tooltip,
   useTheme,
   InputBase,
   IconButton,
@@ -16,26 +15,87 @@ import {
 
 import Iconify from 'src/components/iconify';
 
-interface ChatMessageInputProps {
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  position: 'relative',
+  borderRadius: theme.spacing(2),
+  overflow: 'hidden',
+  transition: theme.transitions.create(['border-color', 'box-shadow'], {
+    duration: theme.transitions.duration.short,
+  }),
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+  },
+  '&.focused': {
+    borderColor: theme.palette.primary.main,
+    boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.1)}`,
+  },
+}));
+
+const StyledInput = styled(InputBase)(({ theme }) => ({
+  flex: 1,
+  padding: theme.spacing(1.5, 2),
+  fontSize: '0.875rem',
+  lineHeight: 1.5,
+  '& .MuiInputBase-input': {
+    padding: 0,
+    '&::placeholder': {
+      opacity: 0.7,
+      color: theme.palette.text.secondary,
+    },
+  },
+}));
+
+const SendButton = styled(IconButton)(({ theme }) => ({
+  width: 44,
+  height: 44,
+  margin: theme.spacing(0.5),
+  borderRadius: theme.spacing(1.5),
+  transition: theme.transitions.create(['background-color', 'transform'], {
+    duration: theme.transitions.duration.short,
+  }),
+  '&:hover': {
+    transform: 'scale(1.05)',
+  },
+  '&.Mui-disabled': {
+    transform: 'none',
+  },
+}));
+
+interface EnhancedChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
   placeholder?: string;
-  initialValue?: string;
   disableSend?: boolean;
+  sessionInfo?: {
+    sessionId: string;
+    messageCount: number;
+  } | null;
+  showSuggestions?: boolean;
 }
 
 export default function ChatMessageInput({
   onSend,
   disabled = false,
-  placeholder = 'Type a message...',
-  initialValue = '',
+  placeholder = 'Ask a question to start a new chat...',
   disableSend = false,
-}: ChatMessageInputProps) {
+  sessionInfo = null,
+  showSuggestions = false,
+}: EnhancedChatInputProps) {
   const theme = useTheme();
-  const [message, setMessage] = useState(initialValue);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [message, setMessage] = useState('');
+  const [focused, setFocused] = useState(false);
 
-  // Auto focus when component mounts
+  // Sample suggestions for new chats
+  const suggestions = [
+    "What are the top 5 products by sales?",
+    "Show me revenue by month",
+    "List customers with high order values",
+    "Which regions have the best performance?",
+  ];
+
   useEffect(() => {
     if (inputRef.current && !disabled) {
       inputRef.current.focus();
@@ -46,111 +106,133 @@ export default function ChatMessageInput({
     setMessage(event.target.value);
   };
 
-  const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
       handleSend();
     }
   };
 
   const handleSend = () => {
     if (!message.trim() || disabled || disableSend) return;
-
     onSend(message.trim());
     setMessage('');
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    onSend(suggestion);
+  };
+
   return (
-    <Paper
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        position: 'relative',
-        boxShadow: 'none',
-        borderRadius: 2,
-        bgcolor: 'transparent',
-      }}
-    >
-      <InputBase
-        inputRef={inputRef}
-        fullWidth
-        value={message}
-        onChange={handleChange}
-        onKeyUp={handleKeyUp}
-        disabled={disabled}
-        placeholder={placeholder}
-        sx={{
-          px: 2,
-          py: 1.5,
-          height: 56,
-          fontSize: '0.875rem',
-          fontWeight: 400,
-          lineHeight: 1.5,
-          transition: theme.transitions.create(['box-shadow', 'background-color']),
-          '&.Mui-focused': {
-            boxShadow: `0 0 0 2px ${theme.palette.primary.main}`,
-          },
-          '& .MuiInputBase-input': {
-            '&::placeholder': {
-              opacity: 0.7,
-              color: theme.palette.text.secondary,
-            },
-          },
-        }}
-        startAdornment={
-          <Iconify
-            icon="eva:message-square-outline"
-            width={20}
-            height={20}
-            sx={{
-              mr: 1,
-              color: disabled ? 'text.disabled' : 'text.secondary',
-            }}
+    <Box>
+      {/* Session Info */}
+      {sessionInfo && (
+        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
+          <Chip
+            label={`Session ${sessionInfo.sessionId} • ${sessionInfo.messageCount} exchanges`}
+            size="small"
+            variant="outlined"
+            sx={{ fontSize: '0.75rem' }}
           />
-        }
-        endAdornment={
-          <Stack direction="row" spacing={1} alignItems="center">
-            {message.length > 0 && (
-              <Typography
-                variant="caption"
+        </Box>
+      )}
+
+      {/* Input Area */}
+      <StyledPaper
+        elevation={0}
+        className={focused ? 'focused' : ''}
+        sx={{
+          backgroundColor: alpha(theme.palette.grey[500], 0.08),
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        }}
+      >
+        <StyledInput
+          ref={inputRef}
+          value={message}
+          onChange={handleChange}
+          onKeyPress={handleKeyPress}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          disabled={disabled}
+          placeholder={placeholder}
+          multiline
+          maxRows={4}
+          startAdornment={
+            <Iconify
+              icon="eva:message-square-outline"
+              width={20}
+              height={20}
+              sx={{
+                mr: 1,
+                color: disabled ? 'text.disabled' : 'text.secondary',
+              }}
+            />
+          }
+        />
+
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mr: 1 }}>
+          {message.length > 0 && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                opacity: 0.7,
+                minWidth: 'fit-content',
+              }}
+            >
+              {message.length}
+            </Typography>
+          )}
+
+          <SendButton
+            onClick={handleSend}
+            disabled={!message.trim() || disabled || disableSend}
+            sx={{
+              backgroundColor: message.trim() && !disabled && !disableSend
+                ? alpha(theme.palette.primary.main, 0.1)
+                : 'transparent',
+              color: message.trim() && !disabled && !disableSend
+                ? 'primary.main'
+                : 'text.disabled',
+              '&:hover': {
+                backgroundColor: message.trim() && !disabled && !disableSend
+                  ? alpha(theme.palette.primary.main, 0.2)
+                  : 'transparent',
+              },
+            }}
+          >
+            <Iconify icon="eva:paper-plane-fill" width={20} height={20} />
+          </SendButton>
+        </Stack>
+      </StyledPaper>
+
+      {/* Suggestions */}
+      {showSuggestions && !sessionInfo && !message && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+            Try asking:
+          </Typography>
+          <Stack direction="row" flexWrap="wrap" gap={1}>
+            {suggestions.map((suggestion, index) => (
+              <Chip
+                key={index}
+                label={suggestion}
+                size="small"
+                variant="outlined"
+                onClick={() => handleSuggestionClick(suggestion)}
                 sx={{
-                  color: 'text.secondary',
-                  opacity: 0.7,
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                    borderColor: theme.palette.primary.main,
+                  },
                 }}
-              >
-                {message.length}
-              </Typography>
-            )}
-            <Tooltip title="Send message">
-              <Box sx={{ display: 'inline-flex' }}>
-                <IconButton
-                  color="primary"
-                  disabled={!message.trim() || disabled || disableSend}
-                  onClick={handleSend}
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    bgcolor: () =>
-                      message.trim() && !disabled && !disableSend
-                        ? alpha(theme.palette.primary.main, 0.1)
-                        : 'transparent',
-                    '&:hover': {
-                      bgcolor: () =>
-                        message.trim() && !disabled && !disableSend
-                          ? alpha(theme.palette.primary.main, 0.2)
-                          : 'transparent',
-                    },
-                    '&.Mui-disabled': {
-                      opacity: 0.48,
-                    },
-                  }}
-                >
-                  <Iconify icon="eva:paper-plane-fill" width={20} height={20} />
-                </IconButton>
-              </Box>
-            </Tooltip>
+              />
+            ))}
           </Stack>
-        }
-      />
-    </Paper>
+        </Box>
+      )}
+    </Box>
   );
 }

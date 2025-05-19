@@ -231,7 +231,7 @@ function PrimarySidebar({ children }: { children: ReactNode }) {
   );
 }
 
-function SecondarySidebar({ children }: { children: ReactNode }) {
+function SecondarySidebar({ children, sx }: { children: ReactNode, sx?: React.CSSProperties }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   const [collapsed, setCollapsed] = useState(false);
@@ -331,17 +331,17 @@ function SecondarySidebar({ children }: { children: ReactNode }) {
   );
 }
 
-function Content({ children }: { children: ReactNode }) {
-  return <ContentContainerStyle>{children}</ContentContainerStyle>;
+function Content({ children, sx }: { children: ReactNode, sx?: React.CSSProperties }) {
+  return <ContentContainerStyle sx={sx}>{children}</ContentContainerStyle>;
 }
 
-function Main({ children }: { children: ReactNode }) {
-  return <MainStyle>{children}</MainStyle>;
+function Main({ children, sx }: { children: ReactNode, sx?: React.CSSProperties }) {
+  return <MainStyle sx={sx}>{children}</MainStyle>;
 }
 
 // The main database layout component
-export function DatabaseLayout({ children }: { children: ReactNode }) {
-  return <RootStyle>{children}</RootStyle>;
+export function DatabaseLayout({ children, sx }: { children: ReactNode, sx?: React.CSSProperties }) {
+  return <RootStyle sx={sx}>{children}</RootStyle>;
 }
 
 // Attach the sub-components to the DatabaseLayout component

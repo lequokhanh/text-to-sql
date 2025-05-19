@@ -19,7 +19,7 @@ public class TableColumn {
     private String columnDescription;
     private Boolean isPrimaryKey;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "from_column")
     private List<ColumnRelation> outgoingRelations;
 }

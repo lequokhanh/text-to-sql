@@ -1,10 +1,14 @@
 package com.slm.slmbackend.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.slm.slmbackend.dto.chat.AskQuestionRequestDTO;
 import com.slm.slmbackend.dto.chat.BotResponseDTO;
+import com.slm.slmbackend.dto.datasource.ChatMessageDTO;
+import com.slm.slmbackend.dto.datasource.ChatSessionDTO;
+import com.slm.slmbackend.dto.datasource.DataSourceConfigurationDetailDTO;
 import com.slm.slmbackend.entity.ChatMessage;
 import com.slm.slmbackend.entity.ChatSession;
-import com.slm.slmbackend.entity.DataSourceConfiguration;
 import com.slm.slmbackend.entity.UserAccount;
 import com.slm.slmbackend.enums.ResponseEnum;
 import com.slm.slmbackend.enums.UserRole;
@@ -13,146 +17,275 @@ import com.slm.slmbackend.repository.ChatMessageRepository;
 import com.slm.slmbackend.repository.ChatSessionRepository;
 import com.slm.slmbackend.repository.DataSourceConfigurationRepository;
 import com.slm.slmbackend.service.ChatService;
+import com.slm.slmbackend.service.DataSourceConfigurationService;
 import com.slm.slmbackend.service.EmbedService;
 import com.slm.slmbackend.service.EngineService;
+import com.slm.slmbackend.util.MapperUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
+import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChatServiceImpl implements ChatService {
+    private static final String URL_FORMAT = "%s:%s/%s";
+    private static final int API_TIMEOUT_SECONDS = 30;
+    private static final String ENGINE_QUERY_ENDPOINT = "/query";
+    private static final String EMBED_QUERY_ENDPOINT = "/api/v1/db/query";
+    private static final String SUCCESS_CODE = "0";
+
     private final ChatSessionRepository chatSessionRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final DataSourceConfigurationRepository dataSourceConfigurationRepository;
     private final EngineService engineService;
     private final EmbedService embedService;
+    private final DataSourceConfigurationService dataSourceConfigurationService;
+    private final ObjectMapper mapper;
+
     @Override
-    @Transactional
     public BotResponseDTO askQuestion(UserAccount user, AskQuestionRequestDTO request) {
-        // Get or create chat session
-        ChatSession chatSession;
-        if (request.getChatSessionId() != null) {
-            chatSession = chatSessionRepository.findById(request.getChatSessionId())
-                    .orElseThrow(() -> new AppException(ResponseEnum.CHAT_SESSION_NOT_FOUND));
-            
-            // Validate user owns the chat session
-            if (!chatSession.getUser().getId().equals(user.getId())) {
-                throw new AppException(ResponseEnum.CHAT_SESSION_NOT_BELONG_TO_USER);
-            }
-        } else {
-            // create new chat session
-            chatSession = new ChatSession();
-            chatSession.setUser(user);
-            chatSession.setDataSource(dataSourceConfigurationRepository.findById(request.getDataSourceId())
-                    .orElseThrow(() -> new AppException(ResponseEnum.DATA_SOURCE_CONFIGURATION_NOT_FOUND)));
+        // Validate user and request
+        if (user == null) {
+            throw new AppException(ResponseEnum.UNAUTHORIZED);
         }
 
-        // Get data source
-        DataSourceConfiguration dataSource = dataSourceConfigurationRepository.findById(request.getDataSourceId())
-                .orElseThrow(() -> new AppException(ResponseEnum.DATA_SOURCE_CONFIGURATION_NOT_FOUND));
-
-        // Validate user has access to the data source
-        if (!dataSource.getOwners().contains(user)) {
-            throw new AppException(ResponseEnum.DATA_SOURCE_NOT_BELONG_TO_USER);
+        if (request == null || request.getDataSourceId() == null) {
+            throw new AppException(ResponseEnum.INVALID_REQUEST);
         }
 
-        // Create and save user message
-        ChatMessage userMessage = new ChatMessage();
-        userMessage.setUserRole(UserRole.USER);
-        userMessage.setMessage(request.getQuestion());
-        userMessage = chatMessageRepository.save(userMessage);
-        chatSession.getMessages().add(userMessage);
-        chatSessionRepository.save(chatSession);
+        if (!StringUtils.hasText(request.getQuestion())) {
+            throw new AppException(ResponseEnum.INVALID_REQUEST, "Question cannot be empty");
+        }
 
-        // Prepare request for engine service
-        Map<String, Object> engineRequest = new HashMap<>();
-        engineRequest.put("question", request.getQuestion());
-        engineRequest.put("dataSource", dataSource);
+        try {
+            // Get or create chat session
+            final ChatSession chatSession;
+            if (request.getChatSessionId() != null) {
+                chatSession = chatSessionRepository.findById(request.getChatSessionId())
+                        .orElseThrow(() -> new AppException(ResponseEnum.CHAT_SESSION_NOT_FOUND));
 
-        // Call engine service and handle response
-        Mono<String> responseMono = engineService.proxyRequest("/query", engineRequest);
-        
-        // Create and save bot response
-        ChatMessage botMessage = new ChatMessage();
-        botMessage.setUserRole(UserRole.BOT);
-        
-        final ChatMessage finalBotMessage = botMessage;
-        BotResponseDTO botResponseDTO = new BotResponseDTO();
-        responseMono.subscribe(response -> {
-            finalBotMessage.setMessage(response);
-
-            Map<String, String> connectionRequest = new HashMap<>();
-
-            connectionRequest.put("url", String.format("%s:%s/%s",
-                    dataSource.getHost(),
-                    dataSource.getPort(),
-                    dataSource.getDatabaseName()));
-            connectionRequest.put("username", dataSource.getUsername());
-            connectionRequest.put("password", dataSource.getPassword());
-            connectionRequest.put("type", dataSource.getDatabaseType().name().toLowerCase());
-            connectionRequest.put("query", response);
-
-            String responseData = embedService.proxyRequest("/api/v1/db/query", connectionRequest)
-                    .doOnError(error -> {
-                        throw new AppException(ResponseEnum.DATASOURCE_CONNECT_FAILED);
-                    })
-                    .block();
-            // get responseData.data
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                JsonNode jsonNode = mapper.readTree(responseData);
-                finalBotMessage.setResponseData(jsonNode.get("data").toString());
-
-                ChatMessage savedBotMessage = chatMessageRepository.save(finalBotMessage);
-                chatSession.getMessages().add(savedBotMessage);
-            } catch (JsonProcessingException e) {
-                throw new AppException(ResponseEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
+                if (!Objects.equals(chatSession.getUser().getId(), user.getId())) {
+                    throw new AppException(ResponseEnum.CHAT_SESSION_NOT_BELONG_TO_USER);
+                }
+            } else {
+                ChatSession newSession = new ChatSession();
+                newSession.setUser(user);
+                newSession.setDataSource(dataSourceConfigurationRepository.findById(request.getDataSourceId())
+                        .orElseThrow(() -> new AppException(ResponseEnum.DATA_SOURCE_CONFIGURATION_NOT_FOUND)));
+                newSession.setMessages(new ArrayList<>());
+                chatSession = chatSessionRepository.save(newSession);
             }
 
-            botResponseDTO.setChatSessionId(chatSession.getId().toString());
-            botResponseDTO.setSql(finalBotMessage.getMessage());
-            botResponseDTO.setData(finalBotMessage.getResponseData());
-            
-            // Update chat session name if it's the first message
-            if (chatSession.getMessages() == null || chatSession.getMessages().isEmpty()) {
-                String sessionName = request.getQuestion().length() > 50 
-                    ? request.getQuestion().substring(0, 47) + "..."
-                    : request.getQuestion();
-                chatSession.setConversationName(sessionName);
-                chatSessionRepository.save(chatSession);
-            }
-        });
+            // Get data source configuration
+            DataSourceConfigurationDetailDTO dataSource = dataSourceConfigurationService.getDataSourceConfigurationById(user, request.getDataSourceId());
 
-        return botResponseDTO;
+            // Create user message
+            ChatMessage userMessage = new ChatMessage();
+            userMessage.setUserRole(UserRole.USER);
+            userMessage.setMessage(request.getQuestion());
+            userMessage.setChatSession(chatSession); // Add this line to set the session relationship
+
+            // Create bot message
+            ChatMessage botMessage = new ChatMessage();
+            botMessage.setUserRole(UserRole.BOT);
+            botMessage.setChatSession(chatSession); // Add this line to set the session relationship
+
+            // Create response DTO
+            BotResponseDTO responseDTO = new BotResponseDTO();
+            responseDTO.setChatSessionId(chatSession.getId().toString());
+
+            // Create connection payload
+            Map<String, Object> connectionPayload = new HashMap<>();
+            connectionPayload.put("url", String.format(URL_FORMAT, dataSource.getHost(), dataSource.getPort(), dataSource.getDatabaseName()));
+            connectionPayload.put("username", dataSource.getUsername());
+            connectionPayload.put("password", dataSource.getPassword());
+            connectionPayload.put("dbType", dataSource.getDatabaseType().name().toLowerCase());
+            connectionPayload.put("schema_enrich_info", dataSource.getTableDefinitions());
+
+            // Create engine request
+            Map<String, Object> engineRequest = new HashMap<>();
+            engineRequest.put("query", request.getQuestion());
+            engineRequest.put("connection_payload", connectionPayload);
+
+            CompletableFuture<BotResponseDTO> future = new CompletableFuture<>();
+
+            // Call engine service
+            engineService.proxyRequest(ENGINE_QUERY_ENDPOINT, engineRequest)
+                    .subscribe(
+                            response -> {
+                                try {
+                                    log.debug("Engine service response received");
+                                    JsonNode responseNode = mapper.readTree(response);
+                                    String code = responseNode.get("code").asText();
+                                    boolean isSuccess = SUCCESS_CODE.equals(code);
+                                    String data = isSuccess && responseNode.has("data") ? responseNode.get("data").toString() : null;
+                                    String errorMessage = !isSuccess && responseNode.has("message") ? responseNode.get("message").asText() : "Unknown error from service";
+
+                                    if (!isSuccess) {
+                                        botMessage.setMessage(errorMessage);
+                                        responseDTO.setSql(errorMessage);
+                                        return;
+                                    }
+
+                                    String query = data.replace("\"", "").replace(";", " ");
+                                    botMessage.setMessage(query);
+                                    responseDTO.setSql(query);
+                                    log.debug("Generated SQL query (length: {})", query.length());
+
+                                    // Call embed service
+                                    Map<String, String> queryRequest = new HashMap<>();
+                                    queryRequest.put("url", String.format(URL_FORMAT, dataSource.getHost(), dataSource.getPort(), dataSource.getDatabaseName()));
+                                    queryRequest.put("username", dataSource.getUsername());
+                                    queryRequest.put("password", dataSource.getPassword());
+                                    queryRequest.put("dbType", dataSource.getDatabaseType().name().toLowerCase());
+                                    queryRequest.put("query", query);
+
+                                    embedService.proxyRequest(EMBED_QUERY_ENDPOINT, queryRequest)
+                                            .subscribe(
+                                                    responseData -> {
+                                                        try {
+                                                            log.debug("Embed service response received");
+                                                            JsonNode embedResponseNode = mapper.readTree(responseData);
+                                                            String embedCode = embedResponseNode.get("code").asText();
+                                                            boolean embedSuccess = SUCCESS_CODE.equals(embedCode);
+                                                            String embedData = embedSuccess && embedResponseNode.has("data") ? embedResponseNode.get("data").toString() : null;
+                                                            String embedErrorMessage = !embedSuccess && embedResponseNode.has("message") ? embedResponseNode.get("message").asText() : "Unknown error from service";
+
+                                                            if (!embedSuccess) {
+                                                                botMessage.setMessage(botMessage.getMessage() + " (Error: " + embedErrorMessage + ")");
+                                                                future.completeExceptionally(
+                                                                        new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, embedErrorMessage));
+                                                                return;
+                                                            }
+
+                                                            responseDTO.setData(embedData);
+                                                            botMessage.setResponseData(embedData);
+
+                                                            // Save messages and complete the future
+                                                            saveMessagesAndCompleteResponse(userMessage, botMessage, responseDTO, future);
+                                                        } catch (Exception e) {
+                                                            log.error("Error processing embed service response: {}", e.getMessage());
+                                                            future.completeExceptionally(
+                                                                    new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, "Error processing data response: " + e.getMessage()));
+                                                        }
+                                                    },
+                                                    error -> {
+                                                        log.error("Embed service call error: {}", error.getMessage());
+                                                        future.completeExceptionally(
+                                                                new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, "Embed service call failed: " + error.getMessage()));
+                                                    }
+                                            );
+                                } catch (Exception e) {
+                                    log.error("Error processing engine service response: {}", e.getMessage());
+                                    future.completeExceptionally(
+                                            new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, "Error processing engine response: " + e.getMessage()));
+                                }
+                            },
+                            error -> {
+                                log.error("Engine service call error: {}", error.getMessage());
+                                future.completeExceptionally(
+                                        new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, "Engine service call failed: " + error.getMessage()));
+                            }
+                    );
+
+            return waitForFutureCompletionWithTimeout(future);
+
+        } catch (AppException e) {
+            log.error("Application error in askQuestion: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error in askQuestion: {}", e.getMessage(), e);
+            throw new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+        }
+    }
+
+    // New helper method to centralize message saving and future completion
+    private void saveMessagesAndCompleteResponse(ChatMessage userMessage, ChatMessage botMessage,
+                                                 BotResponseDTO responseDTO,
+                                                 CompletableFuture<BotResponseDTO> future) {
+        try {
+            // Save messages
+            chatMessageRepository.save(userMessage);
+            chatMessageRepository.save(botMessage);
+            future.complete(responseDTO);
+        } catch (Exception e) {
+            log.error("Error saving chat messages: {}", e.getMessage());
+            future.completeExceptionally(
+                    new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, "Error saving chat messages: " + e.getMessage()));
+        }
+    }
+
+    private BotResponseDTO waitForFutureCompletionWithTimeout(CompletableFuture<BotResponseDTO> future) {
+        try {
+            return future.get(API_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AppException(ResponseEnum.REQUEST_TIMEOUT, "Request was interrupted");
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof AppException) {
+                throw (AppException) cause;
+            }
+            throw new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, "Error processing request: " + e.getMessage());
+        } catch (TimeoutException e) {
+            throw new AppException(ResponseEnum.REQUEST_TIMEOUT, "Request timed out after " + API_TIMEOUT_SECONDS + " seconds");
+        }
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<ChatSession> getAllChatSessions(UserAccount user) {
-        return chatSessionRepository.findByUser(user);
+    public List<ChatSessionDTO> getAllChatSessions(UserAccount user) {
+        if (user == null) {
+            throw new AppException(ResponseEnum.UNAUTHORIZED);
+        }
+        return chatSessionRepository.findByUser(user)
+                .stream().map(
+                        chatSession -> {
+                            ChatSessionDTO chatSessionDTO = MapperUtil.mapObject(
+                                    chatSession, ChatSessionDTO.class);
+                            chatSessionDTO.setDataSourceId(
+                                    chatSession.getDataSource() != null ? chatSession.getDataSource().getId() : null);
+                            return chatSessionDTO;
+                        }
+                ).toList();
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<ChatMessage> getChatSessionMessages(UserAccount user, Integer sessionId) {
+    public List<ChatMessageDTO> getChatSessionMessages(UserAccount user, Integer sessionId) {
+        if (user == null) {
+            throw new AppException(ResponseEnum.UNAUTHORIZED);
+        }
+
+        if (sessionId == null) {
+            throw new AppException(ResponseEnum.INVALID_REQUEST, "Session ID cannot be null");
+        }
+
         ChatSession chatSession = chatSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new AppException(ResponseEnum.CHAT_SESSION_NOT_FOUND));
-        
-        // Validate user owns the chat session
-        if (!chatSession.getUser().equals(user)) {
+
+        validateChatSessionOwnership(chatSession, user);
+
+        return (chatSession.getMessages() != null
+                ? chatSession.getMessages().stream()
+                .map(message -> MapperUtil
+                        .mapObject(message, ChatMessageDTO.class
+                        )
+                )
+                .toList()
+                : Collections.emptyList());
+
+    }
+
+    private void validateChatSessionOwnership(ChatSession chatSession, UserAccount user) {
+        if (!Objects.equals(chatSession.getUser().getId(), user.getId())) {
             throw new AppException(ResponseEnum.CHAT_SESSION_NOT_BELONG_TO_USER);
         }
-        
-        return chatSession.getMessages();
     }
-} 
+}

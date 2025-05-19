@@ -1,3 +1,4 @@
+// src/utils/axios.ts
 import axios, { AxiosRequestConfig } from 'axios';
 
 import { BACKEND_HOST_API } from 'src/config-global';
@@ -47,8 +48,28 @@ export const endpoints = {
     register: '/api/v1/auth/register',
   },
   dataSource: {
+    base: '/api/v1/data-sources',
     create: '/api/v1/data-sources',
     owned: '/api/v1/data-sources/owned',
+    shared: '/api/v1/data-sources/shared',
+    available: '/api/v1/data-sources/available',
+    testConnection: (id: string) => `/api/v1/data-sources/${id}/test-connection`,
+    groups: {
+      base: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/groups`,
+      details: (dataSourceId: string, groupId: string) => 
+        `/api/v1/data-sources/${dataSourceId}/groups/${groupId}`,
+      members: (dataSourceId: string, groupId: string) => 
+        `/api/v1/data-sources/${dataSourceId}/groups/${groupId}/members`,
+      removeMember: (dataSourceId: string, groupId: string, userId: string) => 
+        `/api/v1/data-sources/${dataSourceId}/groups/${groupId}/members/${userId}`,
+    },
+    tables: {
+      base: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/tables`,
+      details: (dataSourceId: string, tableId: string) => 
+        `/api/v1/data-sources/${dataSourceId}/tables/${tableId}`,
+      columns: (dataSourceId: string, tableId: string) => 
+        `/api/v1/data-sources/${dataSourceId}/tables/${tableId}/columns`,
+    }
   },
   embed: {
     testConnection: `/api/proxy/embed/api/v1/db/test-connection`,

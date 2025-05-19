@@ -18,4 +18,8 @@ public class ChatMessage {
     private UserRole userRole;
     private String message;
     private String responseData;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "conversation_id")
+    private ChatSession chatSession;
 }

@@ -2,8 +2,8 @@ package com.slm.slmbackend.controller;
 
 import com.slm.slmbackend.dto.chat.AskQuestionRequestDTO;
 import com.slm.slmbackend.dto.chat.BotResponseDTO;
-import com.slm.slmbackend.entity.ChatSession;
-import com.slm.slmbackend.entity.ChatMessage;
+import com.slm.slmbackend.dto.datasource.ChatMessageDTO;
+import com.slm.slmbackend.dto.datasource.ChatSessionDTO;
 import com.slm.slmbackend.entity.UserAccount;
 import com.slm.slmbackend.response.ResponseWrapper;
 import com.slm.slmbackend.service.ChatService;
@@ -44,7 +44,7 @@ public class ChatController {
                description = "Retrieves all chat sessions for the authenticated user")
     @ApiResponse(responseCode = "200", description = "List of chat sessions retrieved successfully")
     @GetMapping("/sessions")
-    public ResponseWrapper<List<ChatSession>> getAllChatSessions() {
+    public ResponseWrapper<List<ChatSessionDTO>> getAllChatSessions() {
         return ResponseWrapper.success(chatService.getAllChatSessions(getAuthenticatedUser()));
     }
 
@@ -52,7 +52,7 @@ public class ChatController {
                description = "Retrieves all messages for a specific chat session")
     @ApiResponse(responseCode = "200", description = "List of messages retrieved successfully")
     @GetMapping("/sessions/{sessionId}/messages")
-    public ResponseWrapper<List<ChatMessage>> getChatSessionMessages(
+    public ResponseWrapper<List<ChatMessageDTO>> getChatSessionMessages(
             @Parameter(description = "ID of the chat session") @PathVariable Integer sessionId) {
         return ResponseWrapper.success(chatService.getChatSessionMessages(getAuthenticatedUser(), sessionId));
     }

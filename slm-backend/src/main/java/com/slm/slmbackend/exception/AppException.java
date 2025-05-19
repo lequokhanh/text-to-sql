@@ -19,4 +19,9 @@ public class AppException extends RuntimeException {
         super(responseEnum.getMessage());
         this.code = responseEnum.getCode();
     }
+
+    public AppException(ResponseEnum responseEnum, String message) {
+        super(message);
+        this.code = responseEnum.getCode();
+    }
 }

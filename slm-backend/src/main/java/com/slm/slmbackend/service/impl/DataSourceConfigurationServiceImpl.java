@@ -101,7 +101,73 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
     @Override
     public DataSourceConfigurationDetailDTO getDataSourceConfigurationById(UserAccount user, Integer id) {
         DataSourceConfiguration configuration = validateAndGetDataSource(user, id);
-        return MapperUtil.mapObject(configuration, DataSourceConfigurationDetailDTO.class);
+
+        // Map the basic properties using ModelMapper
+        DataSourceConfigurationDetailDTO detailDTO = new DataSourceConfigurationDetailDTO();
+        detailDTO.setId(configuration.getId());
+        detailDTO.setDatabaseType(configuration.getDatabaseType());
+        detailDTO.setName(configuration.getName());
+        detailDTO.setHost(configuration.getHost());
+        detailDTO.setPort(configuration.getPort());
+        detailDTO.setDatabaseName(configuration.getDatabaseName());
+        detailDTO.setUsername(configuration.getUsername());
+        detailDTO.setPassword(configuration.getPassword());
+        detailDTO.setCollectionName(configuration.getCollectionName());
+
+        // Manually map the tableDefinitions to avoid circular references
+        List<TableDTO> tableDTOs = new ArrayList<>();
+        if (configuration.getTableDefinitions() != null) {
+            for (TableDefinition tableDef : configuration.getTableDefinitions()) {
+                TableDTO tableDTO = new TableDTO();
+                tableDTO.setId(tableDef.getId());
+                tableDTO.setTableIdentifier(tableDef.getTableIdentifier());
+
+                // Map columns for this table
+                List<ColumnWithRelationDTO> columnDTOs = new ArrayList<>();
+                if (tableDef.getColumns() != null) {
+                    for (TableColumn column : tableDef.getColumns()) {
+                        ColumnWithRelationDTO columnDTO = new ColumnWithRelationDTO();
+                        columnDTO.setId(column.getId());
+                        columnDTO.setColumnIdentifier(column.getColumnIdentifier());
+                        columnDTO.setColumnType(column.getColumnType());
+                        columnDTO.setColumnDescription(column.getColumnDescription());
+                        columnDTO.setIsPrimaryKey(column.getIsPrimaryKey());
+
+                        // Map relations for this column
+                        List<RelationDTO> relationDTOs = new ArrayList<>();
+                        if (column.getOutgoingRelations() != null) {
+                            for (ColumnRelation relation : column.getOutgoingRelations()) {
+                                RelationDTO relationDTO = new RelationDTO();
+
+                                if (relation.getToColumn() != null) {
+                                    // Create ColumnDTO (not ColumnWithRelationDTO) for toColumn
+                                    ColumnDTO toColumnDTO = new ColumnDTO();
+                                    toColumnDTO.setId(relation.getToColumn().getId());
+                                    toColumnDTO.setColumnIdentifier(relation.getToColumn().getColumnIdentifier());
+                                    toColumnDTO.setColumnType(relation.getToColumn().getColumnType());
+                                    toColumnDTO.setColumnDescription(relation.getToColumn().getColumnDescription());
+                                    toColumnDTO.setIsPrimaryKey(relation.getToColumn().getIsPrimaryKey());
+
+                                    relationDTO.setToColumn(toColumnDTO);
+                                }
+
+                                relationDTOs.add(relationDTO);
+                            }
+                        }
+
+                        columnDTO.setOutgoingRelations(relationDTOs);
+                        columnDTOs.add(columnDTO);
+                    }
+                }
+
+                tableDTO.setColumns(columnDTOs);
+                tableDTOs.add(tableDTO);
+            }
+        }
+
+        detailDTO.setTableDefinitions(tableDTOs);
+
+        return detailDTO;
     }
 
     @Override
