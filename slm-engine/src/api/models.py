@@ -1,0 +1,38 @@
+from flask_restx import fields
+
+# Define models for request/response documentation
+def create_api_models(api):
+    """Create and return Flask-RESTX models for API documentation"""
+    
+    connection_payload_model = api.model('ConnectionPayload', {
+        'url': fields.String(required=True, description='Database host'),
+        'username': fields.String(required=True, description='Database username'),
+        'password': fields.String(required=True, description='Database password'),
+        'dbType': fields.String(required=True, description='Database type (postgresql, mysql, sqlite)'),
+        'schema_enrich_info': fields.Raw(required=False, description='Schema enrichment information'),
+        'session_information': fields.Raw(required=False, description='Session information')
+    })
+
+    query_request_model = api.model('QueryRequest', {
+        'query': fields.String(required=True, description='Natural language query'),
+        'connection_payload': fields.Nested(connection_payload_model, required=True)
+    })
+
+    settings_model = api.model('Settings', {
+        'provider': fields.String(required=False, description='LLM provider (ollama or google)'),
+        'ollama_host': fields.String(required=False, description='Ollama host URL'),
+        'ollama_model': fields.String(required=False, description='Ollama model name'),
+        'additional_kwargs': fields.Raw(required=False, description='Additional Ollama parameters'),
+        'model': fields.String(required=False, description='Google model name'),
+        'api_key': fields.String(required=False, description='Google API key'),
+        'temperature': fields.Float(required=False, description='Model temperature'),
+        'max_tokens': fields.Integer(required=False, description='Maximum tokens'),
+        'prompt_routing': fields.Integer(required=False, description='Prompt routing setting (0 or 1)'),
+        'enrich_schema': fields.Boolean(required=False, description='Schema enrichment setting')
+    })
+    
+    return {
+        'connection_payload_model': connection_payload_model,
+        'query_request_model': query_request_model,
+        'settings_model': settings_model
+    } 

@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from llama_index.llms.ollama import Ollama
 from llama_index.llms.google_genai import GoogleGenAI
 from llama_index.core.llms import LLM
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class OllamaConfig(BaseLLMConfig):
                 "num_predict": 8192,
                 "temperature": 0.7,
             },
-            "prompt_routing": 0,
+            "prompt_routing": 1,
             "enrich_schema": True
         }
 
@@ -68,7 +69,7 @@ class OllamaConfig(BaseLLMConfig):
             base_url=self.settings["ollama_host"],
             request_timeout=300.0,
             keep_alive=30*60,
-            additional_kwargs=self.settings["additional_kwargs"]
+            # additional_kwargs=self.settings["additional_kwargs"]
         )
         logger.info("Ollama LLM client initialized successfully")
 
