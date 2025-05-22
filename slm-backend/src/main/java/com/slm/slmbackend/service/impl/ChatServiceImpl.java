@@ -29,15 +29,12 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ChatServiceImpl implements ChatService {
     private static final String URL_FORMAT = "%s:%s/%s";
-    private static final int API_TIMEOUT_SECONDS = 30;
     private static final String ENGINE_QUERY_ENDPOINT = "/query";
     private static final String EMBED_QUERY_ENDPOINT = "/api/v1/db/query";
     private static final String SUCCESS_CODE = "0";
@@ -196,7 +193,7 @@ public class ChatServiceImpl implements ChatService {
                             }
                     );
 
-            return waitForFutureCompletionWithTimeout(future);
+            return waitForFutureCompletion(future);
 
         } catch (AppException e) {
             log.error("Application error in askQuestion: {}", e.getMessage());
@@ -223,9 +220,9 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
-    private BotResponseDTO waitForFutureCompletionWithTimeout(CompletableFuture<BotResponseDTO> future) {
+    private BotResponseDTO waitForFutureCompletion(CompletableFuture<BotResponseDTO> future) {
         try {
-            return future.get(API_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            return future.get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new AppException(ResponseEnum.REQUEST_TIMEOUT, "Request was interrupted");
@@ -235,8 +232,6 @@ public class ChatServiceImpl implements ChatService {
                 throw (AppException) cause;
             }
             throw new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, "Error processing request: " + e.getMessage());
-        } catch (TimeoutException e) {
-            throw new AppException(ResponseEnum.REQUEST_TIMEOUT, "Request timed out after " + API_TIMEOUT_SECONDS + " seconds");
         }
     }
 

@@ -1,10 +1,8 @@
-// File: src/components/text-to-sql/chat/enhanced-chat-input.tsx
 import { useRef, useState, useEffect } from 'react';
 
 import { alpha, styled } from '@mui/material/styles';
 import {
   Box,
-  Chip,
   Paper,
   Stack,
   useTheme,
@@ -35,21 +33,40 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   flex: 1,
-  padding: theme.spacing(1.5, 2),
-  fontSize: '0.875rem',
+  padding: theme.spacing(1, 2),
+  fontSize: '0.9375rem',
   lineHeight: 1.5,
+  minHeight: '60px',
+  maxHeight: '160px',
+  overflowY: 'auto',
   '& .MuiInputBase-input': {
     padding: 0,
     '&::placeholder': {
       opacity: 0.7,
       color: theme.palette.text.secondary,
+      fontSize: '0.9375rem',
+    },
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+  },
+  '&::-webkit-scrollbar': {
+    width: '4px',
+  },
+  '&::-webkit-scrollbar-track': {
+    backgroundColor: 'transparent',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    borderRadius: '2px',
+    backgroundColor: alpha(theme.palette.grey[500], 0.2),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.grey[500], 0.3),
     },
   },
 }));
 
 const SendButton = styled(IconButton)(({ theme }) => ({
-  width: 44,
-  height: 44,
+  width: 36,
+  height: 36,
   margin: theme.spacing(0.5),
   borderRadius: theme.spacing(1.5),
   transition: theme.transitions.create(['background-color', 'transform'], {
@@ -72,7 +89,6 @@ interface EnhancedChatInputProps {
     sessionId: string;
     messageCount: number;
   } | null;
-  showSuggestions?: boolean;
 }
 
 export default function ChatMessageInput({
@@ -81,20 +97,11 @@ export default function ChatMessageInput({
   placeholder = 'Ask a question to start a new chat...',
   disableSend = false,
   sessionInfo = null,
-  showSuggestions = false,
 }: EnhancedChatInputProps) {
   const theme = useTheme();
   const inputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState('');
   const [focused, setFocused] = useState(false);
-
-  // Sample suggestions for new chats
-  const suggestions = [
-    "What are the top 5 products by sales?",
-    "Show me revenue by month",
-    "List customers with high order values",
-    "Which regions have the best performance?",
-  ];
 
   useEffect(() => {
     if (inputRef.current && !disabled) {
@@ -119,24 +126,8 @@ export default function ChatMessageInput({
     setMessage('');
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    onSend(suggestion);
-  };
-
   return (
     <Box>
-      {/* Session Info */}
-      {sessionInfo && (
-        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
-          <Chip
-            label={`Session ${sessionInfo.sessionId} • ${sessionInfo.messageCount} exchanges`}
-            size="small"
-            variant="outlined"
-            sx={{ fontSize: '0.75rem' }}
-          />
-        </Box>
-      )}
-
       {/* Input Area */}
       <StyledPaper
         elevation={0}
@@ -144,6 +135,10 @@ export default function ChatMessageInput({
         sx={{
           backgroundColor: alpha(theme.palette.grey[500], 0.08),
           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          minHeight: '60px',
+          display: 'flex',
+          alignItems: 'flex-start',
+          pt: 0.5,
         }}
       >
         <StyledInput
@@ -156,21 +151,22 @@ export default function ChatMessageInput({
           disabled={disabled}
           placeholder={placeholder}
           multiline
-          maxRows={4}
+          maxRows={6}
           startAdornment={
             <Iconify
               icon="eva:message-square-outline"
-              width={20}
-              height={20}
+              width={18}
+              height={18}
               sx={{
                 mr: 1,
+                mt: 0.75,
                 color: disabled ? 'text.disabled' : 'text.secondary',
               }}
             />
           }
         />
 
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ mr: 1 }}>
+        <Stack direction="row" alignItems="flex-start" spacing={1} sx={{ mr: 1, mt: 0.75 }}>
           {message.length > 0 && (
             <Typography
               variant="caption"
@@ -178,6 +174,7 @@ export default function ChatMessageInput({
                 color: 'text.secondary',
                 opacity: 0.7,
                 minWidth: 'fit-content',
+                fontSize: '0.8125rem',
               }}
             >
               {message.length}
@@ -188,6 +185,8 @@ export default function ChatMessageInput({
             onClick={handleSend}
             disabled={!message.trim() || disabled || disableSend}
             sx={{
+              width: 36,
+              height: 36,
               backgroundColor: message.trim() && !disabled && !disableSend
                 ? alpha(theme.palette.primary.main, 0.1)
                 : 'transparent',
@@ -201,38 +200,11 @@ export default function ChatMessageInput({
               },
             }}
           >
-            <Iconify icon="eva:paper-plane-fill" width={20} height={20} />
+            <Iconify icon="eva:paper-plane-fill" width={18} height={18} />
           </SendButton>
         </Stack>
       </StyledPaper>
 
-      {/* Suggestions */}
-      {showSuggestions && !sessionInfo && !message && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-            Try asking:
-          </Typography>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {suggestions.map((suggestion, index) => (
-              <Chip
-                key={index}
-                label={suggestion}
-                size="small"
-                variant="outlined"
-                onClick={() => handleSuggestionClick(suggestion)}
-                sx={{
-                  cursor: 'pointer',
-                  fontSize: '0.75rem',
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                    borderColor: theme.palette.primary.main,
-                  },
-                }}
-              />
-            ))}
-          </Stack>
-        </Box>
-      )}
     </Box>
   );
 }

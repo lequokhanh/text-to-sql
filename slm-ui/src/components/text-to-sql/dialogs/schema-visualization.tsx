@@ -50,7 +50,6 @@ const RELATION_SYMBOLS = {
   OTM: '1:n', // One-to-Many
   MTO: 'n:1', // Many-to-One
   OTO: '1:1', // One-to-One
-  MTM: 'n:n', // Many-to-Many
 };
 
 // Define relationship colors
@@ -58,7 +57,6 @@ const RELATION_COLORS = {
   OTM: '#3498db', // One-to-Many - Blue
   MTO: '#2ecc71', // Many-to-One - Green
   OTO: '#9b59b6', // One-to-One - Purple
-  MTM: '#e74c3c', // Many-to-Many - Red
 };
 
 // Define types for the custom node data
@@ -254,7 +252,7 @@ function getRelationshipName(key: string): string {
     case 'OTM': return 'One-to-Many';
     case 'MTO': return 'Many-to-One';
     case 'OTO': return 'One-to-One';
-    default: return 'Many-to-Many';
+    default: return key;
   }
 }
 
@@ -602,34 +600,43 @@ function SchemaVisualizationInner({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showMinimap, setShowMinimap] = useState(true);
   const [showRelationLabels, setShowRelationLabels] = useState(true);
+  const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>({});
   const { fitView, zoomIn, zoomOut } = useReactFlow();
 
-  // Create ReactFlow nodes from tables
+  // Create ReactFlow nodes from tables with persisted positions
   const initialNodes = useMemo(
     () =>
       tables.map((table, index) => {
         const isSelected = selectedTable === table.tableIdentifier;
 
-        // Position tables in a grid layout
-        const columns = Math.ceil(Math.sqrt(tables.length));
-        const col = index % columns;
-        const row = Math.floor(index / columns);
+        // Use saved position if available, otherwise calculate new position
+        const savedPosition = nodePositions[table.tableIdentifier];
+        let position;
+        
+        if (savedPosition) {
+          position = savedPosition;
+        } else {
+          // Position tables in a grid layout for initial render
+          const columns = Math.ceil(Math.sqrt(tables.length));
+          const col = index % columns;
+          const row = Math.floor(index / columns);
+          position = { x: col * 300, y: row * 250 };
+        }
 
         return {
           id: table.tableIdentifier,
           type: 'tableNode',
-          position: { x: col * 300, y: row * 250 },
+          position,
           data: {
             tableName: table.tableIdentifier,
             columns: table.columns,
             isSelected,
           },
-          // Default settings for better compatibility
           draggable: true,
           selectable: true,
         };
       }),
-    [tables, selectedTable]
+    [tables, selectedTable, nodePositions]
   );
 
   // Create edges from relationships
@@ -755,6 +762,14 @@ function SchemaVisualizationInner({
     [theme, isDarkMode]
   );
 
+  // Add handler for node drag
+  const onNodeDragStop = useCallback((event: any, node: Node) => {
+    setNodePositions(prev => ({
+      ...prev,
+      [node.id]: node.position
+    }));
+  }, []);
+
   return (
     <ReactFlow
       nodes={nodes}
@@ -762,9 +777,9 @@ function SchemaVisualizationInner({
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onNodeClick={onNodeClick}
+      onNodeDragStop={onNodeDragStop}
       nodeTypes={nodeTypes}
-      fitView
-      fitViewOptions={{ padding: 0.2 }}
+      fitView={false}
       minZoom={0.1}
       maxZoom={1.5}
       defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}

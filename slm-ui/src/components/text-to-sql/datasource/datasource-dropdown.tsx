@@ -23,6 +23,11 @@ import Iconify from 'src/components/iconify';
 
 import { DatabaseSource } from 'src/types/database';
 
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
 const pulse = keyframes`
   0% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.3); }
   70% { box-shadow: 0 0 0 8px rgba(25, 118, 210, 0); }
@@ -30,21 +35,26 @@ const pulse = keyframes`
 `;
 
 const StyledChip = styled(Chip)(({ theme }) => ({
-  height: 20,
-  fontSize: '0.65rem',
+  height: 22,
+  fontSize: '0.7rem',
   fontWeight: 600,
-  borderRadius: 6,
+  borderRadius: 8,
   border: 'none',
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  backgroundColor: alpha(theme.palette.primary.main, 0.08),
   color: theme.palette.primary.main,
+  transition: theme.transitions.create(['transform', 'box-shadow']),
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px 0 ${alpha(theme.palette.primary.main, 0.15)}`,
+  },
   '& .MuiChip-label': {
-    paddingX: theme.spacing(0.75),
+    paddingX: theme.spacing(1),
   },
 }));
 
 const CreateButton = styled(Button)(({ theme }) => ({
-  borderRadius: 8,
-  padding: theme.spacing(1, 1.5),
+  borderRadius: 12,
+  padding: theme.spacing(1.5, 2),
   textTransform: 'none',
   fontWeight: 600,
   fontSize: '0.875rem',
@@ -73,6 +83,7 @@ const ConnectionIndicator = styled(Box)(({ theme }) => ({
   position: 'absolute',
   top: 2,
   right: 2,
+  boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
 }));
 
 const DatabaseIcon = styled(Box)(({ theme }) => ({
@@ -80,11 +91,56 @@ const DatabaseIcon = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  width: 28,
-  height: 28,
+  width: 32,
+  height: 32,
   borderRadius: '50%',
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  backgroundColor: alpha(theme.palette.primary.main, 0.08),
   border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  transition: theme.transitions.create(['transform', 'border-color', 'box-shadow']),
+  '&:hover': {
+    transform: 'scale(1.05)',
+    borderColor: alpha(theme.palette.primary.main, 0.3),
+    boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.1)}`,
+  },
+}));
+
+const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
+  padding: theme.spacing(1.5),
+  transition: theme.transitions.create(['background-color', 'box-shadow']),
+  borderRadius: theme.spacing(1),
+  margin: theme.spacing(0.5),
+  '&.Mui-selected': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.08),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.12),
+    },
+  },
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.04),
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 8px 0 ${alpha(theme.palette.common.black, 0.05)}`,
+  },
+}));
+
+const StyledListSubheader = styled(ListSubheader)(({ theme }) => ({
+  lineHeight: '32px',
+  fontSize: '0.75rem',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  color: theme.palette.text.secondary,
+  backgroundColor: alpha(theme.palette.background.default, 0.8),
+  backdropFilter: 'blur(6px)',
+  marginTop: theme.spacing(1),
+  padding: theme.spacing(1, 2),
+  '& .MuiStack-root': {
+    '& .MuiBadge-root': {
+      marginLeft: theme.spacing(1.5),
+    },
+    '& .MuiSvgIcon-root': {
+      marginRight: theme.spacing(1),
+    },
+  },
 }));
 
 interface DataSourceDropdownProps {
@@ -120,8 +176,7 @@ export function DataSourceDropdown({
   const filterSources = (sources: DatabaseSource[]) =>
     sources.filter((source) =>
       source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      source.host.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      source.databaseName.toLowerCase().includes(searchQuery.toLowerCase())
+      source.databaseType.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
   const filteredOwnedSources = filterSources(ownedSources);
@@ -176,9 +231,43 @@ export function DataSourceDropdown({
         <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
           {source.name}
         </Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary' }} noWrap>
-          {source.host}:{source.port}/{source.databaseName}
-        </Typography>
+        {isOwned && source.host && (
+          <Tooltip 
+            title={`${source.host}:${source.port}/${source.databaseName}`}
+            placement="top"
+            arrow
+          >
+            <Typography 
+              variant="caption" 
+              component="div"
+              sx={{ 
+                color: 'text.secondary',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
+              <Iconify 
+                icon="eva:link-fill" 
+                width={12} 
+                height={12} 
+                sx={{ color: 'text.disabled' }}
+              />
+              <Box 
+                component="span" 
+                sx={{ 
+                  maxWidth: '160px',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
+                  display: 'inline-block'
+                }}
+              >
+                {source.host}:{source.port}/{source.databaseName}
+              </Box>
+            </Typography>
+          </Tooltip>
+        )}
       </Box>
       
       <Stack direction="row" spacing={1} alignItems="center">
@@ -212,7 +301,7 @@ export function DataSourceDropdown({
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'center',
-          minWidth: 240,
+          minWidth: 280,
           width: '100%',
           borderRadius: 2,
           border: '1px solid',
@@ -220,9 +309,11 @@ export function DataSourceDropdown({
           bgcolor: 'background.paper',
           p: 1.5,
           textTransform: 'none',
+          transition: (theme) => theme.transitions.create(['border-color', 'box-shadow']),
           '&:hover': {
             bgcolor: 'background.paper',
             borderColor: 'primary.main',
+            boxShadow: (theme) => `0 0 0 2px ${alpha(theme.palette.primary.main, 0.08)}`,
           },
         }}
       >
@@ -280,15 +371,32 @@ export function DataSourceDropdown({
         onClose={handleCloseMenu}
         PaperProps={{
           sx: {
-            width: 320,
-            maxHeight: 400,
-            mt: 1,
-            boxShadow: 3,
-            borderRadius: 2,
+            width: 360,
+            maxHeight: 480,
+            mt: 1.5,
+            overflow: 'visible',
+            filter: 'drop-shadow(0 0 8px rgba(0,0,0,0.15))',
+            borderRadius: 3,
+            '& .MuiList-root': {
+              py: 1,
+            },
+            '&:before': {
+              content: '""',
+              display: 'block',
+              position: 'absolute',
+              top: 0,
+              right: 25,
+              width: 10,
+              height: 10,
+              bgcolor: 'background.paper',
+              transform: 'translateY(-50%) rotate(45deg)',
+              zIndex: 0,
+            },
+            animation: `${fadeIn} 0.2s ease-out`,
           },
         }}
       >
-        <Box sx={{ p: 1.5, pb: 1 }}>
+        <Box sx={{ p: 2, pb: 1 }}>
           <TextField
             size="small"
             placeholder="Search data sources..."
@@ -298,25 +406,58 @@ export function DataSourceDropdown({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" width={16} height={16} sx={{ color: 'text.disabled' }} />
+                  <Iconify icon="eva:search-fill" width={18} height={18} sx={{ color: 'text.disabled' }} />
                 </InputAdornment>
               ),
+              sx: {
+                borderRadius: 2,
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: (theme) => alpha(theme.palette.grey[500], 0.2),
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'primary.main',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'primary.main',
+                  borderWidth: 1,
+                },
+              },
             }}
           />
         </Box>
 
         {filteredOwnedSources.length > 0 && (
           <Box>
-            <ListSubheader key="owned-header">
-              <Stack direction="row" alignItems="center" spacing={1}>
+            <StyledListSubheader>
+              <Stack direction="row" alignItems="center">
                 <Iconify icon="eva:person-fill" width={14} height={14} />
-                <span>Owned by Me</span>
-                <Badge badgeContent={filteredOwnedSources.length} color="primary" />
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    ml: 1,
+                    fontWeight: 600,
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Owned by Me
+                </Typography>
+                <Badge 
+                  badgeContent={filteredOwnedSources.length} 
+                  color="primary"
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      fontSize: '0.65rem',
+                      height: 16,
+                      minWidth: 16,
+                      padding: '0 4px',
+                    },
+                  }}
+                />
               </Stack>
-            </ListSubheader>
+            </StyledListSubheader>
             
             {filteredOwnedSources.map((source) => (
-              <MenuItem
+              <StyledMenuItem
                 key={source.id}
                 selected={selectedSource?.id === source.id}
                 onClick={() => {
@@ -325,23 +466,43 @@ export function DataSourceDropdown({
                 }}
               >
                 {renderSourceItem(source, true)}
-              </MenuItem>
+              </StyledMenuItem>
             ))}
           </Box>
         )}
 
         {filteredSharedSources.length > 0 && (
           <Box>
-            <ListSubheader key="shared-header">
-              <Stack direction="row" alignItems="center" spacing={1}>
+            <StyledListSubheader>
+              <Stack direction="row" alignItems="center">
                 <Iconify icon="eva:people-fill" width={14} height={14} />
-                <span>Shared with Me</span>
-                <Badge badgeContent={filteredSharedSources.length} color="secondary" />
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    ml: 1,
+                    fontWeight: 600,
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Shared with Me
+                </Typography>
+                <Badge 
+                  badgeContent={filteredSharedSources.length} 
+                  color="secondary"
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      fontSize: '0.65rem',
+                      height: 16,
+                      minWidth: 16,
+                      padding: '0 4px',
+                    },
+                  }}
+                />
               </Stack>
-            </ListSubheader>
+            </StyledListSubheader>
             
             {filteredSharedSources.map((source) => (
-              <MenuItem
+              <StyledMenuItem
                 key={source.id}
                 selected={selectedSource?.id === source.id}
                 onClick={() => {
@@ -350,19 +511,59 @@ export function DataSourceDropdown({
                 }}
               >
                 {renderSourceItem(source, false)}
-              </MenuItem>
+              </StyledMenuItem>
             ))}
           </Box>
         )}
 
         {filteredOwnedSources.length === 0 && filteredSharedSources.length === 0 && (
-          <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Iconify icon="eva:search-outline" width={32} height={32} sx={{ mb: 1, opacity: 0.5 }} />
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          <Box sx={{ 
+            p: 4, 
+            textAlign: 'center',
+            animation: `${fadeIn} 0.3s ease-out`
+          }}>
+            <Iconify 
+              icon="eva:search-outline" 
+              width={48} 
+              height={48} 
+              sx={{ 
+                mb: 2, 
+                opacity: 0.5,
+                color: 'text.secondary' 
+              }} 
+            />
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                mb: 1,
+                color: 'text.primary',
+                fontWeight: 500
+              }}
+            >
               {searchQuery ? `No results for "${searchQuery}"` : 'No data sources available'}
             </Typography>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'text.secondary',
+                mb: 2
+              }}
+            >
+              {searchQuery 
+                ? 'Try adjusting your search terms'
+                : 'Create a new data source to get started'}
+            </Typography>
             {searchQuery && (
-              <Button size="small" onClick={() => setSearchQuery('')} sx={{ mt: 1 }}>
+              <Button 
+                size="small" 
+                onClick={() => setSearchQuery('')}
+                startIcon={<Iconify icon="eva:close-fill" />}
+                sx={{ 
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 500
+                }}
+              >
                 Clear search
               </Button>
             )}
@@ -371,14 +572,18 @@ export function DataSourceDropdown({
 
         <Divider sx={{ my: 1 }} />
         
-        <MenuItem onClick={() => { onCreateSource(); handleCloseMenu(); }}>
+        <Box sx={{ p: 1.5 }}>
           <CreateButton 
             fullWidth 
-            startIcon={<Iconify icon="eva:plus-fill" width={16} height={16} />}
+            startIcon={<Iconify icon="eva:plus-fill" width={18} height={18} />}
+            onClick={() => { 
+              onCreateSource(); 
+              handleCloseMenu(); 
+            }}
           >
             Create New Data Source
           </CreateButton>
-        </MenuItem>
+        </Box>
       </Menu>
     </Box>
   );

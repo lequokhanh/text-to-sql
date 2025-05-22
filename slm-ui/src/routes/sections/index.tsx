@@ -23,16 +23,27 @@ export default function Router() {
 
     // SET INDEX PAGE WITH HOME PAGE
     {
-      path: '/',
-      element: (
-        <AuthGuard>
-          <MainLayout>
-            <HomePage />
-          </MainLayout>
-        </AuthGuard>
-      ),
       children: [
-        { path: 'datasource/:id/manage', element: <DataSourceManagement /> },
+        {
+            path: '/',
+            element: (
+              <AuthGuard>
+                <MainLayout>
+                  <HomePage />
+                </MainLayout>
+              </AuthGuard>
+            ),
+        },
+        {
+          path: 'datasource/:id/manage', 
+          element: (
+            <AuthGuard>
+              <MainLayout>
+                <DataSourceManagement />
+              </MainLayout>
+            </AuthGuard>
+          ),
+        },
       ],
     },
 

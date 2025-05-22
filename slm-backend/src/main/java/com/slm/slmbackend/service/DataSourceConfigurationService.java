@@ -45,4 +45,6 @@ public interface DataSourceConfigurationService {
     void removeUserFromGroup(UserAccount authenticatedUser, Integer id, Integer groupId, Integer userId);
 
     void testConnection(UserAccount authenticatedUser, Integer id);
+
+    void updateMultipleColumns(UserAccount authenticatedUser, Integer id, UpdateColumnsDTO updateColumnsDTO);
 }

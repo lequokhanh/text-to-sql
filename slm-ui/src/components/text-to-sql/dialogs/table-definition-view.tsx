@@ -4,7 +4,6 @@ import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 // MUI Icons (consolidated imports)
 import {
   Key as KeyIcon,
-  Add as AddIcon,
   Link as LinkIcon,
   Save as SaveIcon,
   Close as CloseIcon,
@@ -30,22 +29,53 @@ import {
 
 import { useDebounce } from 'src/hooks/use-debounce';
 
+import axiosInstance, { endpoints } from 'src/utils/axios';
+
 import Iconify from 'src/components/iconify';
 
-import { TableDefinition, ColumnDefinition } from 'src/types/database';
+import { 
+  ColumnRelation, 
+  TableDefinition, 
+  UpdateColumnDTO,
+  ColumnDefinition,
+  CreateRelationDTO
+} from 'src/types/database';
 
 import { SchemaVisualization } from './schema-visualization';
 
 // Define relation type constants
-type RelationType = 'OTO' | 'OTM' | 'MTO' | 'MTM';
+type RelationType = 'OTO' | 'OTM' | 'MTO';
 
-// Define relation interface with improved typing
-interface RelationDefinition {
-  tableIdentifier: string;
-  columnIdentifier?: string;
-  toColumn: string;
+// Define outgoing relation interface for manage datasource
+interface OutgoingRelation {
+  id: number;
+  toColumn: {
+    id: number;
+    columnIdentifier: string;
+    columnType: string;
+    columnDescription: string;
+    isPrimaryKey: boolean;
+  };
   type: RelationType;
 }
+
+// Helper function to find table and column by column ID - keep this outside since it's pure
+const findTableAndColumnById = (tables: TableDefinition[], columnId: number): { tableIdentifier: string; columnIdentifier: string } | null => {
+  const foundTable = tables.find(table => 
+    table.columns.some(col => col.id === columnId)
+  );
+
+  if (foundTable) {
+    const foundColumn = foundTable.columns.find(col => col.id === columnId);
+    if (foundColumn) {
+      return {
+        tableIdentifier: foundTable.tableIdentifier,
+        columnIdentifier: foundColumn.columnIdentifier
+      };
+    }
+  }
+  return null;
+};
 
 // Styled components
 interface StyledCardProps {
@@ -809,8 +839,7 @@ const RelationTypeSelector: React.FC<RelationTypeSelectorProps> = ({
   const relationTypes = [
     { value: 'OTO' as RelationType, label: '1:1', tooltip: 'One-to-One' },
     { value: 'OTM' as RelationType, label: '1:n', tooltip: 'One-to-Many' },
-    { value: 'MTO' as RelationType, label: 'n:1', tooltip: 'Many-to-One' },
-    { value: 'MTM' as RelationType, label: 'n:n', tooltip: 'Many-to-Many' }
+    { value: 'MTO' as RelationType, label: 'n:1', tooltip: 'Many-to-One' }
   ];
 
   return (
@@ -992,33 +1021,41 @@ interface TableDefinitionViewProps {
 
 // Add search highlight component
 const HighlightedText = ({ text, searchQuery }: { text: string, searchQuery: string }) => {
+  const theme = useTheme();
+  
   if (!searchQuery || !text) return <>{text}</>;
 
   const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
 
   return (
-    <>
+    <m.span
+      initial={{ opacity: 0.5 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+    >
       {parts.map((part, index) =>
         part.toLowerCase() === searchQuery.toLowerCase() ? (
-          <Box
-            component="span"
+          <m.span
             key={index}
-            sx={{
-              bgcolor: (theme: any) => alpha(theme.palette.primary.main, 0.2),
-              color: 'primary.main',
-              py: 0.1,
-              px: 0.2,
-              borderRadius: 0.5,
-              fontWeight: 'medium'
+            initial={{ backgroundColor: 'transparent' }}
+            animate={{ 
+              backgroundColor: alpha(theme.palette.primary.main, 0.2)
+            }}
+            transition={{ duration: 0.2 }}
+            style={{
+              color: theme.palette.primary.main,
+              padding: '2px 4px',
+              borderRadius: '4px',
+              fontWeight: 500
             }}
           >
             {part}
-          </Box>
+          </m.span>
         ) : (
           part
         )
       )}
-    </>
+    </m.span>
   );
 };
 
@@ -1092,7 +1129,13 @@ const TableSkeleton = () => (
 const useKeyboardNavigation = (
   tables: TableDefinition[],
   selectedTable: string | null,
-  toggleTable: (tableId: string) => void
+  toggleTable: (tableId: string) => void,
+  expandedTables: Record<string, boolean>,
+  editingTableId: string | null,
+  editingColumnId: string | null,
+  cancelEditing: () => void,
+  saveColumnChanges: (tableId: string, columnId: string, column: ColumnDefinition) => Promise<void>,
+  getEditingColumn: () => ColumnDefinition | null
 ) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1114,6 +1157,39 @@ const useKeyboardNavigation = (
         toggleTable(tables[currentIndex + 1].tableIdentifier);
         e.preventDefault();
       }
+
+      // Space or Enter to expand/collapse table
+      if ((e.key === ' ' || e.key === 'Enter') && !editingTableId && !editingColumnId) {
+        e.preventDefault();
+        toggleTable(selectedTable);
+      }
+
+      // Escape to cancel editing or collapse table
+      if (e.key === 'Escape') {
+        if (editingTableId && editingColumnId) {
+          cancelEditing();
+        } else if (expandedTables[selectedTable]) {
+          toggleTable(selectedTable);
+        }
+      }
+
+      // Ctrl/Cmd + S to save changes when editing
+      if ((e.ctrlKey || e.metaKey) && e.key === 's' && editingTableId && editingColumnId) {
+        e.preventDefault();
+        const currentEditingColumn = getEditingColumn();
+        if (currentEditingColumn) {
+          saveColumnChanges(editingTableId, editingColumnId, currentEditingColumn);
+        }
+      }
+
+      // Tab navigation between tables
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const nextIndex = e.shiftKey 
+          ? (currentIndex - 1 + tables.length) % tables.length 
+          : (currentIndex + 1) % tables.length;
+        toggleTable(tables[nextIndex].tableIdentifier);
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -1121,8 +1197,33 @@ const useKeyboardNavigation = (
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [tables, selectedTable, toggleTable]);
+  }, [tables, selectedTable, toggleTable, expandedTables, editingTableId, editingColumnId, cancelEditing, saveColumnChanges, getEditingColumn]);
 };
+
+// Add StyledTableHeader component definition after other styled components
+const StyledTableHeader = styled(CardHeader)(({ theme }) => ({
+  padding: theme.spacing(2),
+  transition: 'all 0.2s ease',
+  '& .MuiCardHeader-content': {
+    width: '100%',
+  },
+  '& .table-stats': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    marginTop: theme.spacing(1),
+    color: theme.palette.text.secondary,
+    fontSize: '0.75rem',
+    '& span': {
+      '&:nth-of-type(even)': {
+        opacity: 0.5,
+      },
+    },
+  },
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.05),
+  },
+}));
 
 // Main component
 export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionViewProps): JSX.Element {
@@ -1287,13 +1388,25 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     showToast('Editing canceled', 'info');
   }, [tables, showToast]);
 
-  const saveColumnChanges = useCallback((
+  const saveColumnChanges = useCallback(async (
     tableId: string,
     columnId: string,
     updatedColumn: ColumnDefinition
-  ) => {
+  ): Promise<void> => {
     try {
       const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      // Find the table and column IDs before updating state
+      const sourceTable = editableTables.find(t => t.tableIdentifier === tableId);
+      const sourceColumn = sourceTable?.columns.find(c => c.columnIdentifier === columnId);
+
+      if (!sourceTable?.id) {
+        throw new Error('Table ID not found');
+      }
+
+      if (!sourceColumn?.id) {
+        throw new Error('Column ID not found');
+      }
 
       const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
         if (table.tableIdentifier === tableId) {
@@ -1306,6 +1419,34 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
         }
         return table;
       });
+
+      // Call API to update the column if we're in management mode
+      const sourceId = window.location.pathname.split('/')[2];
+      const isManagementPage = window.location.pathname.includes('/manage');
+      
+      if (isManagementPage && sourceId) {
+        try {
+          const updateColumnDTO: UpdateColumnDTO = {
+            columnIdentifier: updatedColumn.columnIdentifier,
+            columnType: updatedColumn.columnType,
+            columnDescription: updatedColumn.columnDescription,
+            isPrimaryKey: updatedColumn.isPrimaryKey
+          };
+
+          await axiosInstance.put(
+            endpoints.dataSource.tables.columns.update(
+              sourceId.toString(), 
+              sourceTable.id.toString(), 
+              sourceColumn.id.toString()
+            ),
+            updateColumnDTO
+          );
+        } catch (error: any) {
+          console.error('Error updating column:', error);
+          showToast('Failed to update column on server', 'error');
+          return;
+        }
+      }
 
       setState(prev => ({
         ...prev,
@@ -1320,7 +1461,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
       }
 
       showToast('Column updated successfully!', 'success');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving column changes:', error);
       showToast('Failed to save changes', 'error');
     }
@@ -1367,17 +1508,46 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     return table?.columns.filter(c => c.isPrimaryKey).length || 0;
   }, [editableTables]);
 
+  // Move normalizeRelations inside component and wrap with useCallback
+  const normalizeRelations = useCallback((column: ColumnDefinition, tablesToSearch: TableDefinition[]): ColumnRelation[] => {
+    const relations: ColumnRelation[] = [];
+    
+    // Handle standard relations
+    if (column.relations && Array.isArray(column.relations)) {
+      relations.push(...column.relations);
+    }
+    
+    // Handle outgoing relations if they exist
+    if ('outgoingRelations' in column && Array.isArray((column as any).outgoingRelations)) {
+      const outgoingRelations = (column as any).outgoingRelations as OutgoingRelation[];
+      relations.push(...outgoingRelations.map(rel => {
+        const targetInfo = findTableAndColumnById(tablesToSearch, rel.toColumn.id);
+        return {
+          id: rel.id, // Use the outgoing relation's ID
+          tableIdentifier: targetInfo?.tableIdentifier || 'Unknown Table',
+          toColumn: targetInfo?.columnIdentifier || rel.toColumn.columnIdentifier,
+          type: rel.type || 'OTO' // Default to OTO if type is not specified
+        };
+      }));
+    }
+    
+    return relations;
+  }, []); // Empty dependency array since it's a pure function
+
   const getRelationCount = useCallback((tableId: string): number => {
     const table = editableTables.find(t => t.tableIdentifier === tableId);
-    return table?.columns.reduce((count, column) =>
-      count + (column.relations ? column.relations.length : 0), 0) || 0;
-  }, [editableTables]);
+    if (!table) return 0;
+    
+    return table.columns.reduce((count, column) => {
+      const normalizedRelations = normalizeRelations(column, editableTables);
+      return count + normalizedRelations.length;
+    }, 0);
+  }, [editableTables, normalizeRelations]);
 
   const getRelationTypeDisplay = useCallback((relationType: string): string => {
     if (relationType === 'OTM') return '1:n';
     if (relationType === 'MTO') return 'n:1';
     if (relationType === 'OTO') return '1:1';
-    if (relationType === 'MTM') return 'n:n';
     return relationType;
   }, []);
 
@@ -1385,7 +1555,6 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     if (key === 'OTM') return 'One-to-Many';
     if (key === 'MTO') return 'Many-to-One';
     if (key === 'OTO') return 'One-to-One';
-    if (key === 'MTM') return 'Many-to-Many';
     return key;
   }, []);
 
@@ -1519,7 +1688,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     }));
   }, []);
 
-  const addNewRelation = useCallback(() => {
+  const addNewRelation = useCallback(async (): Promise<void> => {
     try {
       const { sourceTableId, sourceColumnId, targetTableId, targetColumnId, relationType } = relationDialog;
 
@@ -1528,20 +1697,30 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
         return;
       }
 
-      const relationToAdd: RelationDefinition = {
-        tableIdentifier: targetTableId,
-        columnIdentifier: sourceColumnId,
-        toColumn: targetColumnId,
+      // Find the source and target table/column IDs
+      const sourceTable = editableTables.find(t => t.tableIdentifier === sourceTableId);
+      const sourceColumn = sourceTable?.columns.find(c => c.columnIdentifier === sourceColumnId);
+      const targetTable = editableTables.find(t => t.tableIdentifier === targetTableId);
+      const targetColumn = targetTable?.columns.find(c => c.columnIdentifier === targetColumnId);
+
+      if (!sourceTable?.id || !sourceColumn?.id) {
+        throw new Error('Source table or column ID not found');
+      }
+
+      if (!targetTable?.id || !targetColumn?.id) {
+        throw new Error('Target table or column ID not found');
+      }
+
+      const relationToAdd: CreateRelationDTO = {
+        tableIdentifier: targetTable.tableIdentifier.toString(),
+        toColumn: targetColumn.columnIdentifier.toString(),
         type: relationType,
       };
 
       const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
 
       // Check if relation already exists
-      const sourceTable = tablesDeepCopy.find((t: TableDefinition) => t.tableIdentifier === sourceTableId);
-      const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === sourceColumnId);
-
-      if (sourceColumn?.relations?.some((r: RelationDefinition) =>
+      if (sourceColumn?.relations?.some((r: ColumnRelation) =>
         r.tableIdentifier === relationToAdd.tableIdentifier &&
         r.toColumn === relationToAdd.toColumn
       )) {
@@ -1568,6 +1747,27 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
         return table;
       });
 
+      // Call API to update the relation if we're in management mode
+      const sourceId = window.location.pathname.split('/')[2];
+      const isManagementPage = window.location.pathname.includes('/manage');
+      
+      if (isManagementPage && sourceId) {
+        try {
+          await axiosInstance.post(
+            endpoints.dataSource.tables.columns.relations.base(
+              sourceId.toString(), 
+              sourceTable.id.toString(), 
+              sourceColumn.id.toString()
+            ),
+            relationToAdd
+          );
+        } catch (error: any) {
+          console.error('Error adding relation:', error);
+          showToast('Failed to add relation on server', 'error');
+          return;
+        }
+      }
+
       setState(prev => ({
         ...prev,
         editableTables: updatedTables,
@@ -1580,20 +1780,59 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
       }
 
       showToast('Relation added successfully!', 'success');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding relation:', error);
       showToast('Failed to add relation', 'error');
     }
   }, [relationDialog, editableTables, onTablesUpdate, showToast]);
 
-  const deleteRelation = useCallback((
+  const deleteRelation = useCallback(async (
     tableId: string,
     columnId: string,
     targetTableId: string,
     targetColumnId: string
-  ) => {
+  ): Promise<void> => {
     try {
       const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+
+      // Find all necessary IDs before updating state
+      const sourceTable = editableTables.find(t => t.tableIdentifier === tableId);
+      const sourceColumn = sourceTable?.columns.find(c => c.columnIdentifier === columnId);
+      const targetTableObj = editableTables.find(t => t.tableIdentifier === targetTableId);
+      const targetColumnObj = targetTableObj?.columns.find(c => c.columnIdentifier === targetColumnId);
+
+      if (!sourceTable?.id || !sourceColumn?.id) {
+        throw new Error('Source table or column ID not found');
+      }
+
+      if (!targetTableObj?.id || !targetColumnObj?.id) {
+        throw new Error('Target table or column ID not found');
+      }
+
+      // Find the relation - handle both standard relations and outgoing relations
+      let relationId: number | undefined;
+      
+      // Check standard relations first
+      const standardRelation = sourceColumn.relations?.find(r => 
+        r.tableIdentifier === targetTableId && r.toColumn === targetColumnId
+      );
+      
+      if (standardRelation?.id) {
+        relationId = standardRelation.id;
+      } else {
+        // Check outgoing relations if standard relation not found
+        const outgoingRelation = (sourceColumn as any).outgoingRelations?.find((r: OutgoingRelation) => 
+          r.toColumn.columnIdentifier === targetColumnId && r.toColumn.id === targetColumnObj.id
+        );
+        
+        if (outgoingRelation?.id) {
+          relationId = outgoingRelation.id;
+        }
+      }
+
+      if (!relationId) {
+        throw new Error('Relation ID not found');
+      }
 
       const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
         if (table.tableIdentifier === tableId) {
@@ -1601,12 +1840,143 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
             ...table,
             columns: table.columns.map((column: ColumnDefinition) => {
               if (column.columnIdentifier === columnId) {
-                return {
-                  ...column,
-                  relations: (column.relations || []).filter(
-                    (r: RelationDefinition) => !(r.tableIdentifier === targetTableId && r.toColumn === targetColumnId)
-                  )
-                };
+                // Remove from both standard relations and outgoing relations
+                const updatedColumn = { ...column };
+                
+                // Update standard relations
+                if (updatedColumn.relations) {
+                  updatedColumn.relations = updatedColumn.relations.filter(
+                    (r: ColumnRelation) => r.id !== relationId
+                  );
+                }
+                
+                // Update outgoing relations if they exist
+                if ((updatedColumn as any).outgoingRelations) {
+                  (updatedColumn as any).outgoingRelations = (updatedColumn as any).outgoingRelations.filter(
+                    (r: OutgoingRelation) => r.id !== relationId
+                  );
+                }
+                
+                return updatedColumn;
+              }
+              return column;
+            })
+          };
+        }
+        return table;
+      });
+
+      // Call API to delete the relation if we're in management mode and we have a relation ID
+      const sourceId = window.location.pathname.split('/')[2];
+      const isManagementPage = window.location.pathname.includes('/manage');
+      
+      if (isManagementPage && sourceId && relationId) {
+        try {
+          await axiosInstance.delete(
+            endpoints.dataSource.tables.columns.relations.delete(
+              sourceId.toString(), 
+              sourceTable.id.toString(), 
+              sourceColumn.id.toString(),
+              relationId.toString()
+            )
+          );
+        } catch (error: any) {
+          console.error('Error deleting relation:', error);
+          showToast('Failed to delete relation on server', 'error');
+          return;
+        }
+      }
+
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables
+      }));
+
+      if (onTablesUpdate) {
+        onTablesUpdate(updatedTables);
+      }
+
+      showToast('Relation deleted successfully!', 'success');
+    } catch (error: any) {
+      console.error('Error deleting relation:', error);
+      showToast('Failed to delete relation', 'error');
+    }
+  }, [editableTables, onTablesUpdate, showToast]);
+
+  // Get current editing column
+  const getEditingColumn = useCallback(() => {
+    if (!editingTableId || !editingColumnId) return null;
+
+    const table = editableTables.find(t => t.tableIdentifier === editingTableId);
+    if (!table) return null;
+
+    return table.columns.find(c => c.columnIdentifier === editingColumnId) || null;
+  }, [editingTableId, editingColumnId, editableTables]);
+
+  const updateRelation = useCallback(async (
+    tableId: string,
+    columnId: string,
+    relationId: number,
+    newType: RelationType
+  ): Promise<void> => {
+    try {
+      // Find the source table and column IDs
+      const sourceTable = editableTables.find(t => t.tableIdentifier === tableId);
+      const sourceColumn = sourceTable?.columns.find(c => c.columnIdentifier === columnId);
+
+      if (!sourceTable?.id || !sourceColumn?.id) {
+        throw new Error('Source table or column ID not found');
+      }
+
+      const sourceId = window.location.pathname.split('/')[2];
+      const isManagementPage = window.location.pathname.includes('/manage');
+
+      // Update relation type in the backend if in management mode
+      if (isManagementPage && sourceId) {
+        try {
+          await axiosInstance.put(
+            endpoints.dataSource.tables.columns.relations.update(
+              sourceId.toString(),
+              sourceTable.id.toString(),
+              sourceColumn.id.toString(),
+              relationId.toString()
+            ),
+            { type: newType }
+          );
+        } catch (error: any) {
+          console.error('Error updating relation:', error);
+          showToast('Failed to update relation on server', 'error');
+          return;
+        }
+      }
+
+      // Update relation type in the frontend state
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
+        if (table.tableIdentifier === tableId) {
+          return {
+            ...table,
+            columns: table.columns.map((column: ColumnDefinition) => {
+              if (column.columnIdentifier === columnId) {
+                // Update both standard relations and outgoing relations
+                const updatedColumn = { ...column };
+                
+                // Update standard relations if they exist
+                if (updatedColumn.relations) {
+                  updatedColumn.relations = updatedColumn.relations.map(r => 
+                    r.id === relationId ? { ...r, type: newType } : r
+                  );
+                }
+                
+                // Update outgoing relations if they exist
+                if ((updatedColumn as any).outgoingRelations) {
+                  (updatedColumn as any).outgoingRelations = (updatedColumn as any).outgoingRelations.map(
+                    (r: OutgoingRelation) => r.id === relationId ? { ...r, type: newType } : r
+                  );
+                }
+                
+                return updatedColumn;
               }
               return column;
             })
@@ -1625,29 +1995,19 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
         onTablesUpdate(updatedTables);
       }
 
-      showToast('Relation deleted successfully!', 'success');
-    } catch (error) {
-      console.error('Error deleting relation:', error);
-      showToast('Failed to delete relation', 'error');
+      showToast('Relation updated successfully!', 'success');
+    } catch (error: any) {
+      console.error('Error updating relation:', error);
+      showToast('Failed to update relation', 'error');
     }
   }, [editableTables, onTablesUpdate, showToast]);
-
-  // Get current editing column
-  const getEditingColumn = useCallback(() => {
-    if (!editingTableId || !editingColumnId) return null;
-
-    const table = editableTables.find(t => t.tableIdentifier === editingTableId);
-    if (!table) return null;
-
-    return table.columns.find(c => c.columnIdentifier === editingColumnId) || null;
-  }, [editingTableId, editingColumnId, editableTables]);
 
   // Render column row
   const renderColumnRow = useCallback((table: TableDefinition, column: ColumnDefinition, index: number) => {
     const isEditing = editingTableId === table.tableIdentifier && editingColumnId === column.columnIdentifier;
     const isHovered = hoveredTableId === table.tableIdentifier && hoveredColumnId === column.columnIdentifier;
     const currentEditingColumn = isEditing ? getEditingColumn() : null;
-    const searchActive = !!searchQuery.trim();
+    const searchActive = searchQuery.trim().length > 0;
 
     const handleKeyPress = (event: React.KeyboardEvent) => {
       if (event.key === 'Enter' && !event.shiftKey) {
@@ -1796,85 +2156,84 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
         {/* Relations Cell */}
         <TableCell className="column-relations">
           <RelationsContainer>
-            {column.relations?.length ? (
-              column.relations.map((relation, relationIndex) => (
-                <Box key={`${relation.tableIdentifier}-${relation.toColumn}-${relationIndex}`} sx={{ mb: 1 }}>
-                  {isEditing ? (
-                    <Stack direction="column" spacing={1} alignItems="center">
-                      <RelationTypeSelector
-                        value={relation.type as RelationType}
-                        onChange={(newType) => {
-                          const updatedRelations = [...(column.relations || [])];
-                          updatedRelations[relationIndex] = {
-                            ...updatedRelations[relationIndex],
-                            type: newType
-                          };
-
-                          handleColumnChange(
-                            table.tableIdentifier,
-                            column.columnIdentifier,
-                            'relations',
-                            updatedRelations
-                          );
-                        }}
-                        disabled={false}
-                      />
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Typography variant="caption">
-                          {relation.tableIdentifier}.{relation.toColumn}
-                        </Typography>
-                        <Tooltip title="Remove relation">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const updatedRelations = [...(column.relations || [])];
-                              updatedRelations.splice(relationIndex, 1);
-                              handleColumnChange(
+            {((): React.ReactNode => {
+              const normalizedRelations = normalizeRelations(column, editableTables);
+              if (normalizedRelations.length) {
+                return normalizedRelations.map((relation, relationIndex) => (
+                  <Box key={`${relation.tableIdentifier}-${relation.toColumn}-${relationIndex}`} sx={{ mb: 1 }}>
+                    {isEditing ? (
+                      <Stack direction="column" spacing={1} alignItems="center">
+                        <RelationTypeSelector
+                          value={relation.type as RelationType}
+                          onChange={(newType) => {
+                            if (relation.id) {
+                              updateRelation(
                                 table.tableIdentifier,
                                 column.columnIdentifier,
-                                'relations',
-                                updatedRelations
+                                relation.id,
+                                newType
                               );
-                            }}
-                            sx={{ p: 0.25 }}
-                          >
-                            <CloseIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Stack>
-                    </Stack>
-                  ) : (
-                    <Tooltip
-                      title={`${getRelationTypeDisplay(relation.type)} → ${relation.tableIdentifier}.${relation.toColumn} (${getRelationshipName(relation.type)})`}
-                      arrow
-                    >
-                      <span>
-                        <StyledRelationChip
-                          size="small"
-                          icon={<StyledRelationIcon />}
-                          label={`${getRelationTypeDisplay(relation.type)} → ${relation.tableIdentifier}.${relation.toColumn}`}
-                          onDelete={
-                            isHovered ?
-                              () => deleteRelation(
-                                table.tableIdentifier,
-                                column.columnIdentifier,
-                                relation.tableIdentifier,
-                                relation.toColumn
-                              ) : undefined
-                          }
+                            }
+                          }}
+                          disabled={false}
                         />
-                      </span>
-                    </Tooltip>
-                  )}
-                </Box>
-              ))
-            ) : (
-              <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                No relations
-              </Typography>
-            )}
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Typography variant="caption">
+                            {relation.tableIdentifier}.{relation.toColumn}
+                          </Typography>
+                          <Tooltip title="Remove relation">
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={async () => {
+                                await deleteRelation(
+                                  table.tableIdentifier,
+                                  column.columnIdentifier,
+                                  relation.tableIdentifier,
+                                  relation.toColumn
+                                );
+                              }}
+                              sx={{
+                                bgcolor: (t) => alpha(t.palette.error.main, 0.1),
+                                '&:hover': {
+                                  bgcolor: (t) => alpha(t.palette.error.main, 0.2),
+                                },
+                              }}
+                            >
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
+                      </Stack>
+                    ) : (
+                      <Tooltip
+                        title={`${getRelationTypeDisplay(relation.type)} → ${relation.tableIdentifier}.${relation.toColumn} (${getRelationshipName(relation.type)})`}
+                        arrow
+                      >
+                        <span>
+                          <StyledRelationChip
+                            size="small"
+                            icon={<StyledRelationIcon />}
+                            label={`${getRelationTypeDisplay(relation.type)} → ${relation.tableIdentifier}.${relation.toColumn}`}
+                            onDelete={isEditing ? () => deleteRelation(
+                              table.tableIdentifier,
+                              column.columnIdentifier,
+                              relation.tableIdentifier,
+                              relation.toColumn
+                            ) : undefined}
+                          />
+                        </span>
+                      </Tooltip>
+                    )}
+                  </Box>
+                ));
+              }
+              return (
+                <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                  No relations
+                </Typography>
+              );
+            })()}
           </RelationsContainer>
 
           {/* Row action buttons */}
@@ -1924,9 +2283,9 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
               <IconButton
                 size="small"
                 color="primary"
-                onClick={() => {
+                onClick={async () => {
                   if (currentEditingColumn) {
-                    saveColumnChanges(
+                    await saveColumnChanges(
                       table.tableIdentifier,
                       column.columnIdentifier,
                       currentEditingColumn
@@ -1977,11 +2336,24 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     getRelationshipName,
     deleteRelation,
     openRelationDialog,
-    startEditing
+    startEditing,
+    normalizeRelations,
+    editableTables,
+    updateRelation
   ]);
 
   // Apply keyboard navigation
-  useKeyboardNavigation(filteredTables, selectedTable, toggleTable);
+  useKeyboardNavigation(
+    filteredTables, 
+    selectedTable, 
+    toggleTable,
+    expandedTables,
+    editingTableId,
+    editingColumnId,
+    cancelEditing,
+    saveColumnChanges,
+    getEditingColumn
+  );
 
   // Simulate a loading state briefly for better UX
   useEffect(() => {
@@ -2101,29 +2473,41 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
             ? alpha(theme.palette.primary.dark, 0.1)
             : alpha(theme.palette.primary.lighter, 0.2),
           py: 2.5,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
           '& .MuiTypography-root': {
             fontSize: '1.25rem',
             fontWeight: 600,
           }
         }}>
+          <AddLinkIcon sx={{ color: 'primary.main' }} />
           Add New Relation
         </DialogTitle>
 
         <DialogContent sx={{ py: 3.5, px: { xs: 2.5, sm: 3 } }}>
           <DialogContentText sx={{ mb: 3 }}>
-            Create a new relationship between columns in your database schema.
+            Create a relationship between database columns. Choose the target table and column, then select the type of relationship.
           </DialogContentText>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Source
+              <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box component="span" sx={{ color: 'primary.main' }}>Source</Box>
+                <Chip 
+                  size="small" 
+                  label="Starting point" 
+                  color="primary" 
+                  variant="outlined"
+                  sx={{ height: 20 }}
+                />
               </Typography>
               <Paper variant="outlined" sx={{
                 p: 2.5,
                 borderRadius: 3,
                 mb: 2,
                 border: `1px solid ${alpha(theme.palette.grey[theme.palette.mode === 'dark' ? 700 : 300], 0.7)}`,
+                bgcolor: alpha(theme.palette.primary.main, 0.05),
               }}>
                 <Typography variant="body2" sx={{ mb: 1 }}>
                   <strong>Table:</strong> {relationDialog.sourceTableId}
@@ -2132,6 +2516,19 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                   <strong>Column:</strong> {relationDialog.sourceColumnId}
                 </Typography>
               </Paper>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box component="span" sx={{ color: 'info.main' }}>Target</Box>
+                <Chip 
+                  size="small" 
+                  label="Destination" 
+                  color="info" 
+                  variant="outlined"
+                  sx={{ height: 20 }}
+                />
+              </Typography>
             </Grid>
 
             <Grid item xs={12} sm={6}>
@@ -2145,8 +2542,32 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                   sx={{ borderRadius: 3 }}
                 >
                   {editableTables.map((table) => (
-                    <MenuItem key={table.tableIdentifier} value={table.tableIdentifier}>
+                    <MenuItem 
+                      key={table.tableIdentifier} 
+                      value={table.tableIdentifier}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Box component="span" sx={{ 
+                        width: 8, 
+                        height: 8, 
+                        borderRadius: '50%',
+                        bgcolor: table.tableIdentifier === relationDialog.sourceTableId ? 'warning.main' : 'success.main',
+                        flexShrink: 0
+                      }} />
                       {table.tableIdentifier}
+                      {table.tableIdentifier === relationDialog.sourceTableId && (
+                        <Chip 
+                          size="small" 
+                          label="Current" 
+                          color="warning" 
+                          variant="outlined"
+                          sx={{ ml: 'auto', height: 20 }}
+                        />
+                      )}
                     </MenuItem>
                   ))}
                 </Select>
@@ -2166,8 +2587,20 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                   {editableTables
                     .find((t) => t.tableIdentifier === relationDialog.targetTableId)
                     ?.columns.map((column) => (
-                      <MenuItem key={column.columnIdentifier} value={column.columnIdentifier}>
-                        {column.columnIdentifier} ({column.columnType})
+                      <MenuItem 
+                        key={column.columnIdentifier} 
+                        value={column.columnIdentifier}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        }}
+                      >
+                        {column.isPrimaryKey && <KeyIcon fontSize="small" sx={{ color: 'warning.main' }} />}
+                        <span>{column.columnIdentifier}</span>
+                        <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
+                          ({column.columnType})
+                        </Typography>
                       </MenuItem>
                     ))}
                 </Select>
@@ -2175,8 +2608,11 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="subtitle2" gutterBottom>
+              <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 Relation Type
+                <Tooltip title="Choose how the tables are related to each other">
+                  <InfoOutlinedIcon fontSize="small" sx={{ color: 'text.secondary' }} />
+                </Tooltip>
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <RelationTypeSelector
@@ -2194,30 +2630,47 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                   bgcolor: alpha(theme.palette.info.main, 0.1)
                 }}>
                   <InfoOutlinedIcon color="info" fontSize="small" sx={{ mt: 0.25 }} />
-                  <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.5 }}>
-                    {(() => {
-                      if (relationDialog.relationType === 'OTO') {
-                        return 'One record in the source table corresponds to exactly one record in the target table.';
-                      }
-                      if (relationDialog.relationType === 'OTM') {
-                        return 'One record in the source table corresponds to many records in the target table.';
-                      }
-                      if (relationDialog.relationType === 'MTO') {
-                        return 'Many records in the source table correspond to one record in the target table.';
-                      }
-                      if (relationDialog.relationType === 'MTM') {
-                        return 'Many records in the source table correspond to many records in the target table.';
-                      }
-                      return '';
-                    })()}
-                  </Typography>
+                  <Box>
+                    <Typography variant="body2" color="info.main" sx={{ fontWeight: 500, mb: 0.5 }}>
+                      {(() => {
+                        if (relationDialog.relationType === 'OTO') return 'One-to-One Relationship';
+                        if (relationDialog.relationType === 'OTM') return 'One-to-Many Relationship';
+                        if (relationDialog.relationType === 'MTO') return 'Many-to-One Relationship';
+                        return '';
+                      })()}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+                      {(() => {
+                        const source = relationDialog.sourceTableId;
+                        const target = relationDialog.targetTableId || 'target';
+                        
+                        if (relationDialog.relationType === 'OTO') {
+                          return `Each record in ${source} corresponds to exactly one record in ${target}, and vice versa.`;
+                        }
+                        if (relationDialog.relationType === 'OTM') {
+                          return `Each record in ${source} can be associated with multiple records in ${target}, but each ${target} record links to only one ${source}.`;
+                        }
+                        if (relationDialog.relationType === 'MTO') {
+                          return `Multiple records in ${source} can be associated with one record in ${target}, but each ${source} record links to only one ${target}.`;
+                        }
+                        return '';
+                      })()}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
             </Grid>
           </Grid>
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, py: 2.5 }}>
+        <DialogActions sx={{ 
+          px: 3, 
+          py: 2.5,
+          bgcolor: theme.palette.mode === 'dark'
+            ? alpha(theme.palette.background.paper, 0.5)
+            : alpha(theme.palette.grey[50], 0.8),
+          borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+        }}>
           <Button
             onClick={handleRelationDialogClose}
             color="inherit"
@@ -2228,7 +2681,9 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
             Cancel
           </Button>
           <Button
-            onClick={addNewRelation}
+            onClick={async () => {
+              await addNewRelation();
+            }}
             color="primary"
             variant="contained"
             sx={{ borderRadius: 3 }}
@@ -2264,69 +2719,105 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
             }}>
               <Box sx={{ flexGrow: 1, position: 'relative' }}>
                 <StyledSearchInput
-                  placeholder="Search tables or columns..."
+                  placeholder={`Search ${filteredTables.length} tables or columns...`}
                   value={searchQuery}
                   onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
                   startAdornment={
-                    <SearchIcon
-                      fontSize="small"
-                      sx={{
-                        mr: 1,
+                    <m.div
+                      animate={{
+                        scale: searchQuery ? [1, 1.2, 1] : 1,
                         color: searchQuery ? 'primary.main' : 'text.secondary',
-                        transition: 'color 0.2s ease'
                       }}
-                    />
+                      transition={{ duration: 0.2 }}
+                    >
+                      <SearchIcon
+                        fontSize="small"
+                        sx={{
+                          mr: 1,
+                          transition: 'color 0.2s ease'
+                        }}
+                      />
+                    </m.div>
                   }
                   endAdornment={
-                    <>
-                      {searchQuery && (
-                        <IconButton
-                          size="small"
-                          onClick={() => setState(prev => ({ ...prev, searchQuery: '' }))}
-                          edge="end"
-                          sx={{
-                            opacity: 0.7,
-                            '&:hover': { opacity: 1 },
-                            transition: 'opacity 0.2s ease'
-                          }}
+                    <AnimatePresence mode="wait">
+                      {searchQuery ? (
+                        <m.div
+                          key="clear"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.15 }}
                         >
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                      {!searchQuery && (
-                        <Tooltip title="Ctrl/⌘+F to focus">
-                          <Typography
-                            variant="caption"
+                          <IconButton
+                            size="small"
+                            onClick={() => setState(prev => ({ ...prev, searchQuery: '' }))}
+                            edge="end"
                             sx={{
-                              color: 'text.disabled',
-                              mr: 1,
-                              display: { xs: 'none', sm: 'block' }
+                              opacity: 0.7,
+                              '&:hover': { opacity: 1 },
+                              transition: 'opacity 0.2s ease'
                             }}
                           >
-                            ⌘F
-                          </Typography>
-                        </Tooltip>
+                            <CloseIcon fontSize="small" />
+                          </IconButton>
+                        </m.div>
+                      ) : (
+                        <m.div
+                          key="shortcut"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <Tooltip title="Ctrl/⌘+F to focus">
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: 'text.disabled',
+                                mr: 1,
+                                display: { xs: 'none', sm: 'block' }
+                              }}
+                            >
+                              ⌘F
+                            </Typography>
+                          </Tooltip>
+                        </m.div>
                       )}
-                    </>
+                    </AnimatePresence>
                   }
                   fullWidth
                   inputRef={searchInputRef}
                   aria-label="Search tables or columns"
                 />
-                {searchQuery && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      position: 'absolute',
-                      right: 0,
-                      bottom: -20,
-                      color: 'text.secondary',
-                      opacity: 0.8
-                    }}
-                  >
-                    Found {filteredTables.length} tables
-                  </Typography>
-                )}
+                <AnimatePresence>
+                  {searchQuery && (
+                    <m.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          position: 'absolute',
+                          right: 0,
+                          bottom: -20,
+                          color: filteredTables.length > 0 ? 'text.secondary' : 'error.main',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5
+                        }}
+                      >
+                        {filteredTables.length > 0 ? (
+                          <>Found {filteredTables.length} tables</>
+                        ) : (
+                          <>No matches found</>
+                        )}
+                      </Typography>
+                    </m.div>
+                  )}
+                </AnimatePresence>
               </Box>
 
               {/* AI tooltip and button */}
@@ -2497,19 +2988,15 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                             selected={selectedTable === table.tableIdentifier}
                             sx={{ cursor: 'default' }} // Changed from pointer to default
                           >
-                            <CardHeader
-                              onClick={() => toggleTable(table.tableIdentifier)} // Move onClick to the header only
+                            <StyledTableHeader
+                              onClick={() => toggleTable(table.tableIdentifier)}
                               sx={{
-                                p: 2,
                                 pb: expandedTables[table.tableIdentifier] ? 1 : 2,
                                 ...(expandedTables[table.tableIdentifier] && {
                                   borderBottom: (t: any) => `1px dashed ${t.palette.divider}`,
                                 }),
                                 background: (t: any) => getBackgroundColor(t, selectedTable === table.tableIdentifier),
-                                cursor: 'pointer', // Add cursor pointer to header
-                                '&:hover': {
-                                  background: (t: any) => alpha(t.palette.action.hover, 0.05),
-                                },
+                                cursor: 'pointer',
                               }}
                               title={
                                 <Box>
@@ -2522,7 +3009,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                                       <IconButton
                                         size="small"
                                         onClick={(e) => {
-                                          e.stopPropagation();  // Stop event propagation to prevent double toggle
+                                          e.stopPropagation();
                                           toggleTable(table.tableIdentifier);
                                         }}
                                         sx={{
@@ -2544,18 +3031,52 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                                       >
                                         <KeyboardArrowDownIcon />
                                       </IconButton>
-                                      <Typography
-                                        variant="subtitle1"
-                                        sx={{
-                                          fontWeight: selectedTable === table.tableIdentifier ? 700 : 500,
-                                          color: selectedTable === table.tableIdentifier ? 'primary.main' : 'text.primary',
-                                          transition: 'color 0.2s ease, font-weight 0.2s ease',
-                                        }}
-                                      >
-                                        {table.tableIdentifier}
-                                      </Typography>
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, position: 'relative' }}>
+                                        <Typography
+                                          variant="subtitle1"
+                                          sx={{
+                                            fontWeight: selectedTable === table.tableIdentifier ? 700 : 500,
+                                            color: selectedTable === table.tableIdentifier ? 'primary.main' : 'text.primary',
+                                            transition: 'color 0.2s ease, font-weight 0.2s ease',
+                                            ...(searchQuery.trim() && table.tableIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) && {
+                                              position: 'relative',
+                                              '&::after': {
+                                                content: '""',
+                                                position: 'absolute',
+                                                bottom: -2,
+                                                left: 0,
+                                                width: '100%',
+                                                height: '2px',
+                                                backgroundColor: 'primary.main',
+                                                opacity: 0.5,
+                                              }
+                                            })
+                                          }}
+                                        >
+                                          <HighlightedText text={table.tableIdentifier} searchQuery={searchQuery} />
+                                        </Typography>
+                                        {searchQuery.trim() && table.columns.some(col => 
+                                          col.columnIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                          (col.columnDescription && col.columnDescription.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                                          col.columnType.toLowerCase().includes(searchQuery.toLowerCase())
+                                        ) && (
+                                          <Chip
+                                            size="small"
+                                            label="Has matches"
+                                            color="primary"
+                                            variant="outlined"
+                                            sx={{
+                                              height: 20,
+                                              ml: 1,
+                                              '& .MuiChip-label': {
+                                                px: 1,
+                                                fontSize: '0.7rem',
+                                              }
+                                            }}
+                                          />
+                                        )}
+                                      </Box>
                                     </Stack>
-
                                     <Stack
                                       direction="row"
                                       spacing={{ xs: 2, sm: 3, md: 4 }}
@@ -2603,17 +3124,14 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                                       />
                                     </Stack>
                                   </Stack>
-
                                   {!expandedTables[table.tableIdentifier] && (
-                                    <Typography
-                                      variant="caption"
-                                      color="text.secondary"
-                                      sx={{ display: 'block', mt: 0.5, ml: 4, fontSize: '0.7rem' }}
-                                    >
-                                      {getColumnCount(table.tableIdentifier)} columns,{' '}
-                                      {getPrimaryKeyCount(table.tableIdentifier)} keys,{' '}
-                                      {getRelationCount(table.tableIdentifier)} relations
-                                    </Typography>
+                                    <Box className="table-stats">
+                                      <span>{getColumnCount(table.tableIdentifier)} columns</span>
+                                      <span>•</span>
+                                      <span>{getPrimaryKeyCount(table.tableIdentifier)} keys</span>
+                                      <span>•</span>
+                                      <span>{getRelationCount(table.tableIdentifier)} relations</span>
+                                    </Box>
                                   )}
                                 </Box>
                               }
@@ -2627,31 +3145,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                                         <TableCell scope="col" className="column-name">Column</TableCell>
                                         <TableCell scope="col" className="column-type">Type</TableCell>
                                         <TableCell scope="col" className="column-description">Description</TableCell>
-                                        <TableCell scope="col" className="column-relations">
-                                          <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                            <span>Relations</span>
-                                            <Tooltip title="Add a new relation">
-                                              <IconButton
-                                                size="small"
-                                                color="primary"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  const firstColumn = table.columns[0];
-                                                  if (firstColumn) {
-                                                    openRelationDialog(table.tableIdentifier, firstColumn.columnIdentifier);
-                                                  }
-                                                }}
-                                                sx={{
-                                                  bgcolor: (t: any) => alpha(t.palette.primary.main, 0.1),
-                                                  width: 24,
-                                                  height: 24,
-                                                }}
-                                              >
-                                                <AddIcon fontSize="small" />
-                                              </IconButton>
-                                            </Tooltip>
-                                          </Stack>
-                                        </TableCell>
+                                        <TableCell scope="col" className="column-relations">Relations</TableCell>
                                       </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -2820,7 +3314,16 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                   }}
                 >
                   <SchemaVisualization
-                    tables={editableTables}
+                    tables={editableTables.map(table => {
+                      const normalizedTable: TableDefinition = {
+                        ...table,
+                        columns: table.columns.map(column => ({
+                          ...column,
+                          relations: normalizeRelations(column, editableTables)
+                        }))
+                      };
+                      return normalizedTable;
+                    })}
                     selectedTable={selectedTable}
                     onTableClick={toggleTable}
                   />
@@ -2859,15 +3362,25 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
               <Typography variant="subtitle2" sx={{ mb: 1, color: 'primary.main' }}>Navigation</Typography>
               <Stack spacing={0.5}>
                 <Typography variant="body2">↑ / ↓ - Navigate between tables</Typography>
-                <Typography variant="body2">Enter - Expand/collapse selected table</Typography>
+                <Typography variant="body2">Tab / Shift+Tab - Cycle through tables</Typography>
+                <Typography variant="body2">Space / Enter - Expand/collapse selected table</Typography>
+                <Typography variant="body2">Escape - Collapse table or exit editing</Typography>
               </Stack>
             </Box>
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1, color: 'primary.main' }}>Actions</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'primary.main' }}>Search & Edit</Typography>
               <Stack spacing={0.5}>
                 <Typography variant="body2">Ctrl/⌘ + F - Focus search</Typography>
                 <Typography variant="body2">Escape - Clear search or cancel editing</Typography>
-                <Typography variant="body2">Click on row - Edit column</Typography>
+                <Typography variant="body2">Click/Enter - Edit column</Typography>
+                <Typography variant="body2">Ctrl/⌘ + S - Save changes</Typography>
+              </Stack>
+            </Box>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'primary.main' }}>Relations</Typography>
+              <Stack spacing={0.5}>
+                <Typography variant="body2">Click + icon - Add new relation</Typography>
+                <Typography variant="body2">Hover + click X - Remove relation</Typography>
               </Stack>
             </Box>
           </Stack>

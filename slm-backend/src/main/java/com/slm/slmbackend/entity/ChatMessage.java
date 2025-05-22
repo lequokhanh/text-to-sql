@@ -16,7 +16,9 @@ public class ChatMessage {
 
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
+    @Lob
     private String message;
+    @Lob
     private String responseData;
 
     @ManyToOne(fetch = FetchType.LAZY)

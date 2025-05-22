@@ -151,13 +151,15 @@ const FloatingActionButton = styled(IconButton)(({ theme }) => ({
   color: theme.palette.primary.contrastText,
   boxShadow: `0 4px 20px 0 ${alpha(theme.palette.primary.main, 0.3)}`,
   border: `4px solid ${alpha(theme.palette.background.default, 0.9)}`,
-  transition: theme.transitions.create(['transform', 'box-shadow'], {
+  opacity: 0.2,
+  transition: theme.transitions.create(['transform', 'box-shadow', 'opacity'], {
     duration: theme.transitions.duration.shorter,
   }),
   '&:hover': {
     backgroundColor: theme.palette.primary.dark,
     transform: 'scale(1.1)',
     boxShadow: `0 6px 28px 0 ${alpha(theme.palette.primary.main, 0.4)}`,
+    opacity: 1,
   },
   '&:active': {
     transform: 'scale(0.95)',
@@ -343,6 +345,7 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
       return;
     }
     
+    // Only set loading if we're actually switching sessions
     setIsLoading(true);
     setError(null);
     
@@ -357,10 +360,8 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
       setError('Failed to load chat history');
       showSnackbar('Failed to load chat history', 'error');
     } finally {
-      // Small delay to ensure smooth transition
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 300);
+      // Remove the loading state immediately after session switch
+      setIsLoading(false);
     }
   }, [switchSession, setError, showSnackbar, activeSession]);
 
@@ -736,8 +737,8 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
     // Chat with messages (from active or temporary session)
     return (
       <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
-        {/* Skeleton loader for initial load */}
-        {isLoading && !activeSession && !tempSession && (
+        {/* Only show skeleton loader for initial data source loading */}
+        {isLoading && !activeSession && !tempSession && sessions.length === 0 && (
           <Box sx={{ mb: 2, p: 2, width: '100%' }}>
             <Stack spacing={2}>
               <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 2 }} />
@@ -764,7 +765,6 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
           width: '100%',
           position: 'relative',
           overflow: 'hidden',
-          mt: '20px',
         }}
       >
         <Box sx={{ 
@@ -793,7 +793,6 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
 
         {/* Full width chat content */}
         <Box sx={{ 
-          mr: '80px',
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -862,7 +861,6 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
                     sessionId: (activeSession || tempSession)?.id || '',
                     messageCount: Math.floor(((activeSession || tempSession)?.messages?.length || 0) / 2),
                   } : null}
-                  showSuggestions={!!selectedSource && !activeSession && !tempSession}
                 />
               </Box>
             </InputArea>
@@ -874,7 +872,7 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
                 aria-label="scroll to bottom"
                 sx={{
                   position: 'fixed',
-                  left: 150, // 80px from left edge as requested
+                  left: 100, // 80px from left edge as requested
                   bottom: { xs: 80, sm: 100 }, // Higher position to avoid input area
                   boxShadow: (t) => `0 0 20px 0 ${alpha(t.palette.primary.main, 0.3)}`,
                   zIndex: 1000,

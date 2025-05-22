@@ -1,8 +1,7 @@
 // File: src/sections/database-management/components/management/DataSourceManagement.tsx
 
-import axios from 'axios';
-import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import React, { useRef, useState , FocusEvent, KeyboardEvent } from 'react';
 
 import {
   Box,
@@ -29,6 +28,8 @@ import {
   InputAdornment,
   DialogContentText,
 } from '@mui/material';
+
+import axiosInstance, { endpoints } from 'src/utils/axios';
 
 import Iconify from 'src/components/iconify';
 
@@ -59,8 +60,30 @@ const FieldContainer = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(3),
 }));
 
+// Add new styled component for form fields
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiInputBase-root': {
+    transition: theme.transitions.create(['border-color', 'box-shadow', 'background-color']),
+    '&.Mui-focused': {
+      backgroundColor: theme.palette.mode === 'dark' 
+        ? alpha(theme.palette.primary.main, 0.1)
+        : alpha(theme.palette.primary.lighter, 0.2),
+      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+    },
+  },
+}));
+
+// Add cursor position tracking interface
+interface CursorPosition {
+  start: number;
+  end: number;
+}
+
 // Supported database types
-const DATABASE_TYPES = ['MySQL', 'PostgreSQL', 'SQLite', 'Microsoft SQL Server', 'Oracle'];
+const DATABASE_TYPES = [
+  { value: 'MYSQL', label: 'MySQL' },
+  { value: 'POSTGRESQL', label: 'PostgreSQL' }
+];
 
 interface DataSourceManagementProps {
   dataSource: DatabaseSource;
@@ -68,17 +91,8 @@ interface DataSourceManagementProps {
   onDelete: (sourceId: string) => void;
 }
 
-// Individual field components
-const SourceField = ({
-  label,
-  value,
-  icon,
-  disabled = false,
-  error,
-  helperText,
-  onChange,
-  type = 'text',
-}: {
+// Update the SourceField component props type
+interface SourceFieldProps {
   label: string;
   value: string;
   icon: string;
@@ -86,25 +100,36 @@ const SourceField = ({
   error?: boolean;
   helperText?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFocus?: (e: FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
   type?: string;
-}) => (
-  <TextField
-    label={label}
-    value={value}
-    onChange={onChange}
-    fullWidth
-    disabled={disabled}
-    error={!!error}
-    helperText={helperText}
-    type={type}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <Iconify icon={icon} width={20} height={20} />
-        </InputAdornment>
-      ),
-    }}
-  />
+  ref?: React.Ref<HTMLInputElement>;
+  autoFocus?: boolean;
+}
+
+// Update the SourceField component
+const SourceField = React.forwardRef<HTMLInputElement, SourceFieldProps>(
+  ({ label, value, icon, error, helperText, onChange, type = 'text', ...props }, ref) => (
+    <StyledTextField
+      fullWidth
+      label={label}
+      value={value}
+      onChange={onChange}
+      error={error}
+      helperText={helperText}
+      type={type}
+      inputRef={ref}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <Iconify icon={icon} width={20} height={20} />
+          </InputAdornment>
+        ),
+      }}
+      {...props}
+    />
+  )
 );
 
 export default function DataSourceManagement({
@@ -115,42 +140,168 @@ export default function DataSourceManagement({
   const [isEditing, setIsEditing] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [hasValidConnection, setHasValidConnection] = useState(false);
+  const [lastTestedValues, setLastTestedValues] = useState<DatabaseSource | null>(null);
+  
+  // Add refs for form fields
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const hostInputRef = useRef<HTMLInputElement>(null);
+  const portInputRef = useRef<HTMLInputElement>(null);
+  const dbNameInputRef = useRef<HTMLInputElement>(null);
+  const usernameInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  
+  // Add cursor position tracking
+  const [cursorPositions, setCursorPositions] = useState<Record<string, CursorPosition>>({});
 
-  // Form setup
+  // Track form values for change detection
   const {
     control,
     handleSubmit,
     formState: { errors },
+    getValues,
   } = useForm<DatabaseSource>({
     defaultValues: dataSource,
   });
 
-  const handleSave = (data: DatabaseSource) => {
-    onUpdate(data);
-    setIsEditing(false);
-    setTestResult(null);
+  // Update event handler types
+  const handleCursorChange = (field: string, event: FocusEvent<HTMLInputElement>) => {
+    const { selectionStart, selectionEnd } = event.target;
+    setCursorPositions({
+      ...cursorPositions,
+      [field]: { start: selectionStart || 0, end: selectionEnd || 0 },
+    });
+  };
+
+  const restoreCursorPosition = (field: string, event: FocusEvent<HTMLInputElement>) => {
+    const position = cursorPositions[field];
+    if (position) {
+      event.target.setSelectionRange(position.start, position.end);
+    }
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>, nextRef?: React.RefObject<HTMLInputElement>) => {
+    if (event.key === 'Enter' && nextRef?.current) {
+      event.preventDefault();
+      nextRef.current.focus();
+    }
+  };
+
+  // Function to check if there are any actual changes from original data
+  const hasFormChanges = () => {
+    const currentValues = getValues();
+    return Object.keys(currentValues).some(key => {
+      const field = key as keyof DatabaseSource;
+      return currentValues[field] !== dataSource[field];
+    });
+  };
+
+  // Function to check if current values match last tested values
+  const checkForChanges = (currentValues: DatabaseSource) => {
+    if (!lastTestedValues) return true;
+    
+    const hasChanges = Object.keys(currentValues).some(key => 
+      currentValues[key as keyof DatabaseSource] !== lastTestedValues[key as keyof DatabaseSource]
+    );
+
+    if (hasChanges) {
+      setHasValidConnection(false);
+      if (testResult?.success) {
+        setTestResult({
+          success: false,
+          message: 'Changes detected. Please test the connection again.',
+        });
+      }
+    }
+    return hasChanges;
   };
 
   const handleTestConnection = async (data: DatabaseSource) => {
     try {
-      // Test connection through backend
-      await axios.post(`/api/v1/data-sources/${data.id}/test-connection`);
-      
+      setTestResult({ success: false, message: 'Testing connection...' });
+      const response = await axiosInstance.post(endpoints.dataSource.testConnection(data.id));
+      const success = true; // Assuming the API returns success if no error is thrown
       setTestResult({
-        success: true,
-        message: 'Connection successful!',
+        success,
+        message: response.data?.message || 'Connection successful!',
       });
+      setHasValidConnection(success);
+      if (success) {
+        // Store the values that were successfully tested
+        setLastTestedValues({...data});
+      }
     } catch (error) {
       setTestResult({
         success: false,
         message: error instanceof Error ? error.message : 'Connection failed',
       });
+      setHasValidConnection(false);
+      setLastTestedValues(null);
     }
   };
 
-  const handleDeleteConfirm = () => {
-    onDelete(dataSource.name);
-    setDeleteDialogOpen(false);
+  const handleSave = async (data: DatabaseSource) => {
+    // Check if there are any actual changes
+    if (!hasFormChanges()) {
+      setTestResult({
+        success: false,
+        message: 'No changes detected to save.',
+      });
+      return;
+    }
+
+    // Check if current values match the last tested values
+    const hasUntestedChanges = !lastTestedValues || Object.keys(data).some(key => 
+      data[key as keyof DatabaseSource] !== lastTestedValues[key as keyof DatabaseSource]
+    );
+
+    if (!hasValidConnection || hasUntestedChanges) {
+      setTestResult({
+        success: false,
+        message: hasUntestedChanges 
+          ? 'Changes detected since last test. Please test the connection again.'
+          : 'Please test the connection before saving changes.',
+      });
+      setHasValidConnection(false);
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.put(`${endpoints.dataSource.base}/${data.id}`, data);
+      await onUpdate(response.data);
+      setIsEditing(false);
+      setTestResult(null);
+      setHasValidConnection(false);
+      setLastTestedValues(null);
+    } catch (error) {
+      console.error('Error saving:', error);
+      setTestResult({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to save changes',
+      });
+    }
+  };
+
+  // Reset all states when editing is cancelled
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setTestResult(null);
+    setHasValidConnection(false);
+    setLastTestedValues(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await axiosInstance.delete(`${endpoints.dataSource.base}/${dataSource.id}`);
+      onDelete(dataSource.id);
+      setDeleteDialogOpen(false);
+    } catch (error) {
+      console.error('Error deleting datasource:', error);
+      setTestResult({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to delete datasource',
+      });
+    }
   };
 
   return (
@@ -173,7 +324,7 @@ export default function DataSourceManagement({
                   }}
                 >
                   <Iconify
-                    icon="eva:database-fill"
+                    icon="material-symbols:database"
                     width={28}
                     height={28}
                     sx={{ color: 'primary.main' }}
@@ -202,10 +353,7 @@ export default function DataSourceManagement({
                   <Button
                     variant="outlined"
                     color="inherit"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setTestResult(null);
-                    }}
+                    onClick={handleCancelEdit}
                     sx={{
                       borderRadius: 1.5,
                       px: 2,
@@ -266,13 +414,17 @@ export default function DataSourceManagement({
                       rules={{ required: 'Name is required' }}
                       render={({ field }) => (
                         <SourceField
+                          {...field}
                           label="Data Source Name"
-                          value={field.value}
                           icon="eva:bookmark-fill"
                           disabled={!isEditing}
                           error={!!errors.name}
                           helperText={errors.name?.message}
-                          onChange={field.onChange}
+                          ref={nameInputRef}
+                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('name', e)}
+                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('name', e)}
+                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, hostInputRef)}
+                          autoFocus={isEditing}
                         />
                       )}
                     />
@@ -296,8 +448,8 @@ export default function DataSourceManagement({
                             }
                           >
                             {DATABASE_TYPES.map((type) => (
-                              <MenuItem key={type} value={type}>
-                                {type}
+                              <MenuItem key={type.value} value={type.value}>
+                                {type.label}
                               </MenuItem>
                             ))}
                           </Select>
@@ -330,13 +482,16 @@ export default function DataSourceManagement({
                       rules={{ required: 'Host is required' }}
                       render={({ field }) => (
                         <SourceField
+                          {...field}
                           label="Host"
-                          value={field.value}
                           icon="eva:globe-fill"
                           disabled={!isEditing}
                           error={!!errors.host}
                           helperText={errors.host?.message}
-                          onChange={field.onChange}
+                          ref={hostInputRef}
+                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('host', e)}
+                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('host', e)}
+                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, portInputRef)}
                         />
                       )}
                     />
@@ -349,13 +504,16 @@ export default function DataSourceManagement({
                       rules={{ required: 'Port is required' }}
                       render={({ field }) => (
                         <SourceField
+                          {...field}
                           label="Port"
-                          value={field.value}
                           icon="eva:link-2-fill"
                           disabled={!isEditing}
                           error={!!errors.port}
                           helperText={errors.port?.message}
-                          onChange={field.onChange}
+                          ref={portInputRef}
+                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('port', e)}
+                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('port', e)}
+                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, dbNameInputRef)}
                         />
                       )}
                     />
@@ -368,13 +526,16 @@ export default function DataSourceManagement({
                       rules={{ required: 'Database name is required' }}
                       render={({ field }) => (
                         <SourceField
+                          {...field}
                           label="Database Name"
-                          value={field.value}
                           icon="eva:folder-fill"
                           disabled={!isEditing}
                           error={!!errors.databaseName}
                           helperText={errors.databaseName?.message}
-                          onChange={field.onChange}
+                          ref={dbNameInputRef}
+                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('databaseName', e)}
+                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('databaseName', e)}
+                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, usernameInputRef)}
                         />
                       )}
                     />
@@ -399,13 +560,16 @@ export default function DataSourceManagement({
                       rules={{ required: 'Username is required' }}
                       render={({ field }) => (
                         <SourceField
+                          {...field}
                           label="Username"
-                          value={field.value}
                           icon="eva:person-fill"
                           disabled={!isEditing}
                           error={!!errors.username}
                           helperText={errors.username?.message}
-                          onChange={field.onChange}
+                          ref={usernameInputRef}
+                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('username', e)}
+                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('username', e)}
+                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, passwordInputRef)}
                         />
                       )}
                     />
@@ -418,14 +582,17 @@ export default function DataSourceManagement({
                       rules={{ required: 'Password is required' }}
                       render={({ field }) => (
                         <SourceField
+                          {...field}
                           label="Password"
-                          value={field.value}
                           icon="eva:lock-fill"
                           disabled={!isEditing}
                           error={!!errors.password}
                           helperText={errors.password?.message}
-                          onChange={field.onChange}
                           type="password"
+                          ref={passwordInputRef}
+                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('password', e)}
+                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('password', e)}
+                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e)}
                         />
                       )}
                     />
@@ -437,9 +604,13 @@ export default function DataSourceManagement({
                     <Button
                       variant="outlined"
                       color="primary"
-                      onClick={handleSubmit((data) => handleTestConnection(data))}
+                      onClick={() => {
+                        const currentValues = getValues();
+                        handleTestConnection(currentValues);
+                      }}
                       startIcon={<Iconify icon="eva:flash-fill" />}
                       sx={{ borderRadius: 1.5 }}
+                      disabled={!hasFormChanges()}
                     >
                       Test Connection
                     </Button>
@@ -449,6 +620,11 @@ export default function DataSourceManagement({
                       color="primary"
                       startIcon={<Iconify icon="eva:save-fill" />}
                       sx={{ borderRadius: 1.5 }}
+                      disabled={
+                        !hasFormChanges() ||
+                        !hasValidConnection ||
+                        checkForChanges(getValues())
+                      }
                     >
                       Save Changes
                     </Button>

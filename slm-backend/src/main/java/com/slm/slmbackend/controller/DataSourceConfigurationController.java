@@ -291,5 +291,16 @@ public class DataSourceConfigurationController {
         dataSourceConfigurationService.testConnection(getAuthenticatedUser(), id);
         return ResponseWrapper.success();
     }
+
+    @Operation(summary = "Update multiple columns",
+            description = "Updates multiple columns in a data source in a single request")
+    @ApiResponse(responseCode = "200", description = "Columns updated successfully")
+    @PutMapping("/{id}/columns/batch")
+    public ResponseWrapper<Void> updateMultipleColumns(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id,
+            @Valid @RequestBody UpdateColumnsDTO updateColumnsDTO) {
+        dataSourceConfigurationService.updateMultipleColumns(getAuthenticatedUser(), id, updateColumnsDTO);
+        return ResponseWrapper.success();
+    }
     
 }

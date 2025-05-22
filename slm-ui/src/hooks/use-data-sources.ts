@@ -18,6 +18,12 @@ interface ApiDataSource {
   tableDefinitions?: any[];
 }
 
+interface SharedApiDataSource {
+  id: number;
+  databaseType: 'POSTGRESQL' | 'MYSQL';
+  name: string;
+}
+
 function transformApiDataSource(apiSource: ApiDataSource): DatabaseSource {
   return {
     id: apiSource.id.toString(),
@@ -32,8 +38,24 @@ function transformApiDataSource(apiSource: ApiDataSource): DatabaseSource {
   };
 }
 
+function transformSharedApiDataSource(apiSource: SharedApiDataSource): DatabaseSource {
+  return {
+    id: apiSource.id.toString(),
+    databaseType: apiSource.databaseType,
+    name: apiSource.name,
+    // For shared sources, we don't have access to these fields
+    host: '',
+    port: '',
+    databaseName: '',
+    username: '',
+    password: '',
+    tableDefinitions: [],
+  };
+}
+
 export function useDataSources() {
   const [dataSources, setDataSources] = useState<DatabaseSource[]>([]);
+  const [sharedSources, setSharedSources] = useState<DatabaseSource[]>([]);
   const [selectedSource, setSelectedSource] = useState<DatabaseSource | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,28 +65,36 @@ export function useDataSources() {
     setError(null);
 
     try {
-      const { data } = await axiosInstance.get(endpoints.dataSource.owned);
-      const transformedSources = Array.isArray(data) ? data.map(transformApiDataSource) : [];
-      setDataSources(transformedSources);
+      // Fetch owned sources
+      const { data: ownedData } = await axiosInstance.get(endpoints.dataSource.owned);
+      const transformedOwnedSources = Array.isArray(ownedData) ? ownedData.map(transformApiDataSource) : [];
+      setDataSources(transformedOwnedSources);
 
-      // Set the first data source as selected if available and no source is currently selected
-      if (transformedSources.length > 0 && !selectedSource) {
-        setSelectedSource(transformedSources[0]);
-      } else if (selectedSource) {
-        // Check if selected source still exists in the data
-        const sourceExists = transformedSources.some(source => source.id === selectedSource.id);
-        if (!sourceExists && transformedSources.length > 0) {
-          // If selected source no longer exists, select the first available source
-          setSelectedSource(transformedSources[0]);
-        } else if (!sourceExists) {
-          // If no sources available, clear selection
-          setSelectedSource(null);
+      // Fetch shared sources
+      const { data: sharedData } = await axiosInstance.get(endpoints.dataSource.available);
+      const transformedSharedSources = Array.isArray(sharedData) 
+        ? sharedData.map((source: SharedApiDataSource) => transformSharedApiDataSource(source)) 
+        : [];
+      setSharedSources(transformedSharedSources);
+
+      // Handle selected source
+      if (selectedSource) {
+        const sourceExistsInOwned = transformedOwnedSources.some(source => source.id === selectedSource.id);
+        const sourceExistsInShared = transformedSharedSources.some(source => source.id === selectedSource.id);
+        
+        if (!sourceExistsInOwned && !sourceExistsInShared && transformedOwnedSources.length > 0) {
+          // If source doesn't exist in either owned or shared, select the first owned source
+          setSelectedSource(transformedOwnedSources[0]);
         }
+      } else if (transformedOwnedSources.length > 0) {
+        // If no source is selected and we have owned sources, select the first one
+        setSelectedSource(transformedOwnedSources[0]);
       }
     } catch (err) {
       console.error('Error fetching data sources:', err);
       setError('Failed to fetch data sources');
       setDataSources([]);
+      setSharedSources([]);
     } finally {
       setIsLoading(false);
     }
@@ -125,6 +155,7 @@ export function useDataSources() {
 
   return {
     dataSources,
+    sharedSources,
     selectedSource,
     setSelectedSource,
     isLoading,

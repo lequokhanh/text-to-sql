@@ -5,7 +5,6 @@ import {
   Box,
   List,
   Fade,
-  Chip,
   alpha,
   Input,
   Button,
@@ -101,36 +100,6 @@ export function ChatSessionsSidebar({
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
-
-  const formatDate = (date: Date) => {
-    // Check if date is today
-    const today = new Date();
-    const isToday = date.getDate() === today.getDate() &&
-                    date.getMonth() === today.getMonth() &&
-                    date.getFullYear() === today.getFullYear();
-  
-    if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-  
-    // Check if date is yesterday
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const isYesterday = date.getDate() === yesterday.getDate() &&
-                        date.getMonth() === yesterday.getMonth() &&
-                        date.getFullYear() === yesterday.getFullYear();
-  
-    if (isYesterday) {
-      return 'Yesterday';
-    }
-  
-    // For older dates
-    return date.toLocaleDateString([], { 
-      month: 'short', 
-      day: 'numeric',
-    });
-  };
-
   // Filter sessions based on search query
   const filteredSessions = sessions.filter(session => 
     session.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -285,7 +254,7 @@ export function ChatSessionsSidebar({
                     >
                       <ListItem
                         sx={{
-                          borderRadius: 3,
+                          borderRadius: 1,
                           p: 1.5,
                           gap: 1,
                           backgroundColor: isActive 
@@ -346,7 +315,7 @@ export function ChatSessionsSidebar({
                         <ListItemText
                           primary={
                             <Typography 
-                              variant="subtitle2" 
+                              variant="subtitle1" 
                               noWrap 
                               sx={{ 
                                 fontWeight: isActive ? 600 : 500,
@@ -355,36 +324,6 @@ export function ChatSessionsSidebar({
                             >
                               {session.title}
                             </Typography>
-                          }
-                          secondary={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
-                              {session.messageCount > 0 && (
-                                <Chip
-                                  label={`${Math.ceil(session.messageCount / 2)}`}
-                                  size="small"
-                                  color={isActive ? 'primary' : 'default'}
-                                  variant={isActive ? 'filled' : 'outlined'}
-                                  sx={{ 
-                                    height: 18, 
-                                    fontSize: '0.65rem', 
-                                    '& .MuiChip-label': { 
-                                      px: 0.8,
-                                      py: 0.1
-                                    }
-                                  }}
-                                />
-                              )}
-                              <Typography 
-                                variant="caption" 
-                                noWrap 
-                                sx={{ 
-                                  color: isActive ? 'primary.light' : 'text.secondary',
-                                  fontSize: '0.7rem'
-                                }}
-                              >
-                                {formatDate(session.lastActivity)}
-                              </Typography>
-                            </Box>
                           }
                         />
                         

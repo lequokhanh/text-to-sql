@@ -3,7 +3,6 @@ package com.slm.slmbackend.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
 
 import java.util.List;
 

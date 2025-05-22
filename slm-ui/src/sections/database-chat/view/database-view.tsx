@@ -1,4 +1,4 @@
-// File: src/sections/database-management/view/database-view.tsx
+// File: src/sections/database-chat/view/database-view.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,7 +6,6 @@ import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
   Box,
   Fade,
-  Chip,
   Alert,
   Paper,
   Stack,
@@ -19,7 +18,6 @@ import { useDataSources } from 'src/hooks/use-data-sources';
 
 import { DatabaseLayout } from 'src/layouts/db-chat/database-layout';
 
-import Iconify from 'src/components/iconify';
 import { MainContent } from 'src/components/text-to-sql/main-content/MainContent';
 import { UnifiedChatInterface } from 'src/components/text-to-sql/chat/unified-chat-interface';
 import { DataSourceDropdown } from 'src/components/text-to-sql/datasource/datasource-dropdown';
@@ -29,7 +27,7 @@ import { DatabaseSource } from 'src/types/database';
 // Constants for layout
 const MAIN_SIDEBAR_WIDTH = 80; // Width of the main sidebar
 const CHAT_SIDEBAR_WIDTH = { xs: 280, sm: 320 }; // Width of the chat sidebar
-const HEADER_HEIGHT = 96; // Height of the header
+const HEADER_HEIGHT = 150; // Height of the header
 
 const HeaderContainer = styled(Paper)(({ theme }) => ({
   position: 'fixed',
@@ -65,41 +63,19 @@ const HeaderTitle = styled(Box)(({ theme }) => ({
   },
 }));
 
-const SelectionStatus = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  animation: 'pulse 2s infinite',
-  '@keyframes pulse': {
-    '0%': {
-      transform: 'translate(-50%, -50%) scale(1)',
-      opacity: 1,
-    },
-    '50%': {
-      transform: 'translate(-50%, -50%) scale(1.05)',
-      opacity: 0.8,
-    },
-    '100%': {
-      transform: 'translate(-50%, -50%) scale(1)',
-      opacity: 1,
-    },
-  },
-}));
-
 export default function DatabaseView() {
   const navigate = useNavigate();
   const theme = useTheme();
   
   // States
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [availableSources, setAvailableSources] = useState<DatabaseSource[]>([]);
   const [showNoSourceAlert, setShowNoSourceAlert] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Custom hooks
   const {
     dataSources: ownedSources,
+    sharedSources,
     selectedSource,
     setSelectedSource,
     fetchDataSources,
@@ -109,7 +85,6 @@ export default function DatabaseView() {
 
   useEffect(() => {
     fetchDataSources();
-    fetchAvailableSources();
   }, [fetchDataSources]);
 
   useEffect(() => {
@@ -121,31 +96,9 @@ export default function DatabaseView() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const fetchAvailableSources = async () => {
-    try {
-      const response = await fetch('/api/v1/data-sources/available');
-      // Check if response is valid JSON before parsing
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        const data = await response.json();
-        setAvailableSources(data);
-      } else {
-        console.error('Error fetching available sources: API returned non-JSON response');
-        // Handle gracefully by setting empty array instead of showing error
-        setAvailableSources([]);
-        
-        // Show a more user-friendly message in the UI
-        // Instead of logging to console, we can use a snackbar or notification
-        // This prevents console error spam
-      }
-    } catch (error) {
-      console.error('Error fetching available sources:', error);
-      // Handle gracefully by setting empty array
-      setAvailableSources([]);
-    }
-  };
-
   const handleSourceSelect = (source: DatabaseSource) => {
+    // For shared sources, we only use the data we already have (id, name, databaseType)
+    // No need to fetch additional details since we don't have access
     setSelectedSource(source);
     setShowNoSourceAlert(false);
   };
@@ -189,73 +142,51 @@ export default function DatabaseView() {
         elevation={0}
         sx={{
           bgcolor: isScrolled 
-            ? alpha(theme.palette.background.default, 0.95)
-            : alpha(theme.palette.background.default, 0.9),
+            ? alpha(theme.palette.background.default, 0.98)
+            : alpha(theme.palette.background.default, 0.95),
+          backgroundImage: isScrolled 
+            ? `linear-gradient(to right, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.background.default, 0.98)})`
+            : `linear-gradient(to right, ${alpha(theme.palette.primary.main, 0.03)}, ${alpha(theme.palette.background.default, 0.95)})`,
           boxShadow: isScrolled 
-            ? `0 4px 20px 0 ${alpha(theme.palette.common.black, 0.05)}`
-            : undefined,
-          // Adjust width to account for right sidebar
+            ? `0 4px 20px 0 ${alpha(theme.palette.common.black, 0.08)}`
+            : `0 2px 12px 0 ${alpha(theme.palette.common.black, 0.04)}`,
+          backdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
           width: { 
             xs: `calc(100% - ${MAIN_SIDEBAR_WIDTH}px - ${CHAT_SIDEBAR_WIDTH.xs}px)`,
             sm: `calc(100% - ${MAIN_SIDEBAR_WIDTH}px - ${CHAT_SIDEBAR_WIDTH.sm}px)`,
           },
-          px: 3,
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          transition: theme.transitions.create(['background-color', 'box-shadow'], {
+            duration: theme.transitions.duration.shorter,
+          }),
         }}
       >
         <Stack direction="row" alignItems="center" spacing={3} sx={{ width: '100%' }}>
           <HeaderTitle>
-            <Box sx={{ position: 'relative' }}>
-              <Iconify 
-                icon="eva:database-fill" 
-                width={36} 
-                height={36} 
-                sx={{ 
-                  color: 'primary.main',
-                  filter: `drop-shadow(0 2px 4px ${alpha(theme.palette.primary.main, 0.2)})`,
-                }} 
-              />
-              {selectedSource && (
-                <SelectionStatus>
-                  <Box
-                    sx={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: '50%',
-                      bgcolor: 'success.main',
-                      boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.5)}`,
-                    }}
-                  />
-                </SelectionStatus>
-              )}
-            </Box>
             <Box>
-              <Typography variant="h4" fontWeight={700} sx={{ letterSpacing: '-0.025em' }}>
-                Database Chat
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-                Query your data with natural language
+              <Typography 
+                variant="h4" 
+                fontWeight={700} 
+                sx={{ 
+                  letterSpacing: '-0.025em',
+                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                  backgroundClip: 'text',
+                  textFillColor: 'transparent',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                SequolKit
               </Typography>
             </Box>
           </HeaderTitle>
           
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ ml: 'auto' }}>
-            {selectedSource && (
-              <Chip
-                icon={<Iconify icon="eva:checkmark-circle-fill" width={16} height={16} />}
-                label={`Connected to ${selectedSource.name}`}
-                color="success"
-                variant="filled"
-                sx={{
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                }}
-              />
-            )}
-            
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ ml: 'auto' }}>            
             <DataSourceDropdown
               ownedSources={ownedSources}
-              sharedSources={availableSources}
+              sharedSources={sharedSources}
               selectedSource={selectedSource}
               onSourceSelect={handleSourceSelect}
               onCreateSource={() => setIsCreateDialogOpen(true)}
@@ -264,6 +195,8 @@ export default function DatabaseView() {
                 borderRadius: 12,
                 minWidth: 200,
                 boxShadow: `0 4px 12px 0 ${alpha(theme.palette.common.black, 0.1)}`,
+                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                backdropFilter: 'blur(20px)',
               }}
             />
           </Stack>
@@ -299,10 +232,9 @@ export default function DatabaseView() {
         height: `calc(100vh - ${HEADER_HEIGHT}px)`,
         mt: `${HEADER_HEIGHT}px`, 
         overflow: 'hidden',
-        ml: `${MAIN_SIDEBAR_WIDTH}px`, // Account for the left sidebar
         width: { 
-          xs: `calc(100% - ${MAIN_SIDEBAR_WIDTH}px - ${CHAT_SIDEBAR_WIDTH.xs}px)`,
-          sm: `calc(100% - ${MAIN_SIDEBAR_WIDTH}px - ${CHAT_SIDEBAR_WIDTH.sm}px)`,
+          xs: `calc(100% - ${CHAT_SIDEBAR_WIDTH.xs}px)`,
+          sm: `calc(100% - ${CHAT_SIDEBAR_WIDTH.sm}px)`,
         },
       }}>
         <UnifiedChatInterface

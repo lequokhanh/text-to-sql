@@ -9,6 +9,16 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  mvc:
+    async:
+      request-timeout: -1
+
+server:
+  tomcat:
+    connection-timeout: -1
+  servlet:
+    session:
+      timeout: -1
 
 security:
   jwt:
@@ -17,8 +27,6 @@ security:
 
 embed-service:
   base-url: ${EMBED_HOST_API:http://localhost:8181}
-  connection-timeout: 5000
 
 engine-service:
   base-url: ${ENGINE_HOST_API:http://localhost:8383}
-  connection-timeout: 5000
