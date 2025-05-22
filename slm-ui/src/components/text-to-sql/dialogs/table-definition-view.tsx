@@ -24,8 +24,8 @@ import {
   TableCell, TableHead, TextField, CardHeader,
   IconButton, Typography, InputLabel, DialogTitle,
   ButtonGroup, FormControl, DialogActions, DialogContent,
-  useMediaQuery, TableContainer, CircularProgress,
-  DialogContentText
+  useMediaQuery, TableContainer, 
+  CircularProgress, DialogContentText
 } from '@mui/material';
 
 import { useDebounce } from 'src/hooks/use-debounce';
@@ -76,11 +76,11 @@ const StyledCard = styled(Card, {
       hoverBoxShadow = `0 0 0 4px ${alpha(theme.palette.primary.light, 0.3)}, 0 12px 32px -4px ${alpha(theme.palette.primary.light, 0.5)}`;
     }
   } else if (isDark) {
-      hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.5)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.4)}`;
-    } else {
-      hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.15)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.1)}`;
-    }
-  
+    hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.5)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.4)}`;
+  } else {
+    hoverBoxShadow = `0 12px 24px -8px ${alpha(theme.palette.common.black, 0.15)}, 0 8px 16px -4px ${alpha(theme.palette.common.black, 0.1)}`;
+  }
+
   const background = isDark ? alpha(theme.palette.background.paper, 0.7) : theme.palette.background.paper;
 
   return {
@@ -625,7 +625,7 @@ const AIButtonWrapper = styled('div')<AIButtonWrapperProps>(({ theme, isAnimatin
 const AIFillButton = styled(Button)(({ theme }) => {
   const isDark = theme.palette.mode === 'dark';
 
-  // Consolidated gradient variables
+  // Enhanced gradient variables for more vibrant look
   const background = isDark
     ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.9)} 0%, ${theme.palette.primary.main} 50%, ${alpha(theme.palette.primary.dark, 0.85)} 100%)`
     : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${theme.palette.primary.dark} 50%, ${alpha(theme.palette.primary.main, 0.85)} 100%)`;
@@ -634,23 +634,21 @@ const AIFillButton = styled(Button)(({ theme }) => {
     ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.95)} 0%, ${theme.palette.primary.main} 60%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`
     : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 60%, ${theme.palette.primary.main} 100%)`;
 
-  // Shadow variables
+  // Enhanced shadow variables
   const boxShadow = isDark
-    ? `0 4px 12px ${alpha(theme.palette.primary.dark, 0.5)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`
-    : `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`;
+    ? `0 4px 12px ${alpha(theme.palette.primary.dark, 0.5)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.3)}, 0 0 0 1px ${alpha(theme.palette.primary.dark, 0.3)}`
+    : `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.1)}, 0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}`;
 
   const hoverBoxShadow = isDark
-    ? `0 6px 16px ${alpha(theme.palette.primary.dark, 0.6)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.4)}`
-    : `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.15)}`;
+    ? `0 6px 16px ${alpha(theme.palette.primary.dark, 0.6)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.4)}, 0 0 0 1px ${alpha(theme.palette.primary.dark, 0.4)}`
+    : `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}, 0 3px 6px ${alpha(theme.palette.common.black, 0.15)}, 0 0 0 1px ${alpha(theme.palette.primary.main, 0.3)}`;
 
   const activeBoxShadow = isDark
     ? `0 2px 8px ${alpha(theme.palette.primary.dark, 0.4)}, 0 1px 3px ${alpha(theme.palette.common.black, 0.3)}`
     : `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}, 0 1px 3px ${alpha(theme.palette.common.black, 0.08)}`;
 
-  // Border and disabled styles
-  const border = isDark
-    ? `1px solid ${alpha(theme.palette.primary.light, 0.2)}`
-    : `1px solid ${alpha(theme.palette.primary.dark, 0.1)}`;
+  // Enhanced border and disabled styles
+  const border = 'none';
 
   const disabledBackground = isDark
     ? `linear-gradient(135deg, ${alpha(theme.palette.grey[800], 0.7)} 0%, ${alpha(theme.palette.grey[700], 0.7)} 100%)`
@@ -673,7 +671,7 @@ const AIFillButton = styled(Button)(({ theme }) => {
     textTransform: 'none',
     whiteSpace: 'nowrap',
     letterSpacing: '0.03em',
-    borderRadius: 16,
+    borderRadius: 20,
     transition: 'all 0.2s ease-in-out',
     position: 'relative',
     overflow: 'hidden',
@@ -872,9 +870,9 @@ const toastVariants = {
     x: 0,
     transition: {
       type: 'spring',
-      stiffness: 400,
+      stiffness: 500,
       damping: 25,
-      mass: 1.2,
+      mass: 1.1,
       delayChildren: 0.1,
       staggerChildren: 0.05
     }
@@ -992,16 +990,160 @@ interface TableDefinitionViewProps {
   onTablesUpdate?: (updatedTables: TableDefinition[]) => void;
 }
 
+// Add search highlight component
+const HighlightedText = ({ text, searchQuery }: { text: string, searchQuery: string }) => {
+  if (!searchQuery || !text) return <>{text}</>;
+
+  const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.toLowerCase() === searchQuery.toLowerCase() ? (
+          <Box
+            component="span"
+            key={index}
+            sx={{
+              bgcolor: (theme: any) => alpha(theme.palette.primary.main, 0.2),
+              color: 'primary.main',
+              py: 0.1,
+              px: 0.2,
+              borderRadius: 0.5,
+              fontWeight: 'medium'
+            }}
+          >
+            {part}
+          </Box>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+};
+
+// Add skeleton loader component
+const TableRowSkeleton = () => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
+  return (
+    <TableRow
+      sx={{
+        '& .MuiTableCell-root': {
+          py: 1.5,
+          px: { xs: 1, sm: 1.5 },
+          borderColor: alpha(theme.palette.divider, isDark ? 0.2 : 0.5),
+        }
+      }}
+    >
+      {[0, 1, 2, 3].map((i) => (
+        <TableCell key={i}>
+          <Box sx={{
+            height: i === 1 ? 24 : 20,
+            width: () => {
+              if (i === 2) return '85%';
+              if (i === 3) return '60%';
+              return '70%';
+            },
+            borderRadius: 1,
+            animation: 'pulse 1.5s ease-in-out 0.5s infinite',
+            bgcolor: (t: any) => alpha(t.palette.text.disabled, 0.1),
+            '@keyframes pulse': {
+              '0%': {
+                opacity: 0.6,
+              },
+              '50%': {
+                opacity: 0.3,
+              },
+              '100%': {
+                opacity: 0.6,
+              }
+            }
+          }} />
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+};
+
+// Add table row loader
+const TableSkeleton = () => (
+  <StyledTableContainer>
+    <Table size="small">
+      <TableHead>
+        <TableRow>
+          <TableCell className="column-name">Column</TableCell>
+          <TableCell className="column-type">Type</TableCell>
+          <TableCell className="column-description">Description</TableCell>
+          <TableCell className="column-relations">Relations</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {[...Array(5)].map((_, index) => (
+          <TableRowSkeleton key={index} />
+        ))}
+      </TableBody>
+    </Table>
+  </StyledTableContainer>
+);
+
+// Add keyboard handler for accessibility
+const useKeyboardNavigation = (
+  tables: TableDefinition[],
+  selectedTable: string | null,
+  toggleTable: (tableId: string) => void
+) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle if we're not in an input field
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (!selectedTable || !tables.length) return;
+
+      const currentIndex = tables.findIndex(t => t.tableIdentifier === selectedTable);
+      if (currentIndex === -1) return;
+
+      // Arrow up/down for table navigation
+      if (e.key === 'ArrowUp' && currentIndex > 0) {
+        toggleTable(tables[currentIndex - 1].tableIdentifier);
+        e.preventDefault();
+      } else if (e.key === 'ArrowDown' && currentIndex < tables.length - 1) {
+        toggleTable(tables[currentIndex + 1].tableIdentifier);
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [tables, selectedTable, toggleTable]);
+};
+
 // Main component
 export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionViewProps): JSX.Element {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const getBackgroundColor = (t: any, selected: boolean): string => {
+    if (!selected) return 'transparent';
+    const isDark = t.palette.mode === 'dark';
+    return isDark
+      ? alpha(t.palette.primary.dark, 0.1)
+      : alpha(t.palette.primary.lighter, 0.2);
+  };
   // Enhanced responsive grid layout
   const gridSizes = useMemo(() => ({
     tableList: { xs: 12, sm: 12, md: 6, lg: 6, xl: 6 }, // 50%
     diagram: { xs: 12, sm: 12, md: 6, lg: 6, xl: 6 },   // 50%
   }), []);
+
+  // Add keyboard shortcuts dialog state
+  const [shortcutsDialogOpen, setShortcutsDialogOpen] = useState(false);
 
   // Unified state management
   const [state, setState] = useState<AppState>({
@@ -1031,6 +1173,9 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     }
   });
 
+  // Add a tablesLoading state
+  const [tablesLoading, setTablesLoading] = useState(true);
+
   // Destructured state for easier access
   const {
     expandedTables, selectedTable, editingTableId, editingColumnId,
@@ -1046,20 +1191,38 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
   // Initialize tables on component mount
   useEffect(() => {
     if (tables?.length > 0) {
-      const tablesDeepCopy = JSON.parse(JSON.stringify(tables));
+      // Only initialize tables if they haven't been set yet or if props.tables actually changed
+      // This prevents resetting editableTables when just selectedTable changes
+      setState(prev => {
+        // Skip re-initializing if we already have tables with descriptions
+        if (prev.editableTables.length > 0 &&
+          prev.editableTables[0].tableIdentifier === tables[0].tableIdentifier) {
+          return {
+            ...prev,
+            // Only set expandedTables and selectedTable if none selected yet
+            ...(Object.keys(expandedTables).length === 0 && !selectedTable && {
+              expandedTables: { [tables[0].tableIdentifier]: true },
+              selectedTable: tables[0].tableIdentifier
+            })
+          };
+        }
 
-      setState(prev => ({
-        ...prev,
-        editableTables: tablesDeepCopy,
-        filteredTables: tablesDeepCopy,
-        // Auto-expand first table if none selected
-        ...(Object.keys(expandedTables).length === 0 && !selectedTable && {
-          expandedTables: { [tables[0].tableIdentifier]: true },
-          selectedTable: tables[0].tableIdentifier
-        })
-      }));
+        // Otherwise do a full initialization
+        const tablesDeepCopy = JSON.parse(JSON.stringify(tables));
+        return {
+          ...prev,
+          editableTables: tablesDeepCopy,
+          filteredTables: tablesDeepCopy,
+          // Auto-expand first table if none selected
+          ...(Object.keys(expandedTables).length === 0 && !selectedTable && {
+            expandedTables: { [tables[0].tableIdentifier]: true },
+            selectedTable: tables[0].tableIdentifier
+          })
+        };
+      });
     }
-  }, [tables, expandedTables, selectedTable]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tables]); // expandedTables and selectedTable dependencies were intentionally removed to fix the reset issue
 
   // Filter tables based on search query
   useEffect(() => {
@@ -1211,18 +1374,19 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
   }, [editableTables]);
 
   const getRelationTypeDisplay = useCallback((relationType: string): string => {
-    const map: Record<string, string> = { 'OTM': '1:n', 'MTO': 'n:1', 'OTO': '1:1', 'MTM': 'n:n' };
-    return map[relationType] || relationType;
+    if (relationType === 'OTM') return '1:n';
+    if (relationType === 'MTO') return 'n:1';
+    if (relationType === 'OTO') return '1:1';
+    if (relationType === 'MTM') return 'n:n';
+    return relationType;
   }, []);
 
   const getRelationshipName = useCallback((key: string): string => {
-    const map: Record<string, string> = {
-      'OTM': 'One-to-Many',
-      'MTO': 'Many-to-One',
-      'OTO': 'One-to-One',
-      'MTM': 'Many-to-Many'
-    };
-    return map[key] || key;
+    if (key === 'OTM') return 'One-to-Many';
+    if (key === 'MTO') return 'Many-to-One';
+    if (key === 'OTO') return 'One-to-One';
+    if (key === 'MTM') return 'Many-to-Many';
+    return key;
   }, []);
 
   // AI description generation
@@ -1483,6 +1647,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     const isEditing = editingTableId === table.tableIdentifier && editingColumnId === column.columnIdentifier;
     const isHovered = hoveredTableId === table.tableIdentifier && hoveredColumnId === column.columnIdentifier;
     const currentEditingColumn = isEditing ? getEditingColumn() : null;
+    const searchActive = !!searchQuery.trim();
 
     const handleKeyPress = (event: React.KeyboardEvent) => {
       if (event.key === 'Enter' && !event.shiftKey) {
@@ -1515,6 +1680,12 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
             hoveredColumnId: null
           }));
         }}
+        onClick={() => {
+          // Add click handler to start editing when row is clicked
+          if (!isEditing) {
+            startEditing(table.tableIdentifier, column.columnIdentifier);
+          }
+        }}
         sx={{
           position: 'relative',
           cursor: 'pointer',
@@ -1527,6 +1698,9 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
             px: { xs: 1, sm: 1.5 },
             ...(isEditing && {
               backgroundColor: alpha(theme.palette.primary.main, 0.04),
+            }),
+            ...(searchActive && column.columnIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) && {
+              bgcolor: (t) => alpha(t.palette.primary.main, 0.05),
             }),
           },
           transition: 'all 0.15s ease-in-out',
@@ -1554,7 +1728,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
             ) : (
               <Typography variant="body2" fontWeight={column.isPrimaryKey ? 'medium' : 'normal'}>
                 {column.isPrimaryKey && <StyledPrimaryKeyIcon />}
-                {column.columnIdentifier}
+                <HighlightedText text={column.columnIdentifier} searchQuery={searchQuery} />
               </Typography>
             )}
           </Stack>
@@ -1578,7 +1752,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
               aria-label="Edit column type"
             />
           ) : (
-            <StyledColumnTypeChip label={column.columnType} size="small" />
+            <StyledColumnTypeChip label={<HighlightedText text={column.columnType} searchQuery={searchQuery} />} size="small" />
           )}
         </TableCell>
 
@@ -1610,7 +1784,11 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                 wordBreak: 'break-word',
               }}
             >
-              {column.columnDescription || 'No description provided'}
+              {column.columnDescription ? (
+                <HighlightedText text={column.columnDescription} searchQuery={searchQuery} />
+              ) : (
+                'No description provided'
+              )}
             </Typography>
           )}
         </TableCell>
@@ -1790,6 +1968,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     editingColumnId,
     hoveredTableId,
     hoveredColumnId,
+    searchQuery,
     getEditingColumn,
     handleColumnChange,
     saveColumnChanges,
@@ -1800,6 +1979,48 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     openRelationDialog,
     startEditing
   ]);
+
+  // Apply keyboard navigation
+  useKeyboardNavigation(filteredTables, selectedTable, toggleTable);
+
+  // Simulate a loading state briefly for better UX
+  useEffect(() => {
+    if (tables?.length > 0) {
+      setTablesLoading(true);
+      const timer = setTimeout(() => {
+        setTablesLoading(false);
+      }, 800);
+
+      return () => clearTimeout(timer);
+    }
+    return undefined; // Add explicit return for linter
+  }, [tables]);
+
+  // Search input ref for focus
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Add keyboard shortcut for search focus
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd+F to focus search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f' && searchInputRef.current) {
+        e.preventDefault();
+        searchInputRef.current.focus();
+      }
+
+      // Escape key to clear search if it's not empty
+      if (e.key === 'Escape' && searchQuery && document.activeElement !== searchInputRef.current) {
+        e.preventDefault();
+        setState(prev => ({ ...prev, searchQuery: '' }));
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [searchQuery]);
 
   // Render component
   return (
@@ -1974,10 +2195,21 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                 }}>
                   <InfoOutlinedIcon color="info" fontSize="small" sx={{ mt: 0.25 }} />
                   <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.5 }}>
-                    {relationDialog.relationType === 'OTO' && 'One record in the source table corresponds to exactly one record in the target table.'}
-                    {relationDialog.relationType === 'OTM' && 'One record in the source table corresponds to many records in the target table.'}
-                    {relationDialog.relationType === 'MTO' && 'Many records in the source table correspond to one record in the target table.'}
-                    {relationDialog.relationType === 'MTM' && 'Many records in the source table correspond to many records in the target table.'}
+                    {(() => {
+                      if (relationDialog.relationType === 'OTO') {
+                        return 'One record in the source table corresponds to exactly one record in the target table.';
+                      }
+                      if (relationDialog.relationType === 'OTM') {
+                        return 'One record in the source table corresponds to many records in the target table.';
+                      }
+                      if (relationDialog.relationType === 'MTO') {
+                        return 'Many records in the source table correspond to one record in the target table.';
+                      }
+                      if (relationDialog.relationType === 'MTM') {
+                        return 'Many records in the source table correspond to many records in the target table.';
+                      }
+                      return '';
+                    })()}
                   </Typography>
                 </Box>
               </Box>
@@ -2030,17 +2262,74 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
               gap: 1.5,
               width: '100%',
             }}>
-              <Box sx={{ flexGrow: 1 }}>
+              <Box sx={{ flexGrow: 1, position: 'relative' }}>
                 <StyledSearchInput
                   placeholder="Search tables or columns..."
                   value={searchQuery}
                   onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
-                  startAdornment={<SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />}
+                  startAdornment={
+                    <SearchIcon
+                      fontSize="small"
+                      sx={{
+                        mr: 1,
+                        color: searchQuery ? 'primary.main' : 'text.secondary',
+                        transition: 'color 0.2s ease'
+                      }}
+                    />
+                  }
+                  endAdornment={
+                    <>
+                      {searchQuery && (
+                        <IconButton
+                          size="small"
+                          onClick={() => setState(prev => ({ ...prev, searchQuery: '' }))}
+                          edge="end"
+                          sx={{
+                            opacity: 0.7,
+                            '&:hover': { opacity: 1 },
+                            transition: 'opacity 0.2s ease'
+                          }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      {!searchQuery && (
+                        <Tooltip title="Ctrl/⌘+F to focus">
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'text.disabled',
+                              mr: 1,
+                              display: { xs: 'none', sm: 'block' }
+                            }}
+                          >
+                            ⌘F
+                          </Typography>
+                        </Tooltip>
+                      )}
+                    </>
+                  }
                   fullWidth
+                  inputRef={searchInputRef}
                   aria-label="Search tables or columns"
                 />
+                {searchQuery && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      position: 'absolute',
+                      right: 0,
+                      bottom: -20,
+                      color: 'text.secondary',
+                      opacity: 0.8
+                    }}
+                  >
+                    Found {filteredTables.length} tables
+                  </Typography>
+                )}
               </Box>
 
+              {/* AI tooltip and button */}
               <Tooltip
                 title={aiLoading ? "Generating descriptions..." : "Auto-generate descriptions for all columns"}
                 arrow
@@ -2075,14 +2364,14 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                 pr: 1,
                 height: { xs: '500px', sm: '600px', md: 'calc(700px - 64px)' },
                 scrollbarWidth: 'thin',
-                '&::-webkit-scrollbar': { width: 6 },
+                '&::-webkit-scrollbar': { width: 8 },
                 '&::-webkit-scrollbar-track': {
                   backgroundColor: alpha(theme.palette.common.black, 0.05),
-                  borderRadius: 3,
+                  borderRadius: 4,
                 },
                 '&::-webkit-scrollbar-thumb': {
                   backgroundColor: alpha(theme.palette.primary.main, 0.3),
-                  borderRadius: 3,
+                  borderRadius: 4,
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.primary.main, 0.5),
                   }
@@ -2090,202 +2379,298 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
               }}
             >
               <AnimatePresence>
-                {filteredTables.length === 0 ? (
-                  <FadeInTransition
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <EmptyStateMessage>
-                      <Iconify
-                        icon="eva:search-outline"
-                        sx={{ width: 40, height: 40, color: 'text.secondary', opacity: 0.5, mb: 1 }}
-                      />
-                      <Typography variant="subtitle1" color="text.secondary">
-                        No tables found
-                      </Typography>
-                      <Typography variant="body2" color="text.disabled">
-                        Try adjusting your search query
-                      </Typography>
-                    </EmptyStateMessage>
-                  </FadeInTransition>
-                ) : (
-                  <Stack spacing={2.5}>
-                    {filteredTables.map((table, index) => (
-                      <m.div
-                        key={table.tableIdentifier}
-                        id={`table-${table.tableIdentifier}`}
-                        custom={index}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        variants={tableVariants}
-                        layout
+                {(() => {
+                  // Handle loading state
+                  if (tablesLoading) {
+                    return (
+                      <FadeInTransition
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                       >
-                        <StyledCard selected={selectedTable === table.tableIdentifier}>
-                          <CardHeader
-                            title={
-                              <Box>
-                                <Stack
-                                  direction="row"
-                                  alignItems="center"
-                                  justifyContent="space-between"
-                                >
-                                  <Stack direction="row" alignItems="center" spacing={1}>
-                                    <IconButton
-                                      size="small"
-                                      onClick={() => toggleTable(table.tableIdentifier)}
-                                      sx={{
-                                        transition: 'transform 0.3s ease',
-                                        transform: expandedTables[table.tableIdentifier] ? 'rotate(-180deg)' : 'rotate(0deg)',
-                                        color: 'primary.main',
-                                        bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
-                                      }}
-                                      aria-label={`Toggle table ${table.tableIdentifier}`}
-                                      aria-expanded={expandedTables[table.tableIdentifier]}
-                                    >
-                                      <KeyboardArrowDownIcon />
-                                    </IconButton>
-                                    <Typography
-                                      variant="subtitle1"
-                                      sx={{
-                                        fontWeight: selectedTable === table.tableIdentifier ? 'bold' : 'medium',
-                                        color: selectedTable === table.tableIdentifier ? 'primary.main' : 'text.primary',
-                                      }}
-                                    >
-                                      {table.tableIdentifier}
-                                    </Typography>
-                                  </Stack>
-
-                                  <Stack
-                                    direction="row"
-                                    spacing={{ xs: 2, sm: 3, md: 4 }}
-                                    alignItems="center"
-                                  >
-                                    <StyledBadge
-                                      badgeContent={getPrimaryKeyCount(table.tableIdentifier)}
-                                      color="warning"
-                                      showZero
-                                    >
-                                      <Tooltip title="Primary keys">
-                                        <KeyIcon
-                                          fontSize="small"
-                                          sx={{
-                                            color: 'warning.main',
-                                            opacity: getPrimaryKeyCount(table.tableIdentifier) > 0 ? 1 : 0.4
-                                          }}
-                                        />
-                                      </Tooltip>
-                                    </StyledBadge>
-                                    <StyledBadge
-                                      badgeContent={getRelationCount(table.tableIdentifier)}
-                                      color="info"
-                                      showZero
-                                    >
-                                      <Tooltip title="Relations">
-                                        <LinkIcon
-                                          fontSize="small"
-                                          sx={{
-                                            color: 'info.main',
-                                            opacity: getRelationCount(table.tableIdentifier) > 0 ? 1 : 0.4
-                                          }}
-                                        />
-                                      </Tooltip>
-                                    </StyledBadge>
-                                    <Chip
-                                      label={getColumnCount(table.tableIdentifier)}
-                                      size="small"
-                                      color={selectedTable === table.tableIdentifier ? 'primary' : 'default'}
-                                      sx={{
-                                        height: 20,
-                                        borderRadius: 10,
-                                        '& .MuiChip-label': { px: 1, fontSize: '0.75rem' }
-                                      }}
-                                    />
-                                  </Stack>
-                                </Stack>
-
-                                {!expandedTables[table.tableIdentifier] && (
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block', mt: 0.5, ml: 4, fontSize: '0.7rem' }}
-                                  >
-                                    {getColumnCount(table.tableIdentifier)} columns,{' '}
-                                    {getPrimaryKeyCount(table.tableIdentifier)} keys,{' '}
-                                    {getRelationCount(table.tableIdentifier)} relations
-                                  </Typography>
-                                )}
-                              </Box>
-                            }
-                            sx={{
-                              p: 2,
-                              pb: expandedTables[table.tableIdentifier] ? 1 : 2,
-                              ...(expandedTables[table.tableIdentifier] && {
-                                borderBottom: (t) => `1px dashed ${t.palette.divider}`,
-                              }),
-                              background: (t) => {
-                                if (selectedTable === table.tableIdentifier) {
-                                  return t.palette.mode === 'dark'
-                                    ? alpha(t.palette.primary.dark, 0.1)
-                                    : alpha(t.palette.primary.lighter, 0.2);
+                        <Stack spacing={2.5}>
+                          {[...Array(3)].map((_, index) => (
+                            <StyledCard key={index}>
+                              <CardHeader
+                                title={
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Box sx={{
+                                      width: 180,
+                                      height: 24,
+                                      borderRadius: 1,
+                                      animation: 'pulse 1.5s ease-in-out 0.5s infinite',
+                                      bgcolor: (t: any) => alpha(t.palette.text.disabled, 0.1),
+                                      '@keyframes pulse': {
+                                        '0%': {
+                                          opacity: 0.6,
+                                        },
+                                        '50%': {
+                                          opacity: 0.3,
+                                        },
+                                        '100%': {
+                                          opacity: 0.6,
+                                        }
+                                      }
+                                    }} />
+                                  </Box>
                                 }
-                                return 'transparent';
-                              }
+                                sx={{ p: 2 }}
+                              />
+                              <Box sx={{ p: { xs: 1, sm: 2 } }}>
+                                <TableSkeleton />
+                              </Box>
+                            </StyledCard>
+                          ))}
+                        </Stack>
+                      </FadeInTransition>
+                    );
+                  }
+
+                  // Handle empty tables state
+                  if (filteredTables.length === 0) {
+                    // Helper functions for conditional text/icons
+                    const getEmptyStateIcon = () => {
+                      if (searchQuery) return "eva:search-outline";
+                      return "eva:database-outline";
+                    };
+
+                    const getEmptyStateMessage = () => {
+                      if (searchQuery) return "Try a different search term";
+                      return "Tables will appear here when available";
+                    };
+
+                    return (
+                      <FadeInTransition
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <EmptyStateMessage>
+                          <Iconify
+                            icon={getEmptyStateIcon()}
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              color: 'text.secondary',
+                              opacity: 0.5,
+                              mb: 1
                             }}
                           />
-                          <Collapse in={expandedTables[table.tableIdentifier]}>
-                            <Box sx={{ p: { xs: 1, sm: 2 } }}>
-                              <StyledTableContainer>
-                                <Table size="small" aria-label={`${table.tableIdentifier} columns`}>
-                                  <TableHead>
-                                    <TableRow>
-                                      <TableCell scope="col" className="column-name">Column</TableCell>
-                                      <TableCell scope="col" className="column-type">Type</TableCell>
-                                      <TableCell scope="col" className="column-description">Description</TableCell>
-                                      <TableCell scope="col" className="column-relations">
-                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                          <span>Relations</span>
-                                          <Tooltip title="Add a new relation">
-                                            <IconButton
-                                              size="small"
-                                              color="primary"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                const firstColumn = table.columns[0];
-                                                if (firstColumn) {
-                                                  openRelationDialog(table.tableIdentifier, firstColumn.columnIdentifier);
-                                                }
-                                              }}
-                                              sx={{
-                                                bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
-                                                width: 24,
-                                                height: 24,
-                                              }}
-                                            >
-                                              <AddIcon fontSize="small" />
-                                            </IconButton>
-                                          </Tooltip>
-                                        </Stack>
-                                      </TableCell>
-                                    </TableRow>
-                                  </TableHead>
-                                  <TableBody>
-                                    <AnimatePresence>
-                                      {table.columns.map((column, colIndex) =>
-                                        renderColumnRow(table, column, colIndex)
-                                      )}
-                                    </AnimatePresence>
-                                  </TableBody>
-                                </Table>
-                              </StyledTableContainer>
-                            </Box>
-                          </Collapse>
-                        </StyledCard>
-                      </m.div>
-                    ))}
-                  </Stack>
-                )}
+                          <Typography variant="subtitle1" color="text.secondary">
+                            {searchQuery ? "No matches found" : "No tables found"}
+                          </Typography>
+                          <Typography variant="body2" color="text.disabled">
+                            {getEmptyStateMessage()}
+                          </Typography>
+                          {searchQuery && (
+                            <Button
+                              variant="text"
+                              color="primary"
+                              size="small"
+                              onClick={() => setState(prev => ({ ...prev, searchQuery: '' }))}
+                              sx={{ mt: 2 }}
+                              startIcon={<CloseIcon />}
+                            >
+                              Clear search
+                            </Button>
+                          )}
+                        </EmptyStateMessage>
+                      </FadeInTransition>
+                    );
+                  }
+
+                  // Handle populated tables state
+                  return (
+                    <Stack spacing={2.5}>
+                      {filteredTables.map((table, index) => (
+                        <m.div
+                          key={table.tableIdentifier}
+                          id={`table-${table.tableIdentifier}`}
+                          custom={index}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          variants={tableVariants}
+                          layout
+                        >
+                          <StyledCard
+                            selected={selectedTable === table.tableIdentifier}
+                            sx={{ cursor: 'default' }} // Changed from pointer to default
+                          >
+                            <CardHeader
+                              onClick={() => toggleTable(table.tableIdentifier)} // Move onClick to the header only
+                              sx={{
+                                p: 2,
+                                pb: expandedTables[table.tableIdentifier] ? 1 : 2,
+                                ...(expandedTables[table.tableIdentifier] && {
+                                  borderBottom: (t: any) => `1px dashed ${t.palette.divider}`,
+                                }),
+                                background: (t: any) => getBackgroundColor(t, selectedTable === table.tableIdentifier),
+                                cursor: 'pointer', // Add cursor pointer to header
+                                '&:hover': {
+                                  background: (t: any) => alpha(t.palette.action.hover, 0.05),
+                                },
+                              }}
+                              title={
+                                <Box>
+                                  <Stack
+                                    direction="row"
+                                    alignItems="center"
+                                    justifyContent="space-between"
+                                  >
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                      <IconButton
+                                        size="small"
+                                        onClick={(e) => {
+                                          e.stopPropagation();  // Stop event propagation to prevent double toggle
+                                          toggleTable(table.tableIdentifier);
+                                        }}
+                                        sx={{
+                                          transition: 'transform 0.3s ease, background-color 0.2s ease',
+                                          transform: expandedTables[table.tableIdentifier] ? 'rotate(-180deg)' : 'rotate(0deg)',
+                                          color: expandedTables[table.tableIdentifier] ? 'primary.main' : 'text.secondary',
+                                          bgcolor: (t: any) => alpha(
+                                            expandedTables[table.tableIdentifier]
+                                              ? t.palette.primary.main
+                                              : t.palette.action.selected,
+                                            expandedTables[table.tableIdentifier] ? 0.15 : 0.05
+                                          ),
+                                          '&:hover': {
+                                            bgcolor: (t: any) => alpha(t.palette.primary.main, 0.2),
+                                          },
+                                        }}
+                                        aria-label={`Toggle table ${table.tableIdentifier}`}
+                                        aria-expanded={expandedTables[table.tableIdentifier]}
+                                      >
+                                        <KeyboardArrowDownIcon />
+                                      </IconButton>
+                                      <Typography
+                                        variant="subtitle1"
+                                        sx={{
+                                          fontWeight: selectedTable === table.tableIdentifier ? 700 : 500,
+                                          color: selectedTable === table.tableIdentifier ? 'primary.main' : 'text.primary',
+                                          transition: 'color 0.2s ease, font-weight 0.2s ease',
+                                        }}
+                                      >
+                                        {table.tableIdentifier}
+                                      </Typography>
+                                    </Stack>
+
+                                    <Stack
+                                      direction="row"
+                                      spacing={{ xs: 2, sm: 3, md: 4 }}
+                                      alignItems="center"
+                                    >
+                                      <StyledBadge
+                                        badgeContent={getPrimaryKeyCount(table.tableIdentifier)}
+                                        color="warning"
+                                        showZero
+                                      >
+                                        <Tooltip title="Primary keys">
+                                          <KeyIcon
+                                            fontSize="small"
+                                            sx={{
+                                              color: 'warning.main',
+                                              opacity: getPrimaryKeyCount(table.tableIdentifier) > 0 ? 1 : 0.4
+                                            }}
+                                          />
+                                        </Tooltip>
+                                      </StyledBadge>
+                                      <StyledBadge
+                                        badgeContent={getRelationCount(table.tableIdentifier)}
+                                        color="info"
+                                        showZero
+                                      >
+                                        <Tooltip title="Relations">
+                                          <LinkIcon
+                                            fontSize="small"
+                                            sx={{
+                                              color: 'info.main',
+                                              opacity: getRelationCount(table.tableIdentifier) > 0 ? 1 : 0.4
+                                            }}
+                                          />
+                                        </Tooltip>
+                                      </StyledBadge>
+                                      <Chip
+                                        label={getColumnCount(table.tableIdentifier)}
+                                        size="small"
+                                        color={selectedTable === table.tableIdentifier ? 'primary' : 'default'}
+                                        sx={{
+                                          height: 20,
+                                          borderRadius: 10,
+                                          '& .MuiChip-label': { px: 1, fontSize: '0.75rem' }
+                                        }}
+                                      />
+                                    </Stack>
+                                  </Stack>
+
+                                  {!expandedTables[table.tableIdentifier] && (
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      sx={{ display: 'block', mt: 0.5, ml: 4, fontSize: '0.7rem' }}
+                                    >
+                                      {getColumnCount(table.tableIdentifier)} columns,{' '}
+                                      {getPrimaryKeyCount(table.tableIdentifier)} keys,{' '}
+                                      {getRelationCount(table.tableIdentifier)} relations
+                                    </Typography>
+                                  )}
+                                </Box>
+                              }
+                            />
+                            <Collapse in={expandedTables[table.tableIdentifier]}>
+                              <Box sx={{ p: { xs: 1, sm: 2 } }}>
+                                <StyledTableContainer>
+                                  <Table size="small" aria-label={`${table.tableIdentifier} columns`}>
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell scope="col" className="column-name">Column</TableCell>
+                                        <TableCell scope="col" className="column-type">Type</TableCell>
+                                        <TableCell scope="col" className="column-description">Description</TableCell>
+                                        <TableCell scope="col" className="column-relations">
+                                          <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                            <span>Relations</span>
+                                            <Tooltip title="Add a new relation">
+                                              <IconButton
+                                                size="small"
+                                                color="primary"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  const firstColumn = table.columns[0];
+                                                  if (firstColumn) {
+                                                    openRelationDialog(table.tableIdentifier, firstColumn.columnIdentifier);
+                                                  }
+                                                }}
+                                                sx={{
+                                                  bgcolor: (t: any) => alpha(t.palette.primary.main, 0.1),
+                                                  width: 24,
+                                                  height: 24,
+                                                }}
+                                              >
+                                                <AddIcon fontSize="small" />
+                                              </IconButton>
+                                            </Tooltip>
+                                          </Stack>
+                                        </TableCell>
+                                      </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                      <AnimatePresence>
+                                        {table.columns.map((column, colIndex) =>
+                                          renderColumnRow(table, column, colIndex)
+                                        )}
+                                      </AnimatePresence>
+                                    </TableBody>
+                                  </Table>
+                                </StyledTableContainer>
+                              </Box>
+                            </Collapse>
+                          </StyledCard>
+                        </m.div>
+                      ))}
+                    </Stack>
+                  );
+                })()}
               </AnimatePresence>
             </Box>
           </Box>
@@ -2304,9 +2689,12 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
               flexDirection: 'column',
               borderRadius: 3,
               position: 'relative',
-              background: theme.palette.mode === 'dark'
-                ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.grey[900], 0.8)} 100%)`
-                : `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.grey[50], 0.85)} 100%)`,
+              background: (() => {
+                if (theme.palette.mode === 'dark') {
+                  return `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.grey[900], 0.8)} 100%)`;
+                }
+                return `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.grey[50], 0.85)} 100%)`;
+              })(),
               border: `1px solid ${alpha(theme.palette.grey[theme.palette.mode === 'dark' ? 700 : 300], theme.palette.mode === 'dark' ? 0.3 : 0.7)}`,
               backdropFilter: 'blur(10px)',
             }}
@@ -2329,15 +2717,54 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                 <Typography variant="h6">Schema Diagram</Typography>
               </Stack>
 
-              {selectedTable && (
-                <Chip
-                  label={selectedTable}
-                  color="primary"
-                  size="small"
-                  onDelete={() => setState(prev => ({ ...prev, selectedTable: null }))}
-                  sx={{ height: 28, borderRadius: 8 }}
-                />
-              )}
+              <Stack direction="row" spacing={1}>
+                {tablesLoading && (
+                  <Box
+                    sx={{
+                      width: 80,
+                      height: 28,
+                      borderRadius: 2,
+                      animation: 'pulse 1.5s ease-in-out 0.5s infinite',
+                      bgcolor: (t: any) => alpha(t.palette.text.disabled, 0.1),
+                      '@keyframes pulse': {
+                        '0%': { opacity: 0.6 },
+                        '50%': { opacity: 0.3 },
+                        '100%': { opacity: 0.6 },
+                      },
+                    }}
+                  />
+                )}
+
+                {!tablesLoading && selectedTable && (
+                  <Chip
+                    label={selectedTable}
+                    color="primary"
+                    size="small"
+                    onDelete={() => setState(prev => ({ ...prev, selectedTable: null }))}
+                    sx={{ height: 28, borderRadius: 8 }}
+                  />
+                )}
+
+                {!tablesLoading && !selectedTable && filteredTables.length > 0 && (
+                  <Chip
+                    label="Select a table"
+                    variant="outlined"
+                    size="small"
+                    icon={<KeyboardArrowDownIcon fontSize="small" />}
+                    sx={{ height: 28, borderRadius: 8 }}
+                  />
+                )}
+
+                <Tooltip title="Keyboard shortcuts">
+                  <IconButton
+                    size="small"
+                    sx={{ color: 'text.secondary' }}
+                    onClick={() => setShortcutsDialogOpen(true)}
+                  >
+                    <Iconify icon="eva:info-outline" width={20} height={20} />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
             </Box>
 
             <Divider sx={{ mb: 2 }} />
@@ -2350,28 +2777,57 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                 border: `1px solid ${alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.2 : 0.5)}`,
                 height: { xs: '400px', sm: '500px', md: 'calc(700px - 100px)' },
                 overflow: 'hidden',
-                background: theme.palette.mode === 'dark'
-                  ? `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.5)} 0%, ${alpha(theme.palette.grey[900], 0.4)} 100%)`
-                  : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.3)} 0%, ${alpha(theme.palette.grey[100], 0.2)} 100%)`,
-                backgroundImage: theme.palette.mode === 'dark'
-                  ? `radial-gradient(${alpha(theme.palette.grey[800], 0.4)} 1px, transparent 1px), 
-                     radial-gradient(${alpha(theme.palette.grey[800], 0.3)} 1px, transparent 1px)`
-                  : `radial-gradient(${alpha(theme.palette.grey[400], 0.2)} 1px, transparent 1px), 
-                     radial-gradient(${alpha(theme.palette.grey[400], 0.15)} 1px, transparent 1px)`,
+                background: (() => {
+                  if (theme.palette.mode === 'dark') {
+                    return `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.5)} 0%, ${alpha(theme.palette.grey[900], 0.4)} 100%)`;
+                  }
+                  return `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.3)} 0%, ${alpha(theme.palette.grey[100], 0.2)} 100%)`;
+                })(),
+                backgroundImage: (() => {
+                  if (theme.palette.mode === 'dark') {
+                    return `radial-gradient(${alpha(theme.palette.grey[800], 0.4)} 1px, transparent 1px), 
+                     radial-gradient(${alpha(theme.palette.grey[800], 0.3)} 1px, transparent 1px)`;
+                  }
+                  return `radial-gradient(${alpha(theme.palette.grey[400], 0.2)} 1px, transparent 1px), 
+                     radial-gradient(${alpha(theme.palette.grey[400], 0.15)} 1px, transparent 1px)`;
+                })(),
                 backgroundSize: '20px 20px',
                 backgroundPosition: '0 0, 10px 10px',
                 backdropFilter: 'blur(2px)',
               }}
             >
-              {filteredTables.length > 0 ? (
-                <Box sx={{ width: '92%', height: '92%', margin: 'auto', position: 'relative', top: '4%' }}>
+              {tablesLoading && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                  }}
+                >
+                  <CircularProgress size={40} />
+                </Box>
+              )}
+
+              {!tablesLoading && filteredTables.length > 0 && (
+                <Box
+                  sx={{
+                    width: '92%',
+                    height: '92%',
+                    margin: 'auto',
+                    position: 'relative',
+                    top: '4%',
+                  }}
+                >
                   <SchemaVisualization
                     tables={editableTables}
                     selectedTable={selectedTable}
                     onTableClick={toggleTable}
                   />
                 </Box>
-              ) : (
+              )}
+
+              {!tablesLoading && filteredTables.length === 0 && (
                 <EmptyStateMessage>
                   <Iconify
                     icon="eva:layers-outline"
@@ -2389,6 +2845,44 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Keyboard shortcuts helper */}
+      <Dialog
+        open={shortcutsDialogOpen}
+        maxWidth="xs"
+        onClose={() => setShortcutsDialogOpen(false)}
+      >
+        <DialogTitle>Keyboard Shortcuts</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'primary.main' }}>Navigation</Typography>
+              <Stack spacing={0.5}>
+                <Typography variant="body2">↑ / ↓ - Navigate between tables</Typography>
+                <Typography variant="body2">Enter - Expand/collapse selected table</Typography>
+              </Stack>
+            </Box>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'primary.main' }}>Actions</Typography>
+              <Stack spacing={0.5}>
+                <Typography variant="body2">Ctrl/⌘ + F - Focus search</Typography>
+                <Typography variant="body2">Escape - Clear search or cancel editing</Typography>
+                <Typography variant="body2">Click on row - Edit column</Typography>
+              </Stack>
+            </Box>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setShortcutsDialogOpen(false)}
+            color="primary"
+            variant="contained"
+            startIcon={<Iconify icon="eva:checkmark-fill" />}
+          >
+            Got it
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
