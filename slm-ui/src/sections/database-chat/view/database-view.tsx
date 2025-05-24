@@ -27,7 +27,7 @@ import { DatabaseSource } from 'src/types/database';
 // Constants for layout
 const MAIN_SIDEBAR_WIDTH = 80; // Width of the main sidebar
 const CHAT_SIDEBAR_WIDTH = { xs: 280, sm: 320 }; // Width of the chat sidebar
-const HEADER_HEIGHT = 150; // Height of the header
+const HEADER_HEIGHT = 100; // Height of the header
 
 const HeaderContainer = styled(Paper)(({ theme }) => ({
   position: 'fixed',
