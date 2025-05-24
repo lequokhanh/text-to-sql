@@ -383,6 +383,20 @@ export function DataSourceDropdown({
               py: 0,
               flex: 1,
               overflow: 'auto',
+              '&::-webkit-scrollbar': {
+                width: '8px',
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: (t) => alpha(t.palette.grey[500], 0.08),
+                borderRadius: '8px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: (t) => alpha(t.palette.grey[500], 0.24),
+                borderRadius: '8px',
+                '&:hover': {
+                  backgroundColor: (t) => alpha(t.palette.grey[500], 0.32),
+                },
+              },
             },
             '&:before': {
               content: '""',
@@ -407,7 +421,9 @@ export function DataSourceDropdown({
             position: 'sticky',
             top: 0,
             bgcolor: 'background.paper',
-            zIndex: 1,
+            zIndex: 2,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
           }}
         >
           <TextField
