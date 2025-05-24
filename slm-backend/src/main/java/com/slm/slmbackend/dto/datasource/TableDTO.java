@@ -8,5 +8,6 @@ import java.util.List;
 public class TableDTO {
     private Integer id;
     private String tableIdentifier;
+    private String tableDescription;
     private List<ColumnWithRelationDTO> columns;
 }

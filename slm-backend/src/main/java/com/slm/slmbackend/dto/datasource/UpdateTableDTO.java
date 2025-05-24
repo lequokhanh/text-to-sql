@@ -6,4 +6,5 @@ import lombok.Data;
 public class UpdateTableDTO {
     private Integer id;
     private String tableIdentifier;
+    private String tableDescription;
 }

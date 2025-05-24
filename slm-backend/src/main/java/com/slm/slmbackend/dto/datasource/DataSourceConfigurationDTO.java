@@ -13,5 +13,5 @@ public class DataSourceConfigurationDTO {
     private String databaseName;
     private String username;
     private String password;
-    private String collectionName;
+    private String databaseDescription;
 }

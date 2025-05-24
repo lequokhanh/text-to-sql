@@ -23,6 +23,7 @@ export interface ColumnDefinition {
 export interface TableDefinition {
   id: number;
   tableIdentifier: string;
+  tableDescription?: string;
   columns: ColumnDefinition[];
 }
 
@@ -63,6 +64,7 @@ export interface DataSourceConfigurationDTO {
   databaseName: string;
   username: string;
   password: string;
+  databaseDescription?: string;
   collectionName?: string;
 }
 
@@ -122,6 +124,7 @@ export type DatabaseSource = {
   username: string;
   password: string;
   name: string;
+  databaseDescription?: string;
   tableDefinitions: TableDefinition[];
 };
 

@@ -28,9 +28,7 @@ public class DataSourceConfiguration {
     private String databaseName;
     private String username;
     private String password;
-
-    @Column(unique = true)
-    private String collectionName;
+    private String databaseDescription;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     @JoinTable(

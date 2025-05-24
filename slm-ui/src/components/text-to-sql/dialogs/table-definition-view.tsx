@@ -1002,6 +1002,7 @@ interface AppState {
   selectedTable: string | null;
   editingTableId: string | null;
   editingColumnId: string | null;
+  editingTableDescription: boolean;
   searchQuery: string;
   filteredTables: TableDefinition[];
   editableTables: TableDefinition[];
@@ -1020,43 +1021,50 @@ interface TableDefinitionViewProps {
 }
 
 // Add search highlight component
-const HighlightedText = ({ text, searchQuery }: { text: string, searchQuery: string }) => {
+const HighlightedText = ({ text, searchQuery }: { text: string | undefined | null, searchQuery: string | undefined | null }) => {
   const theme = useTheme();
   
-  if (!searchQuery || !text) return <>{text}</>;
+  if (!searchQuery?.trim() || !text) return <>{text || ''}</>;
 
-  const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
+  try {
+    const query = searchQuery.trim();
+    const safeText = String(text);
+    const parts = safeText.split(new RegExp(`(${query})`, 'gi'));
 
-  return (
-    <m.span
-      initial={{ opacity: 0.5 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.2 }}
-    >
-      {parts.map((part, index) =>
-        part.toLowerCase() === searchQuery.toLowerCase() ? (
-          <m.span
-            key={index}
-            initial={{ backgroundColor: 'transparent' }}
-            animate={{ 
-              backgroundColor: alpha(theme.palette.primary.main, 0.2)
-            }}
-            transition={{ duration: 0.2 }}
-            style={{
-              color: theme.palette.primary.main,
-              padding: '2px 4px',
-              borderRadius: '4px',
-              fontWeight: 500
-            }}
-          >
-            {part}
-          </m.span>
-        ) : (
-          part
-        )
-      )}
-    </m.span>
-  );
+    return (
+      <m.span
+        initial={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+      >
+        {parts.map((part, index) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <m.span
+              key={index}
+              initial={{ backgroundColor: 'transparent' }}
+              animate={{ 
+                backgroundColor: alpha(theme.palette.primary.main, 0.2)
+              }}
+              transition={{ duration: 0.2 }}
+              style={{
+                color: theme.palette.primary.main,
+                padding: '2px 4px',
+                borderRadius: '4px',
+                fontWeight: 500
+              }}
+            >
+              {part}
+            </m.span>
+          ) : (
+            part
+          )
+        )}
+      </m.span>
+    );
+  } catch (error) {
+    console.error('Error in HighlightedText:', error);
+    return <>{text || ''}</>;
+  }
 };
 
 // Add skeleton loader component
@@ -1220,6 +1228,11 @@ const StyledTableHeader = styled(CardHeader)(({ theme }) => ({
       },
     },
   },
+  '& .table-description': {
+    marginTop: theme.spacing(1),
+    color: theme.palette.text.secondary,
+    fontSize: '0.875rem',
+  },
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.05),
   },
@@ -1252,6 +1265,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     selectedTable: null,
     editingTableId: null,
     editingColumnId: null,
+    editingTableDescription: false,
     searchQuery: '',
     filteredTables: [],
     editableTables: [],
@@ -1280,7 +1294,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
   // Destructured state for easier access
   const {
     expandedTables, selectedTable, editingTableId, editingColumnId,
-    searchQuery, filteredTables, editableTables, aiLoading,
+    editingTableDescription, searchQuery, filteredTables, editableTables, aiLoading,
     aiButtonTooltipOpen, hoveredTableId, hoveredColumnId,
     toast, relationDialog
   } = state;
@@ -1293,56 +1307,72 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
   useEffect(() => {
     if (tables?.length > 0) {
       // Only initialize tables if they haven't been set yet or if props.tables actually changed
-      // This prevents resetting editableTables when just selectedTable changes
       setState(prev => {
-        // Skip re-initializing if we already have tables with descriptions
-        if (prev.editableTables.length > 0 &&
-          prev.editableTables[0].tableIdentifier === tables[0].tableIdentifier) {
-          return {
-            ...prev,
-            // Only set expandedTables and selectedTable if none selected yet
-            ...(Object.keys(expandedTables).length === 0 && !selectedTable && {
-              expandedTables: { [tables[0].tableIdentifier]: true },
-              selectedTable: tables[0].tableIdentifier
-            })
-          };
-        }
-
-        // Otherwise do a full initialization
         const tablesDeepCopy = JSON.parse(JSON.stringify(tables));
         return {
           ...prev,
           editableTables: tablesDeepCopy,
           filteredTables: tablesDeepCopy,
           // Auto-expand first table if none selected
-          ...(Object.keys(expandedTables).length === 0 && !selectedTable && {
+          ...(Object.keys(prev.expandedTables).length === 0 && !prev.selectedTable && {
             expandedTables: { [tables[0].tableIdentifier]: true },
             selectedTable: tables[0].tableIdentifier
           })
         };
       });
+      setTablesLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tables]); // expandedTables and selectedTable dependencies were intentionally removed to fix the reset issue
+  }, [tables]); // Only depend on tables prop
 
   // Filter tables based on search query
   useEffect(() => {
-    if (!debouncedSearchQuery.trim()) {
-      setState(prev => ({ ...prev, filteredTables: prev.editableTables }));
+    if (!debouncedSearchQuery?.trim()) {
+      setState(prev => ({ ...prev, filteredTables: prev.editableTables || [] }));
       return;
     }
 
-    const query = debouncedSearchQuery.toLowerCase();
-    const filtered = editableTables.filter(table =>
-      table.tableIdentifier.toLowerCase().includes(query) ||
-      table.columns.some(col =>
-        col.columnIdentifier.toLowerCase().includes(query) ||
-        (col.columnDescription && col.columnDescription.toLowerCase().includes(query)) ||
-        col.columnType.toLowerCase().includes(query)
-      )
-    );
+    try {
+      const query = debouncedSearchQuery.toLowerCase().trim();
+      const filtered = (editableTables || []).filter(table => {
+        // Safely check if table exists and has required properties
+        if (!table || typeof table !== 'object') return false;
 
-    setState(prev => ({ ...prev, filteredTables: filtered }));
+        // Check table identifier
+        const tableId = table.tableIdentifier?.toLowerCase() || '';
+        if (tableId.includes(query)) {
+          return true;
+        }
+
+        // Check table description
+        const tableDesc = table.tableDescription?.toLowerCase() || '';
+        if (tableDesc.includes(query)) {
+          return true;
+        }
+
+        // Check columns
+        if (!Array.isArray(table.columns)) return false;
+        
+        return table.columns.some(col => {
+          if (!col || typeof col !== 'object') return false;
+          
+          const colId = col.columnIdentifier?.toLowerCase() || '';
+          const colDesc = col.columnDescription?.toLowerCase() || '';
+          const colType = col.columnType?.toLowerCase() || '';
+          
+          return (
+            colId.includes(query) ||
+            colDesc.includes(query) ||
+            colType.includes(query)
+          );
+        });
+      });
+
+      setState(prev => ({ ...prev, filteredTables: filtered }));
+    } catch (error) {
+      console.error('Error filtering tables:', error);
+      // In case of error, show all tables
+      setState(prev => ({ ...prev, filteredTables: editableTables || [] }));
+    }
   }, [debouncedSearchQuery, editableTables]);
 
   // Core helper functions
@@ -1559,104 +1589,138 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
   }, []);
 
   // AI description generation
-  const generateAIDescription = async (column: ColumnDefinition, table: TableDefinition): Promise<string> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+const generateAIDescription = useCallback(async (column: ColumnDefinition, table: TableDefinition): Promise<string> => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Context-aware descriptions
-    const isForeignKey = column.relations && column.relations.length > 0;
-    const colName = column.columnIdentifier.toLowerCase();
+  // Context-aware descriptions
+  const isForeignKey = column.relations && column.relations.length > 0;
+  const colName = column.columnIdentifier.toLowerCase();
 
-    if (column.isPrimaryKey) {
-      return `Unique identifier for each record in the ${table.tableIdentifier} table`;
+  if (column.isPrimaryKey) {
+    return `Unique identifier for each record in the ${table.tableIdentifier} table`;
+  }
+
+  if (isForeignKey) {
+    const relations = column.relations || [];
+    const targetTables = relations.map(r => r.tableIdentifier).join(', ');
+    return `Foreign key referencing ${targetTables} ${relations.length > 1 ? 'tables' : 'table'}`;
+  }
+
+  if (colName.includes('id') && colName.endsWith('id')) {
+    return `Reference to ${colName.replace(/_?id$/, '')} record`;
+  }
+
+  if (colName.includes('name')) {
+    return `Name or title of the ${table.tableIdentifier} record`;
+  }
+
+  if (colName.includes('date') || colName.includes('time')) {
+    let action = 'event occurred';
+    if (colName.includes('created')) action = 'record was created';
+    else if (colName.includes('updated')) action = 'record was last modified';
+    else if (colName.includes('deleted')) action = 'record was removed';
+
+    return `Timestamp indicating when the ${action}`;
+  }
+
+  if (/price|cost|amount/.test(colName)) {
+    return `Monetary value representing the ${colName.replace(/_/g, ' ')}`;
+  }
+
+  if (colName.includes('status')) {
+    return `Current state of the ${table.tableIdentifier} record`;
+  }
+
+  if (colName.includes('description')) {
+    return `Detailed description of the ${table.tableIdentifier} record`;
+  }
+
+  if (/bool|flag/.test(column.columnType.toLowerCase())) {
+    const flagDescription = colName
+      .replace(/^is_|^has_/, '')
+      .replace(/_/g, ' ');
+    return `Flag indicating whether the ${table.tableIdentifier} ${flagDescription}`;
+  }
+
+  return `Stores ${column.columnType} data for ${table.tableIdentifier} records`;
+}, []);
+
+  // Add this before the fillAllDescriptionsWithAI function
+const generateAITableDescription = useCallback(async (table: TableDefinition): Promise<string> => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  const columnTypes = table.columns.map(col => `${col.columnIdentifier} (${col.columnType})`).join(', ');
+  const primaryKeys = table.columns.filter(col => col.isPrimaryKey).map(col => col.columnIdentifier).join(', ');
+  const hasRelations = table.columns.some(col => (col.relations && col.relations.length > 0));
+
+  let description = `Table storing ${table.tableIdentifier} records with columns: ${columnTypes}.`;
+  
+  if (primaryKeys) {
+    description += ` Primary key(s): ${primaryKeys}.`;
+  }
+
+  if (hasRelations) {
+    description += ` Contains relationships with other tables.`;
+  }
+
+  return description;
+}, []);
+
+  // Update the fillAllDescriptionsWithAI function
+const fillAllDescriptionsWithAI = useCallback(async () => {
+  try {
+    setState(prev => ({ ...prev, aiLoading: true, aiButtonTooltipOpen: false }));
+
+    const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+    let generatedCount = 0;
+
+    // Generate table descriptions first
+    await Promise.all(
+      tablesDeepCopy.map(async (table: TableDefinition) => {
+        if (!table.tableDescription) {
+          table.tableDescription = await generateAITableDescription(table);
+          generatedCount += 1;
+        }
+      })
+    );
+
+    // Then generate column descriptions
+    await Promise.all(
+      tablesDeepCopy.flatMap((table: TableDefinition) =>
+        table.columns.map(async (column: ColumnDefinition) => {
+          if (!column.columnDescription) {
+            column.columnDescription = await generateAIDescription(column, table);
+            generatedCount += 1;
+          }
+        })
+      )
+    );
+
+    setState(prev => ({
+      ...prev,
+      editableTables: tablesDeepCopy,
+      filteredTables: tablesDeepCopy,
+      aiLoading: false
+    }));
+
+    if (onTablesUpdate && generatedCount > 0) {
+      onTablesUpdate(tablesDeepCopy);
     }
 
-    if (isForeignKey) {
-      const relations = column.relations || [];
-      const targetTables = relations.map(r => r.tableIdentifier).join(', ');
-      return `Foreign key referencing ${targetTables} ${relations.length > 1 ? 'tables' : 'table'}`;
-    }
-
-    if (colName.includes('id') && colName.endsWith('id')) {
-      return `Reference to ${colName.replace(/_?id$/, '')} record`;
-    }
-
-    if (colName.includes('name')) {
-      return `Name or title of the ${table.tableIdentifier} record`;
-    }
-
-    if (colName.includes('date') || colName.includes('time')) {
-      let action = 'event occurred';
-      if (colName.includes('created')) action = 'record was created';
-      else if (colName.includes('updated')) action = 'record was last modified';
-      else if (colName.includes('deleted')) action = 'record was removed';
-
-      return `Timestamp indicating when the ${action}`;
-    }
-
-    if (/price|cost|amount/.test(colName)) {
-      return `Monetary value representing the ${colName.replace(/_/g, ' ')}`;
-    }
-
-    if (colName.includes('status')) {
-      return `Current state of the ${table.tableIdentifier} record`;
-    }
-
-    if (colName.includes('description')) {
-      return `Detailed description of the ${table.tableIdentifier} record`;
-    }
-
-    if (/bool|flag/.test(column.columnType.toLowerCase())) {
-      const flagDescription = colName
-        .replace(/^is_|^has_/, '')
-        .replace(/_/g, ' ');
-      return `Flag indicating whether the ${table.tableIdentifier} ${flagDescription}`;
-    }
-
-    return `Stores ${column.columnType} data for ${table.tableIdentifier} records`;
-  };
-
-  const fillAllDescriptionsWithAI = async () => {
-    try {
-      setState(prev => ({ ...prev, aiLoading: true, aiButtonTooltipOpen: false }));
-
-      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
-      let generatedCount = 0;
-
-      await Promise.all(
-        tablesDeepCopy.flatMap((table: TableDefinition) =>
-          table.columns.map(async (column: ColumnDefinition) => {
-            if (!column.columnDescription) {
-              column.columnDescription = await generateAIDescription(column, table);
-              generatedCount += 1;
-            }
-          })
-        )
-      );
-
-      setState(prev => ({
-        ...prev,
-        editableTables: tablesDeepCopy,
-        filteredTables: tablesDeepCopy,
-        aiLoading: false
-      }));
-
-      if (onTablesUpdate && generatedCount > 0) {
-        onTablesUpdate(tablesDeepCopy);
-      }
-
-      showToast(
-        generatedCount > 0
-          ? `Successfully generated ${generatedCount} column descriptions!`
-          : 'All columns already have descriptions',
-        generatedCount > 0 ? 'success' : 'info'
-      );
-    } catch (error) {
-      console.error('AI description generation failed:', error);
-      showToast('Failed to generate AI descriptions', 'error');
-      setState(prev => ({ ...prev, aiLoading: false }));
-    }
-  };
+    showToast(
+      generatedCount > 0
+        ? `Successfully generated ${generatedCount} descriptions!`
+        : 'All tables and columns already have descriptions',
+      generatedCount > 0 ? 'success' : 'info'
+    );
+  } catch (error) {
+    console.error('AI description generation failed:', error);
+    showToast('Failed to generate AI descriptions', 'error');
+    setState(prev => ({ ...prev, aiLoading: false }));
+  }
+}, [editableTables, onTablesUpdate, showToast, generateAITableDescription, generateAIDescription]);
 
   // Relation management
   const openRelationDialog = useCallback((tableId: string, columnId: string) => {
@@ -2394,6 +2458,86 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     };
   }, [searchQuery]);
 
+  // Add this function to handle table description changes
+  const handleTableDescriptionChange = useCallback((
+    tableId: string,
+    value: string
+  ) => {
+    setState(prev => {
+      const updatedTables = JSON.parse(JSON.stringify(prev.editableTables));
+
+      const result = updatedTables.map((table: TableDefinition) => {
+        if (table.tableIdentifier === tableId) {
+          return {
+            ...table,
+            tableDescription: value
+          };
+        }
+        return table;
+      });
+
+      return {
+        ...prev,
+        editableTables: result
+      };
+    });
+  }, []);
+
+  // Add this function to save table description
+  const saveTableDescription = useCallback(async (tableId: string): Promise<void> => {
+    try {
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+      const sourceTable = editableTables.find(t => t.tableIdentifier === tableId);
+
+      if (!sourceTable?.id) {
+        throw new Error('Table ID not found');
+      }
+
+      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
+        if (table.tableIdentifier === tableId) {
+          return table;
+        }
+        return table;
+      });
+
+      // Call API to update the table if we're in management mode
+      const sourceId = window.location.pathname.split('/')[2];
+      const isManagementPage = window.location.pathname.includes('/manage');
+      
+      if (isManagementPage && sourceId) {
+        try {
+          await axiosInstance.put(
+            endpoints.dataSource.tables.update(
+              sourceId.toString(),
+              sourceTable.id.toString()
+            ),
+            { tableDescription: sourceTable.tableDescription }
+          );
+        } catch (error: any) {
+          console.error('Error updating table description:', error);
+          showToast('Failed to update table description on server', 'error');
+          return;
+        }
+      }
+
+      setState(prev => ({
+        ...prev,
+        editableTables: updatedTables,
+        filteredTables: updatedTables,
+        editingTableDescription: false
+      }));
+
+      if (onTablesUpdate) {
+        onTablesUpdate(updatedTables);
+      }
+
+      showToast('Table description updated successfully!', 'success');
+    } catch (error: any) {
+      console.error('Error saving table description:', error);
+      showToast('Failed to save table description', 'error');
+    }
+  }, [editableTables, onTablesUpdate, showToast]);
+
   // Render component
   return (
     <Box sx={{ position: 'relative', overflow: 'hidden', width: '100%' }}>
@@ -2702,7 +2846,11 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
         sx={{ alignItems: 'stretch' }}
       >
         {/* Table List Panel */}
-        <Grid item {...gridSizes.tableList}>
+        <Grid 
+          item 
+          {...gridSizes.tableList}
+          key="table-list-panel"
+        >
           <Box sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -2726,7 +2874,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                     <m.div
                       animate={{
                         scale: searchQuery ? [1, 1.2, 1] : 1,
-                        color: searchQuery ? 'primary.main' : 'text.secondary',
+                        color: searchQuery ? theme.palette.primary.main : theme.palette.text.secondary,
                       }}
                       transition={{ duration: 0.2 }}
                     >
@@ -2875,13 +3023,14 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                   if (tablesLoading) {
                     return (
                       <FadeInTransition
+                        key="loading"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
                         <Stack spacing={2.5}>
                           {[...Array(3)].map((_, index) => (
-                            <StyledCard key={index}>
+                            <StyledCard key={`skeleton-${index}`}>
                               <CardHeader
                                 title={
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -2932,6 +3081,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
 
                     return (
                       <FadeInTransition
+                        key="empty"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -2972,7 +3122,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
 
                   // Handle populated tables state
                   return (
-                    <Stack spacing={2.5}>
+                    <Stack key="tables" spacing={2.5}>
                       {filteredTables.map((table, index) => (
                         <m.div
                           key={table.tableIdentifier}
@@ -3038,7 +3188,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                                             fontWeight: selectedTable === table.tableIdentifier ? 700 : 500,
                                             color: selectedTable === table.tableIdentifier ? 'primary.main' : 'text.primary',
                                             transition: 'color 0.2s ease, font-weight 0.2s ease',
-                                            ...(searchQuery.trim() && table.tableIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) && {
+                                            ...(searchQuery?.trim() && table?.tableIdentifier?.toLowerCase().includes(searchQuery.toLowerCase()) && {
                                               position: 'relative',
                                               '&::after': {
                                                 content: '""',
@@ -3053,13 +3203,17 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                                             })
                                           }}
                                         >
-                                          <HighlightedText text={table.tableIdentifier} searchQuery={searchQuery} />
+                                          <HighlightedText text={table?.tableIdentifier} searchQuery={searchQuery} />
                                         </Typography>
-                                        {searchQuery.trim() && table.columns.some(col => 
-                                          col.columnIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                          (col.columnDescription && col.columnDescription.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                                          col.columnType.toLowerCase().includes(searchQuery.toLowerCase())
-                                        ) && (
+                                        {searchQuery?.trim() && Array.isArray(table?.columns) && table?.columns.some(col => {
+                                          if (!col) return false;
+                                          const query = searchQuery?.toLowerCase() || '';
+                                          return (
+                                            (col?.columnIdentifier?.toLowerCase() || '').includes(query) ||
+                                            (col?.columnDescription?.toLowerCase() || '').includes(query) ||
+                                            (col?.columnType?.toLowerCase() || '').includes(query)
+                                          );
+                                        }) && (
                                           <Chip
                                             size="small"
                                             label="Has matches"
@@ -3133,6 +3287,53 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                                       <span>{getRelationCount(table.tableIdentifier)} relations</span>
                                     </Box>
                                   )}
+                                  <Box className="table-description">
+                                    {editingTableDescription && editingTableId === table.tableIdentifier ? (
+                                      <DescriptionTextField
+                                        size="small"
+                                        value={table.tableDescription || ''}
+                                        onChange={(e) => handleTableDescriptionChange(table.tableIdentifier, e.target.value)}
+                                        onKeyPress={(e) => {
+                                          if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            saveTableDescription(table.tableIdentifier);
+                                          }
+                                        }}
+                                        fullWidth
+                                        multiline
+                                        rows={2}
+                                        placeholder="Enter table description..."
+                                        aria-label="Edit table description"
+                                      />
+                                    ) : (
+                                      <Box
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setState(prev => ({
+                                            ...prev,
+                                            editingTableDescription: true,
+                                            editingTableId: table.tableIdentifier
+                                          }));
+                                        }}
+                                        sx={{ cursor: 'text' }}
+                                      >
+                                        <Typography
+                                          variant="body2"
+                                          color={table.tableDescription ? 'text.primary' : 'text.secondary'}
+                                          sx={{
+                                            fontStyle: table.tableDescription ? 'normal' : 'italic',
+                                            wordBreak: 'break-word',
+                                          }}
+                                        >
+                                          {table.tableDescription ? (
+                                            <HighlightedText text={table.tableDescription} searchQuery={searchQuery} />
+                                          ) : (
+                                            'No table description provided'
+                                          )}
+                                        </Typography>
+                                      </Box>
+                                    )}
+                                  </Box>
                                 </Box>
                               }
                             />
@@ -3150,9 +3351,11 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
                                     </TableHead>
                                     <TableBody>
                                       <AnimatePresence>
-                                        {table.columns.map((column, colIndex) =>
-                                          renderColumnRow(table, column, colIndex)
-                                        )}
+                                        {table.columns
+                                          .filter(column => column && column.columnIdentifier) // Filter out null or invalid columns
+                                          .map((column, colIndex) =>
+                                            renderColumnRow(table, column, colIndex)
+                                          )}
                                       </AnimatePresence>
                                     </TableBody>
                                   </Table>
@@ -3171,7 +3374,11 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
         </Grid>
 
         {/* Schema Diagram Panel */}
-        <Grid item {...gridSizes.diagram}>
+        <Grid 
+          item 
+          {...gridSizes.diagram}
+          key="schema-diagram-panel"
+        >
           <Paper
             elevation={4}
             sx={{

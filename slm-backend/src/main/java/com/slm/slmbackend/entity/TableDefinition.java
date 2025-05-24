@@ -16,6 +16,8 @@ public class TableDefinition {
     private Integer id;
     private String tableIdentifier;
 
+    private String tableDescription;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "table_schema_id")
     private List<TableColumn> columns;

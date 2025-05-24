@@ -1,7 +1,7 @@
 // File: src/sections/database-management/components/management/DataSourceManagement.tsx
 
 import { useForm, Controller } from 'react-hook-form';
-import React, { useRef, useState , FocusEvent, KeyboardEvent } from 'react';
+import React, { useRef, useState , KeyboardEvent } from 'react';
 
 import {
   Box,
@@ -26,6 +26,7 @@ import {
   DialogActions,
   DialogContent,
   InputAdornment,
+  TextFieldProps,
   DialogContentText,
 } from '@mui/material';
 
@@ -73,11 +74,6 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-// Add cursor position tracking interface
-interface CursorPosition {
-  start: number;
-  end: number;
-}
 
 // Supported database types
 const DATABASE_TYPES = [
@@ -92,25 +88,13 @@ interface DataSourceManagementProps {
 }
 
 // Update the SourceField component props type
-interface SourceFieldProps {
-  label: string;
-  value: string;
+interface SourceFieldProps extends Omit<TextFieldProps, 'ref'> {
   icon: string;
-  disabled?: boolean;
-  error?: boolean;
-  helperText?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onFocus?: (e: FocusEvent<HTMLInputElement>) => void;
-  onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
-  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
-  type?: string;
-  ref?: React.Ref<HTMLInputElement>;
-  autoFocus?: boolean;
 }
 
 // Update the SourceField component
-const SourceField = React.forwardRef<HTMLInputElement, SourceFieldProps>(
-  ({ label, value, icon, error, helperText, onChange, type = 'text', ...props }, ref) => (
+const SourceField = React.forwardRef<HTMLDivElement, SourceFieldProps>(
+  ({ label, value, icon, error, helperText, onChange, type = 'text', multiline, rows, ...props }, ref) => (
     <StyledTextField
       fullWidth
       label={label}
@@ -119,13 +103,15 @@ const SourceField = React.forwardRef<HTMLInputElement, SourceFieldProps>(
       error={error}
       helperText={helperText}
       type={type}
-      inputRef={ref}
+      ref={ref}
+      multiline={multiline}
+      rows={rows}
       InputProps={{
-        startAdornment: (
+        startAdornment: !multiline ? (
           <InputAdornment position="start">
             <Iconify icon={icon} width={20} height={20} />
           </InputAdornment>
-        ),
+        ) : undefined,
       }}
       {...props}
     />
@@ -150,9 +136,7 @@ export default function DataSourceManagement({
   const dbNameInputRef = useRef<HTMLInputElement>(null);
   const usernameInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
-  
-  // Add cursor position tracking
-  const [cursorPositions, setCursorPositions] = useState<Record<string, CursorPosition>>({});
+
 
   // Track form values for change detection
   const {
@@ -164,23 +148,8 @@ export default function DataSourceManagement({
     defaultValues: dataSource,
   });
 
-  // Update event handler types
-  const handleCursorChange = (field: string, event: FocusEvent<HTMLInputElement>) => {
-    const { selectionStart, selectionEnd } = event.target;
-    setCursorPositions({
-      ...cursorPositions,
-      [field]: { start: selectionStart || 0, end: selectionEnd || 0 },
-    });
-  };
 
-  const restoreCursorPosition = (field: string, event: FocusEvent<HTMLInputElement>) => {
-    const position = cursorPositions[field];
-    if (position) {
-      event.target.setSelectionRange(position.start, position.end);
-    }
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>, nextRef?: React.RefObject<HTMLInputElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>, nextRef?: React.RefObject<HTMLInputElement>) => {
     if (event.key === 'Enter' && nextRef?.current) {
       event.preventDefault();
       nextRef.current.focus();
@@ -421,10 +390,32 @@ export default function DataSourceManagement({
                           error={!!errors.name}
                           helperText={errors.name?.message}
                           ref={nameInputRef}
-                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('name', e)}
-                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('name', e)}
-                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, hostInputRef)}
+                          onFocus={() => {}}
+                          onBlur={() => {}}
+                          onKeyDown={(e) => handleKeyDown(e, hostInputRef)}
                           autoFocus={isEditing}
+                        />
+                      )}
+                    />
+                  </FieldContainer>
+
+                  <FieldContainer>
+                    <Controller
+                      name="databaseDescription"
+                      control={control}
+                      render={({ field }) => (
+                        <SourceField
+                          {...field}
+                          value={field.value || ''}
+                          label="Database Description"
+                          icon="eva:file-text-fill"
+                          disabled={!isEditing}
+                          error={!!errors.databaseDescription}
+                          helperText={errors.databaseDescription?.message}
+                          multiline
+                          rows={3}
+                          onFocus={() => {}}
+                          onBlur={() => {}}
                         />
                       )}
                     />
@@ -489,9 +480,9 @@ export default function DataSourceManagement({
                           error={!!errors.host}
                           helperText={errors.host?.message}
                           ref={hostInputRef}
-                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('host', e)}
-                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('host', e)}
-                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, portInputRef)}
+                          onFocus={() => {}}
+                          onBlur={() => {}}
+                          onKeyDown={(e) => handleKeyDown(e, portInputRef)}
                         />
                       )}
                     />
@@ -511,9 +502,9 @@ export default function DataSourceManagement({
                           error={!!errors.port}
                           helperText={errors.port?.message}
                           ref={portInputRef}
-                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('port', e)}
-                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('port', e)}
-                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, dbNameInputRef)}
+                          onFocus={() => {}}
+                          onBlur={() => {}}
+                          onKeyDown={(e) => handleKeyDown(e, dbNameInputRef)}
                         />
                       )}
                     />
@@ -533,9 +524,9 @@ export default function DataSourceManagement({
                           error={!!errors.databaseName}
                           helperText={errors.databaseName?.message}
                           ref={dbNameInputRef}
-                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('databaseName', e)}
-                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('databaseName', e)}
-                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, usernameInputRef)}
+                          onFocus={() => {}}
+                          onBlur={() => {}}
+                          onKeyDown={(e) => handleKeyDown(e, usernameInputRef)}
                         />
                       )}
                     />
@@ -567,9 +558,9 @@ export default function DataSourceManagement({
                           error={!!errors.username}
                           helperText={errors.username?.message}
                           ref={usernameInputRef}
-                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('username', e)}
-                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('username', e)}
-                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, passwordInputRef)}
+                          onFocus={() => {}}
+                          onBlur={() => {}}
+                          onKeyDown={(e) => handleKeyDown(e, passwordInputRef)}
                         />
                       )}
                     />
@@ -590,9 +581,8 @@ export default function DataSourceManagement({
                           helperText={errors.password?.message}
                           type="password"
                           ref={passwordInputRef}
-                          onFocus={(e: FocusEvent<HTMLInputElement>) => restoreCursorPosition('password', e)}
-                          onBlur={(e: FocusEvent<HTMLInputElement>) => handleCursorChange('password', e)}
-                          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(e)}
+                          onFocus={() => {}}
+                          onBlur={() => {}}
                         />
                       )}
                     />

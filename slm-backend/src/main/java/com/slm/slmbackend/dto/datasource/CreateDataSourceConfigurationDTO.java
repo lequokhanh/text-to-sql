@@ -31,12 +31,18 @@ public class CreateDataSourceConfigurationDTO {
     @NotBlank(message = "Name is required")
     private String name;
 
+    @NotBlank(message = "Database description is required")
+    private String databaseDescription;
+
     private List<TableDefinition> tableDefinitions;
 
     @Data
     public static class TableDefinition {
         @NotBlank(message = "Table identifier is required")
         private String tableIdentifier;
+
+        @NotBlank(message = "Table description is required")
+        private String tableDescription;
 
         @NotNull(message = "Columns are required")
         private List<TableColumn> columns;

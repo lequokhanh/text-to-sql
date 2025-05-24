@@ -11,4 +11,5 @@ public class DataSourceConfigurationViewDTO {
     private Integer id;
     private DatabaseType databaseType;
     private String name;
+    private String databaseDescription;
 }

@@ -10,7 +10,6 @@ import com.slm.slmbackend.repository.DataSourceConfigurationRepository;
 import com.slm.slmbackend.repository.UserAccountRepository;
 import com.slm.slmbackend.service.DataSourceConfigurationService;
 import com.slm.slmbackend.service.EmbedService;
-import com.slm.slmbackend.service.IdGenerationService;
 import com.slm.slmbackend.util.MapperUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,6 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
 
     private final DataSourceConfigurationRepository dataSourceConfigurationRepository;
     private final ColumnRelationRepository columnRelationRepository;
-    private final IdGenerationService idGenerationService;
     private final UserAccountRepository userAccountRepository;
     private final EmbedService embedService;
 
@@ -52,14 +50,9 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
         // Set owner
         List<UserAccount> owners = new ArrayList<>();
         owners.add(user);
-
-        // Generate a unique collection name
-        String collectionName = createDTO.getName() + "_" + idGenerationService.getNextId("DataSourceConfiguration");
-        
         // Set all properties
-        configuration.setCollectionName(collectionName)
-                .setTableDefinitions(tableDefinitions)
-                .setOwners(owners);
+        configuration.setTableDefinitions(tableDefinitions)
+                     .setOwners(owners);
 
         // Save to get IDs assigned
         configuration = dataSourceConfigurationRepository.save(configuration);
@@ -160,8 +153,7 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
         detailDTO.setDatabaseName(configuration.getDatabaseName());
         detailDTO.setUsername(configuration.getUsername());
         detailDTO.setPassword(configuration.getPassword());
-        detailDTO.setCollectionName(configuration.getCollectionName());
-
+        detailDTO.setDatabaseDescription(configuration.getDatabaseDescription());
         // Map the table definitions
         List<TableDTO> tableDTOs = new ArrayList<>();
         if (configuration.getTableDefinitions() != null) {
@@ -169,6 +161,7 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
                 TableDTO tableDTO = new TableDTO();
                 tableDTO.setId(tableDef.getId());
                 tableDTO.setTableIdentifier(tableDef.getTableIdentifier());
+                tableDTO.setTableDescription(tableDef.getTableDescription());
 
                 // Map columns for this table
                 List<ColumnWithRelationDTO> columnDTOs = new ArrayList<>();
@@ -367,7 +360,10 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
         
         TableDefinition tableDefinition = findTableById(configuration, tableId);
         
-        tableDefinition.setTableIdentifier(tableDTO.getTableIdentifier());
+        if (tableDTO.getTableIdentifier() != null) 
+            tableDefinition.setTableIdentifier(tableDTO.getTableIdentifier());
+        if (tableDTO.getTableDescription() != null)
+            tableDefinition.setTableDescription(tableDTO.getTableDescription());
         
         dataSourceConfigurationRepository.save(configuration);
     }

@@ -105,7 +105,11 @@ public class ChatServiceImpl implements ChatService {
             connectionPayload.put("username", dataSource.getUsername());
             connectionPayload.put("password", dataSource.getPassword());
             connectionPayload.put("dbType", dataSource.getDatabaseType().name().toLowerCase());
-            connectionPayload.put("schema_enrich_info", dataSource.getTableDefinitions());
+
+            Map<String, Object> schemaEnrichInfo = new HashMap<>();
+            schemaEnrichInfo.put("database_description", dataSource.getDatabaseDescription());
+            schemaEnrichInfo.put("enrich_schema", dataSource.getTableDefinitions());
+            connectionPayload.put("schema_enrich_info", schemaEnrichInfo);
 
             // Create engine request
             Map<String, Object> engineRequest = new HashMap<>();
