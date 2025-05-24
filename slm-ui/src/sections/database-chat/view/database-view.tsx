@@ -9,25 +9,41 @@ import {
   Alert,
   Paper,
   Stack,
+  Button,
+  Dialog,
+  Tooltip,
   Typography,
   AlertTitle,
+  DialogTitle,
+  DialogContent,
   LinearProgress,
+  CircularProgress,
 } from '@mui/material';
 
 import { useDataSources } from 'src/hooks/use-data-sources';
 
+import axiosInstance, { endpoints } from 'src/utils/axios';
+
 import { DatabaseLayout } from 'src/layouts/db-chat/database-layout';
 
+import Iconify from 'src/components/iconify';
 import { MainContent } from 'src/components/text-to-sql/main-content/MainContent';
 import { UnifiedChatInterface } from 'src/components/text-to-sql/chat/unified-chat-interface';
+import { SchemaVisualization } from 'src/components/text-to-sql/dialogs/schema-visualization';
 import { DataSourceDropdown } from 'src/components/text-to-sql/datasource/datasource-dropdown';
 
-import { DatabaseSource } from 'src/types/database';
+import { DatabaseSource, ColumnRelation, TableDefinition, ColumnDefinition } from 'src/types/database';
 
 // Constants for layout
 const MAIN_SIDEBAR_WIDTH = 80; // Width of the main sidebar
 const CHAT_SIDEBAR_WIDTH = { xs: 280, sm: 320 }; // Width of the chat sidebar
-const HEADER_HEIGHT = 100; // Height of the header
+const HEADER_HEIGHT = 80; // Height of the header
+
+const DATABASE_ICONS = {
+  POSTGRESQL: 'logos:postgresql',
+  MYSQL: 'logos:mysql',
+  ORACLE: 'logos:oracle',
+};
 
 const HeaderContainer = styled(Paper)(({ theme }) => ({
   position: 'fixed',
@@ -63,6 +79,66 @@ const HeaderTitle = styled(Box)(({ theme }) => ({
   },
 }));
 
+// Define relation type constants
+type RelationType = 'OTO' | 'OTM' | 'MTO';
+
+// Define outgoing relation interface for manage datasource
+interface OutgoingRelation {
+  id: number;
+  toColumn: {
+    id: number;
+    columnIdentifier: string;
+    columnType: string;
+    columnDescription: string;
+    isPrimaryKey: boolean;
+  };
+  type: RelationType;
+}
+
+// Helper function to find table and column by column ID - keep this outside since it's pure
+const findTableAndColumnById = (tables: TableDefinition[], columnId: number): { tableIdentifier: string; columnIdentifier: string } | null => {
+  const foundTable = tables.find(table => 
+    table.columns.some((col: ColumnDefinition) => col.id === columnId)
+  );
+
+  if (foundTable) {
+    const foundColumn = foundTable.columns.find((col: ColumnDefinition) => col.id === columnId);
+    if (foundColumn) {
+      return {
+        tableIdentifier: foundTable.tableIdentifier,
+        columnIdentifier: foundColumn.columnIdentifier
+      };
+    }
+  }
+  return null;
+};
+
+// Helper function to normalize relations
+const normalizeRelations = (column: ColumnDefinition, tablesToSearch: TableDefinition[]): ColumnRelation[] => {
+  const relations: ColumnRelation[] = [];
+  
+  // Handle standard relations
+  if (column.relations && Array.isArray(column.relations)) {
+    relations.push(...column.relations);
+  }
+  
+  // Handle outgoing relations if they exist
+  if ('outgoingRelations' in column && Array.isArray((column as any).outgoingRelations)) {
+    const outgoingRelations = (column as any).outgoingRelations as OutgoingRelation[];
+    relations.push(...outgoingRelations.map(rel => {
+      const targetInfo = findTableAndColumnById(tablesToSearch, rel.toColumn.id);
+      return {
+        id: rel.id,
+        tableIdentifier: targetInfo?.tableIdentifier || 'Unknown Table',
+        toColumn: targetInfo?.columnIdentifier || rel.toColumn.columnIdentifier,
+        type: rel.type || 'OTO'
+      };
+    }));
+  }
+  
+  return relations;
+};
+
 export default function DatabaseView() {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -71,6 +147,11 @@ export default function DatabaseView() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [showNoSourceAlert, setShowNoSourceAlert] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSchemaDialogOpen, setIsSchemaDialogOpen] = useState(false);
+  const [detailedSource, setDetailedSource] = useState<DatabaseSource | null>(null);
+  const [isLoadingSchema, setIsLoadingSchema] = useState(false);
+  const [schemaError, setSchemaError] = useState<string | null>(null);
+  const [selectedTable, setSelectedTable] = useState<TableDefinition | null>(null);
 
   // Custom hooks
   const {
@@ -122,6 +203,24 @@ export default function DatabaseView() {
     setTimeout(() => setShowNoSourceAlert(false), 5000);
   };
 
+  const handleViewSchema = async () => {
+    if (!selectedSource) return;
+
+    setIsSchemaDialogOpen(true);
+    setIsLoadingSchema(true);
+    setSchemaError(null);
+
+    try {
+      const response = await axiosInstance.get(`${endpoints.dataSource.base}/${selectedSource.id}`);
+      setDetailedSource(response.data);
+    } catch (error) {
+      console.error('Error fetching schema:', error);
+      setSchemaError('Failed to load schema. Please try again.');
+    } finally {
+      setIsLoadingSchema(false);
+    }
+  };
+
   return (
     <DatabaseLayout>
       {/* Progress indicator */}
@@ -130,9 +229,9 @@ export default function DatabaseView() {
           sx={{
             position: 'fixed',
             top: 0,
-            left: MAIN_SIDEBAR_WIDTH, // Start after the main sidebar
+            left: MAIN_SIDEBAR_WIDTH,
             right: 0,
-            zIndex: 1101, // Above header
+            zIndex: 1101,
           }}
         />
       )}
@@ -158,6 +257,7 @@ export default function DatabaseView() {
           },
           px: { xs: 2, sm: 3 },
           py: 2,
+          height: HEADER_HEIGHT,
           transition: theme.transitions.create(['background-color', 'box-shadow'], {
             duration: theme.transitions.duration.shorter,
           }),
@@ -182,6 +282,38 @@ export default function DatabaseView() {
               </Typography>
             </Box>
           </HeaderTitle>
+
+          {selectedSource && (
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ ml: 4 }}>
+              <Iconify
+                icon={DATABASE_ICONS[selectedSource.databaseType] || 'mdi:database'}
+                width={20}
+                sx={{ color: 'primary.main' }}
+              />
+              <Stack spacing={0.5}>
+                <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
+                  {selectedSource.name}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  {selectedSource.host}:{selectedSource.port} • {selectedSource.databaseName}
+                </Typography>
+              </Stack>
+              {selectedSource.databaseDescription && (
+                <Tooltip title={selectedSource.databaseDescription}>
+                  <Iconify icon="eva:info-outline" width={20} sx={{ color: 'text.secondary', cursor: 'help' }} />
+                </Tooltip>
+              )}
+              <Button
+                variant="soft"
+                color="primary"
+                size="small"
+                startIcon={<Iconify icon="mdi:database-search" />}
+                onClick={handleViewSchema}
+              >
+                Schema
+              </Button>
+            </Stack>
+          )}
           
           <Stack direction="row" alignItems="center" spacing={2} sx={{ ml: 'auto' }}>            
             <DataSourceDropdown
@@ -203,15 +335,15 @@ export default function DatabaseView() {
         </Stack>
       </HeaderContainer>
 
-      {/* Alert - full width */}
+      {/* Alert */}
       <Fade in={showNoSourceAlert}>
         <Alert 
           severity="warning" 
           sx={{ 
             position: 'fixed',
-            top: HEADER_HEIGHT + 20, // Below the header
-            left: MAIN_SIDEBAR_WIDTH + 20, // After the left sidebar with padding
-            right: CHAT_SIDEBAR_WIDTH.sm + 20, // Before the right sidebar with padding
+            top: HEADER_HEIGHT + 20,
+            left: MAIN_SIDEBAR_WIDTH + 20,
+            right: CHAT_SIDEBAR_WIDTH.sm + 20,
             zIndex: 1000,
             borderRadius: 2,
             border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
@@ -226,7 +358,101 @@ export default function DatabaseView() {
         </Alert>
       </Fade>
 
-      {/* Chat Interface with Sidebar - full width */}
+      {/* Schema Visualization Dialog */}
+      <Dialog
+        open={isSchemaDialogOpen}
+        onClose={() => {
+          setIsSchemaDialogOpen(false);
+          setDetailedSource(null);
+          setSchemaError(null);
+        }}
+        maxWidth="xl"
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: '90vh',
+            maxHeight: '90vh',
+          },
+        }}
+      >
+        <DialogTitle>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Iconify icon="eva:diagram-fill" width={24} sx={{ color: 'primary.main' }} />
+            <Typography variant="h6">Database Schema</Typography>
+          </Stack>
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          {isLoadingSchema && (
+            <Box sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: 2,
+            }}>
+              <CircularProgress />
+              <Typography variant="body2" color="text.secondary">
+                Loading schema...
+              </Typography>
+            </Box>
+          )}
+
+          {schemaError && (
+            <Box sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: 2,
+            }}>
+              <Iconify icon="eva:alert-triangle-fill" width={40} sx={{ color: 'error.main' }} />
+              <Typography color="error" variant="subtitle1">
+                {schemaError}
+              </Typography>
+              <Button 
+                variant="contained" 
+                onClick={handleViewSchema}
+                startIcon={<Iconify icon="eva:refresh-outline" />}
+              >
+                Retry
+              </Button>
+            </Box>
+          )}
+
+          {!isLoadingSchema && !schemaError && detailedSource?.tableDefinitions && (
+            <Box
+              sx={{
+                width: '92%',
+                height: '92%',
+                margin: 'auto',
+                position: 'relative',
+                top: '4%',
+              }}
+            >
+              <SchemaVisualization
+                tables={detailedSource.tableDefinitions.map(table => ({
+                  ...table,
+                  columns: table.columns.map(column => ({
+                    ...column,
+                    relations: normalizeRelations(column, detailedSource.tableDefinitions)
+                  }))
+                }))}
+                selectedTable={selectedTable?.tableIdentifier || null}
+                onTableClick={(tableIdentifier: string) => {
+                  const table1 = detailedSource.tableDefinitions.find(table => table.tableIdentifier === tableIdentifier);
+                  if (table1) {
+                    setSelectedTable(table1);
+                  }
+                }}
+              />
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Chat Interface */}
       <Box sx={{ 
         position: 'relative', 
         height: `calc(100vh - ${HEADER_HEIGHT}px)`,
