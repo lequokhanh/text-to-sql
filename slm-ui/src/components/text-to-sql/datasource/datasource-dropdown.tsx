@@ -374,11 +374,15 @@ export function DataSourceDropdown({
             width: 360,
             maxHeight: 480,
             mt: 1.5,
-            overflow: 'visible',
+            overflow: 'hidden',
             filter: 'drop-shadow(0 0 8px rgba(0,0,0,0.15))',
             borderRadius: 3,
+            display: 'flex',
+            flexDirection: 'column',
             '& .MuiList-root': {
-              py: 1,
+              py: 0,
+              flex: 1,
+              overflow: 'auto',
             },
             '&:before': {
               content: '""',
@@ -396,7 +400,16 @@ export function DataSourceDropdown({
           },
         }}
       >
-        <Box sx={{ p: 2, pb: 1 }}>
+        <Box 
+          sx={{ 
+            p: 2, 
+            pb: 1,
+            position: 'sticky',
+            top: 0,
+            bgcolor: 'background.paper',
+            zIndex: 1,
+          }}
+        >
           <TextField
             size="small"
             placeholder="Search data sources..."
@@ -520,7 +533,12 @@ export function DataSourceDropdown({
           <Box sx={{ 
             p: 4, 
             textAlign: 'center',
-            animation: `${fadeIn} 0.3s ease-out`
+            animation: `${fadeIn} 0.3s ease-out`,
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}>
             <Iconify 
               icon="eva:search-outline" 
@@ -572,7 +590,13 @@ export function DataSourceDropdown({
 
         <Divider sx={{ my: 1 }} />
         
-        <Box sx={{ p: 1.5 }}>
+        <Box sx={{ 
+          p: 1.5,
+          position: 'sticky',
+          bottom: 0,
+          bgcolor: 'background.paper',
+          zIndex: 1,
+        }}>
           <CreateButton 
             fullWidth 
             startIcon={<Iconify icon="eva:plus-fill" width={18} height={18} />}

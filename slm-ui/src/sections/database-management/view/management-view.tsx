@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import { useTheme } from '@mui/material/styles';
 import {
@@ -8,8 +8,10 @@ import {
   Tabs,
   Stack,
   alpha,
+  Tooltip,
   Container,
   Typography,
+  IconButton,
   CircularProgress,
 } from '@mui/material';
 
@@ -69,6 +71,7 @@ const DATABASE_ICONS = {
 export default function DatasourceManagementView() {
   const { id: sourceId } = useParams<{ id: string }>();
   const theme = useTheme();
+  const navigate = useNavigate();
   const [value, setValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [dataSource, setDataSource] = useState<DatabaseSource | null>(null);
@@ -152,6 +155,21 @@ export default function DatasourceManagementView() {
             spacing={2}
             sx={{ mb: 3 }}
           >
+            <Tooltip title="Back to home">
+              <IconButton
+                onClick={() => navigate('/')}
+                sx={{
+                  mr: 1,
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'primary.main',
+                    bgcolor: (t) => alpha(t.palette.primary.main, 0.08),
+                  },
+                }}
+              >
+                <Iconify icon="eva:arrow-ios-back-fill" width={24} height={24} />
+              </IconButton>
+            </Tooltip>
             <Box
               sx={{
                 p: 1,
