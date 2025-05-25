@@ -22,7 +22,8 @@ from response.log_manager import (
     log_success,
     log_error,
     log_warning,
-    log_summary
+    log_summary,
+    log_prompt
 )
 from llama_index.core import PromptTemplate
 from llama_index.llms.ollama import Ollama
@@ -173,7 +174,7 @@ class SchemaEnrichmentWorkflow(Workflow):
             prompt = schema_parser(cluster, "Simple", include_sample_data=True)
             cluster_infos.append(prompt)
             print(prompt)
-
+        database_description = ev.database_description
         # Process each cluster
         cluster_enriched = []
         for cluster_idx, cluster_info in enumerate(cluster_infos):
@@ -183,11 +184,13 @@ class SchemaEnrichmentWorkflow(Workflow):
             try:
                 # Load template from configuration
                 from core.templates import SCHEMA_ENRICHMENT_SKELETON
+                print(cluster_info)
+                print(database_description)
                 SCHEMA_ENRICHMENT_PROMPT = SCHEMA_ENRICHMENT_SKELETON.format(
-                    cluster_info=cluster_info,
-                    db_info=ev.database_description
+                    schema=cluster_info,
+                    database_description=database_description
                 )
-                
+                log_prompt("PROMPT", SCHEMA_ENRICHMENT_PROMPT)
                 retries = 3
                 enriched_data = []
                 
@@ -200,7 +203,7 @@ class SchemaEnrichmentWorkflow(Workflow):
                             pydantic_model=SchemaEnrichmentResponse
                         )
                         enriched_data = chat_response.tables
-                        
+                        print(enriched_data)
                         if len(enriched_data) > 0:
                             log_success("SUCCESS", f"Successfully parsed cluster {cluster_idx+1} with Pydantic model")
                             break
@@ -209,18 +212,6 @@ class SchemaEnrichmentWorkflow(Workflow):
                         time.sleep(1)
                     except Exception as e:
                         log_warning("WARNING", f"Failed to parse with Pydantic for cluster {cluster_idx+1}, retry {i+1}/{retries}: {str(e)}")
-                        
-                        # On the last retry, try with the fallback parser
-                        if i == retries - 1:
-                            try:
-                                chat_response = llm_chat(self.llm, PromptTemplate(SCHEMA_ENRICHMENT_PROMPT).format_messages())
-                                enriched_data = parse_schema_enrichment(chat_response)
-                                if len(enriched_data) > 0:
-                                    log_success("SUCCESS", f"Successfully parsed cluster {cluster_idx+1} with fallback parser")
-                                    break
-                            except Exception as fallback_error:
-                                log_error("ERROR", f"Fallback parsing also failed: {str(fallback_error)}")
-                        
                         time.sleep(1)
 
                 cluster_enriched.append({"tables": enriched_data})
@@ -294,22 +285,22 @@ class SchemaEnrichmentWorkflow(Workflow):
         
         for cluster in cluster_enriched:
             for table in cluster.get('tables', []):
-                table_name = table.get('table_name')
+                table_name = table.table_name
                 if not table_name:
                     continue
                     
                 # Create mapping for table
                 if table_name not in enrichment_map:
                     enrichment_map[table_name] = {
-                        'table_description': table.get('description', ''),
+                        'table_description': table.description,
                         'columns': {}
                     }
                 
                 # Create mapping for columns
-                for column in table.get('columns', []):
-                    column_name = column.get('column_name')
+                for column in table.columns:
+                    column_name = column.column_name
                     if column_name:
-                        enrichment_map[table_name]['columns'][column_name] = column.get('description', '')
+                        enrichment_map[table_name]['columns'][column_name] = column.description
                         
         return enrichment_map
         
