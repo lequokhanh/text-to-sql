@@ -26,6 +26,7 @@ from response.log_manager import (
 )
 from llama_index.core import PromptTemplate
 from llama_index.llms.ollama import Ollama
+from exceptions.app_exception import AppException
 import logging
 import time
 
@@ -111,6 +112,7 @@ class SchemaEnrichmentWorkflow(Workflow):
             log_error("ERROR", error_msg)
             self.workflow_logs["errors"].append(error_msg)
             database_description = "No description available due to error"
+            raise AppException(error_msg, 500)
 
         # Cluster schema
         cluster_start_time = time.time()
@@ -156,6 +158,7 @@ class SchemaEnrichmentWorkflow(Workflow):
             self.workflow_logs["errors"].append(error_msg)
             # Fallback: each table in its own cluster
             clusters = [[table] for table in ev.database_schema]  
+            raise AppException(error_msg, 500)
             
         return SchemaEnrichmentEvent(database_description=database_description, clusters=clusters)
 

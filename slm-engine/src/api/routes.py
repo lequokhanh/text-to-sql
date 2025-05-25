@@ -16,16 +16,19 @@ logger = logging.getLogger(__name__)
 workflow = None
 schema_workflow = None
 baseline_workflow = None
+question_workflow = None
 
 def initialize_routes(api, api_models, workflows):
     """Initialize API routes with the given Flask-RESTX API"""
-    global workflow, schema_workflow, baseline_workflow
-    workflow, schema_workflow, baseline_workflow = workflows
+    global workflow, schema_workflow, baseline_workflow, question_workflow
+    workflow, schema_workflow, baseline_workflow, question_workflow = workflows
     
     connection_payload_model = api_models['connection_payload_model']
     query_request_model = api_models['query_request_model']
+    question_request_model = api_models['question_request_model']
     settings_model = api_models['settings_model']
-    
+    schema_enrich_request_model = api_models['schema_enrich_request_model'] 
+
     @api.route('/')
     class Home(Resource):
         @api.doc('home',
@@ -260,7 +263,7 @@ def initialize_routes(api, api_models, workflows):
 
     @api.route('/schema-enrichment')
     class SchemaEnrichment(Resource):
-        @api.expect(query_request_model)
+        @api.expect(schema_enrich_request_model)
         @api.doc('schema_enrichment',
             responses={
                 200: 'Success',
@@ -497,5 +500,96 @@ def initialize_routes(api, api_models, workflows):
             """Health check endpoint"""
             logger.debug("Health check request received")
             return jsonify({"status": "ok"})
+
+    @api.route('/suggest-questions')
+    class SuggestQuestions(Resource):
+        @api.expect(question_request_model)
+        @api.doc('suggest_questions',
+            responses={
+                200: 'Success',
+                400: 'Bad Request - Missing or invalid parameters',
+                500: 'Internal Server Error'
+            }
+        )
+        @async_route
+        async def post(self):
+            """Generate insightful questions based on database schema"""
+            logger.info("Received request to /suggest-questions endpoint")
+            try:
+                data = request.json
+                top_k = data.get("top_k", 5)  # Default to 5 questi
+                tables = data.get("tables", [])
+                database_description = data.get("database_description", None)
+                # Create a Langfuse trace for this query
+                trace = observability_service.langfuse.trace(
+                    name="question_suggestions",
+                    metadata={
+                        "top_k": top_k,
+                        "tables": tables
+                    }
+                )
+
+                if not tables:
+                    logger.warning("Missing required tables in request")
+                    trace.update(
+                        status="failed",
+                        metadata={"error": "Missing 'tables'"}
+                    )
+                    return jsonify({"error": "Missing 'tables'"}), 400
+                
+
+                # Create a span for schema retrieval
+                schema_span = observability_service.langfuse.span(
+                    name="schema_retrieval",
+                    parent_id=trace.id
+                )
+
+                logger.info("Retrieving schema from database")
+                table_details = tables
+                
+                # Enrich schema with additional information
+                logger.info(f"Retrieved schema with {len(table_details)} tables")
+                
+                schema_span.update(
+                    metadata={
+                        "table_count": len(table_details),
+                    }
+                )
+
+                # Trace the query processing using LlamaIndex instrumentor
+                logger.info("Executing workflow")
+                with observability_service.llama_index_instrumentor.observe(trace_id=trace.id):
+                    from core.events import QuestionSuggestionEvent
+                    response = await question_workflow.run(
+                        table_details=table_details,
+                        top_k=top_k
+                    )
+                
+                # Update trace with result status
+                if response and "suggestions" in response:
+                    trace.update(
+                        status="success",
+                        metadata={
+                            "question_count": len(response["suggestions"])
+                        }
+                    )
+                else:
+                    trace.update(
+                        status="failed",
+                        metadata={"error": "Failed to generate question suggestions"}
+                    )
+                
+                logger.info("Workflow completed successfully")
+                
+                return ResponseWrapper.success(response)
+
+            except Exception as e:
+                logger.error(f"Error generating question suggestions: {str(e)}", exc_info=True)
+                if 'trace' in locals():
+                    trace.update(
+                        status="failed",
+                        metadata={"error": str(e)}
+                    )
+                raise AppException(str(e), 500)
             
     return api 

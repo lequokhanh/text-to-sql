@@ -51,8 +51,8 @@ class OllamaConfig(BaseLLMConfig):
                 "num_predict": 8192,
                 "temperature": 0.7,
             },
-            "prompt_routing": 1,
-            "enrich_schema": True
+            "prompt_routing": 0,
+            "enrich_schema": False
         }
 
     def _initialize_llm(self) -> None:
@@ -105,10 +105,10 @@ class GoogleGenAIConfig(BaseLLMConfig):
         return {
             "model": os.getenv("GOOGLE_MODEL", "gemini-2.0-flash"),
             "api_key": os.getenv("GOOGLE_API_KEY", ""),
-            "temperature": float(os.getenv("GOOGLE_TEMPERATURE", "0.7")),
+            "temperature": float(os.getenv("GOOGLE_TEMPERATURE", "0.5")),
             "max_tokens": int(os.getenv("GOOGLE_MAX_TOKENS", "8192")),
             "prompt_routing": 0,
-            "enrich_schema": True
+            "enrich_schema": False
         }
 
     def _initialize_llm(self) -> None:

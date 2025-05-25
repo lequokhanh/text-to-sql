@@ -8,16 +8,16 @@ class SQLQuery(BaseModel):
     """Model for SQL query generation and correction."""
     sql_query: str = Field(..., description="The SQL query to execute")
     
-    @classmethod
-    def model_json_schema(cls, *args, **kwargs):
-        # Customize schema to ensure the model can extract the query from different LLM response formats
-        schema = super().model_json_schema(*args, **kwargs)
-        # Add examples to help the LLM understand the expected output format
-        schema["examples"] = [
-            {"sql_query": "SELECT * FROM users WHERE age > 18"},
-            {"sql_query": "WITH user_orders AS (SELECT u.id, u.name, o.order_date FROM users u JOIN orders o ON u.id = o.user_id) SELECT * FROM user_orders"}
-        ]
-        return schema
+    # @classmethod
+    # def model_json_schema(cls, *args, **kwargs):
+    #     # Customize schema to ensure the model can extract the query from different LLM response formats
+    #     schema = super().model_json_schema(*args, **kwargs)
+    #     # Add examples to help the LLM understand the expected output format
+    #     schema["examples"] = [
+    #         {"sql_query": "SELECT * FROM users WHERE age > 18"},
+    #         {"sql_query": "WITH user_orders AS (SELECT u.id, u.name, o.order_date FROM users u JOIN orders o ON u.id = o.user_id) SELECT * FROM user_orders"}
+    #     ]
+    #     return schema
 
 class DatabaseDescription(BaseModel):
     database_description: str = Field(..., description="The brief description of the database")

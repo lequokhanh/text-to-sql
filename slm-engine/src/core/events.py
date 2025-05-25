@@ -28,4 +28,10 @@ class SQLReflectionEvent(Event):
 class SchemaEnrichmentEvent(Event):
     """Event after analyzing table relationships."""
     database_description: str
-    clusters: list[list] 
+    clusters: list[list]
+
+class QuestionSuggestionEvent(Event):
+    """Event for generating question suggestions based on schema."""
+    table_details: list[object]
+    database_description: str = ""
+    top_k: int = 5 

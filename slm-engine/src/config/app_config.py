@@ -68,7 +68,7 @@ def initialize_workflows():
     TEXT_TO_SQL_PROMPT_SKELETON = text2sql_prompt_routing(llm_config.settings["prompt_routing"])
     
     # Import here to avoid circular imports
-    from core.workflow import SQLAgentWorkflow, SchemaEnrichmentWorkflow, BaselineWorkflow
+    from core.workflow import SQLAgentWorkflow, SchemaEnrichmentWorkflow, BaselineWorkflow, QuestionSuggestionWorkflow
     
     workflow = SQLAgentWorkflow(
         text2sql_prompt=TEXT_TO_SQL_PROMPT_SKELETON,
@@ -90,4 +90,10 @@ def initialize_workflows():
     )
     logger.info("Baseline Workflow initialized successfully")
     
-    return workflow, schema_workflow, baseline_workflow 
+    question_workflow = QuestionSuggestionWorkflow(
+        llm=llm_config.get_llm(),
+        verbose=True
+    )
+    logger.info("Question Suggestion Workflow initialized successfully")
+    
+    return workflow, schema_workflow, baseline_workflow, question_workflow 

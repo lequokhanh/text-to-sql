@@ -9,6 +9,7 @@ from core.utils import (
     extract_tables_from_sql,
     schema_parser,
     extract_sql_query,
+    is_valid_sql_query
 )
 from core.events import (
     TableRetrieveEvent,
@@ -55,7 +56,7 @@ class SQLAgentWorkflow(Workflow):
         super().__init__(*args, **kwargs)
         self.text2sql_prompt = text2sql_prompt
         self.num_tables_threshold = 3
-        self.max_sql_retries = 3
+        self.max_sql_retries = 5
         self.llm = llm
         self._timeout = 300.0
 
@@ -69,6 +70,7 @@ class SQLAgentWorkflow(Workflow):
         await context.set("database_description", ev.database_description)
         await context.set("user_query", ev.query)
         await context.set("session_information", ev.session_information)
+        await context.set("retry_count", 0)
 
         table_details = ev.table_details
         
@@ -138,6 +140,7 @@ class SQLAgentWorkflow(Workflow):
         table_details = await context.get("table_details")
         connection_payload = await context.get("connection_payload")
         database_description = await context.get("database_description")
+        retry_count = await context.get("retry_count")
         dialect = connection_payload.get("dbType", "").upper()
         log_step_start("GENERATE", dialect=dialect)
         
@@ -157,7 +160,7 @@ class SQLAgentWorkflow(Workflow):
         
         log_step_start("GENERATE", message=f"Preparing schema information for {len(selected_tables)} tables")
         log_step_start("GENERATE", selected_tables=selected_tables)
-        table_schemas = schema_parser(selected_tables, "DDL", include_sample_data=True)
+        table_schemas = schema_parser(selected_tables, "DDL", include_sample_data=not app_config.PRIVACY_MODE)
         
 
         TEXT_TO_SQL_PROMPT = self.text2sql_prompt.format(
@@ -181,16 +184,21 @@ class SQLAgentWorkflow(Workflow):
         
         # Extract the SQL query from the response
         sql_query = chat_response.sql_query
+
+        if "SELECT" not in sql_query.upper():
+            log_error("GENERATE", "SQL query does not contain a SELECT statement")
+            return StopEvent(result="Please ask a question that only references tables in the schema.")
+        
         log_success("GENERATE", "Extracted SQL query: " + sql_query)
         
         log_step_end("GENERATE", start_time)
-        return SQLValidatorEvent(sql_query=sql_query, retry_count=0)
+        return SQLValidatorEvent(sql_query=sql_query, retry_count=retry_count)
     
     @step
-    async def Validate_SQL(self, context: Context, ev: SQLValidatorEvent) -> ExecuteSQLEvent:
+    async def Validate_SQL(self, context: Context, ev: SQLValidatorEvent) -> ExecuteSQLEvent | StopEvent | SQLReflectionEvent:
         """Validate SQL query."""
         start_time = log_step_start("VALIDATE", sql=ev.sql_query)
-        
+        retry_count = ev.retry_count
         table_details = await context.get("table_details")
         
         # Extract tables from the SQL query
@@ -203,29 +211,40 @@ class SQLAgentWorkflow(Workflow):
         log_step_start("VALIDATE", valid_tables=json.dumps(valid_tables))
 
         # Check if all the tables in the SQL are in the table_details
-        valid = True
+        table_validation = True
         for table in table_sql:
             if table.lower().strip() not in valid_tables:
                 log_error("VALIDATE", f"Invalid table found: '{table}'")
-                valid = False
+                table_validation = False
                 break
+
+        # Check if the SQL query is syntactically valid
+        is_valid_sql, error = is_valid_sql_query(ev.sql_query)
         
-        if not valid:
+        if not table_validation:
             log_error("VALIDATE", "SQL references tables not in provided schema")
             return StopEvent(result="Please ask a question that only references tables in the schema.")
 
-        
+        if not is_valid_sql:
+            log_error("VALIDATE", f"Invalid SQL query: {error}")
+            retry_count += 1
+            await context.set("retry_count", retry_count)
+            return SQLReflectionEvent(sql_query=ev.sql_query, error=error, retry_count=retry_count)
+
+        await context.set("retry_count", retry_count)
+
         log_success("VALIDATE", "SQL query validated successfully")
         
         log_step_end("VALIDATE", start_time)
         return ExecuteSQLEvent(sql_query=ev.sql_query)
 
     @step
-    async def Excute_SQL(self, context: Context, ev: ExecuteSQLEvent) -> SQLReflectionEvent | StopEvent:
+    async def Execute_SQL(self, context: Context, ev: ExecuteSQLEvent) -> SQLReflectionEvent | StopEvent:
         """ Execute SQL query."""
         start_time = log_step_start("EXECUTE", sql=ev.sql_query)
         
         connection_payload = await context.get("connection_payload")
+        retry_count = await context.get("retry_count")
         log_step_start("EXECUTE", connection_type=connection_payload.get('dbType', 'unknown'))
         
         log_step_start("EXECUTE", message="Sending query to database...")
@@ -238,7 +257,9 @@ class SQLAgentWorkflow(Workflow):
             log_error("EXECUTE", f"SQL execution failed with error: {error_msg}")
             
             log_step_end("EXECUTE", start_time)
-            return SQLReflectionEvent(sql_query=ev.sql_query, error=error_msg, retry_count=0)
+            retry_count += 1
+            await context.set("retry_count", retry_count)
+            return SQLReflectionEvent(sql_query=ev.sql_query, error=error_msg, retry_count=retry_count)
         else:
             log_success("EXECUTE", "SQL executed successfully")
             
@@ -262,8 +283,9 @@ class SQLAgentWorkflow(Workflow):
             log_step_end("REFLECT", start_time)
             raise AppException(error_msg, 4)
         
-        # Increment retry count
-        retry_count = ev.retry_count + 1
+        # Use the retry count from the event
+        retry_count = ev.retry_count
+        await context.set("retry_count", retry_count)
         log_step_start("REFLECT", attempt=f"{retry_count}/{self.max_sql_retries}")
         
         log_step_start("REFLECT", sql_with_error=ev.sql_query)
@@ -286,7 +308,7 @@ class SQLAgentWorkflow(Workflow):
         selected_tables = await context.get("selected_tables")
 
         log_step_start("REFLECT", message=f"Preparing schema information for {len(selected_tables)} tables")
-        table_schemas = schema_parser(selected_tables, "DDL", include_sample_data=True)
+        table_schemas = schema_parser(selected_tables, "DDL", include_sample_data=not app_config.PRIVACY_MODE)
         
         # Load the error reflection template from configuration
         from core.templates import SQL_ERROR_REFLECTION_SKELETON

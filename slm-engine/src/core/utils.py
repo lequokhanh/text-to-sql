@@ -5,9 +5,9 @@ from typing import List, Any
 from llama_index.core.llms import ChatResponse
 import networkx as nx
 import community as community_louvain
-from sql_metadata import Parser
+from sqlglot import parse_one, exp, transpile
+import sqlglot
 
-    
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -51,6 +51,8 @@ def extract_table_list(response: ChatResponse) -> list:
         # If no quotes found, split by commas and clean up
         items = [item.strip().strip("'\"") for item in cleaned_response.split(',')]
         return [item for item in items if item]
+    
+
 
 
 def extract_tables_from_sql(sql_query: str) -> list[str]:
@@ -172,8 +174,24 @@ def extract_tables_from_sql(sql_query: str) -> list[str]:
     #         unique_tables.append(table)
     
     # return unique_tables
-    parser = Parser(sql_query)
-    return parser.tables
+
+    # Parse the SQL
+    parsed = sqlglot.parse_one(sql_query)
+    
+    # Get all CTE names
+    cte_names = set()
+    for cte in parsed.find_all(exp.CTE):
+        cte_names.add(cte.alias)
+    
+    # Extract all table references
+    tables = set()
+    for table in parsed.find_all(exp.Table):
+        table_name = table.name
+        # Only add if it's not a CTE
+        if table_name not in cte_names:
+            tables.add(table_name)
+    
+    return list(tables)
 
 
 def schema_clustering(table_details: list, resolution_value = 1.0) -> list:
@@ -684,6 +702,12 @@ def extract_sql_query(response_text):
             
         return sql
 
+def is_valid_sql_query(sql_query: str) -> tuple[bool, Exception | None]:
+    try:
+        sqlglot.transpile(sql_query)
+        return True, None
+    except Exception as e:
+        return False, e
 
 def parse_llm_json_response(response: str) -> dict:
     """

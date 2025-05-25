@@ -34,7 +34,7 @@ TEXT_TO_SQL_SKELETON = (
     "### User question: {user_question}\n"
     "### Database description: {database_description}\n"
     "### Database schema:\n"
-    "{table_schemas}\n"
+    "{table_schemas}\n\n"
     "### Requirements:\n"
     "1. Write a precise SQL query that answers the user's question exactly\n"
     "2. Use only the tables and columns provided above\n"
@@ -42,9 +42,9 @@ TEXT_TO_SQL_SKELETON = (
     "4. Include proper JOINs when data needs to be combined from multiple tables\n"
     "5. Use appropriate aggregation functions (COUNT, SUM, AVG, etc.) when needed\n"
     "6. Use set operations (UNION, INTERSECT, EXCEPT) when needed\n"
-    "7. Ensure your query is efficient and follows best practices\n"
-    "8. Return ONLY the SQL query without any additional text, comments, or explanations\n"
-    "9. If you can't answer the question with the given tables or the question is not related to the database, return empty string ``"
+    "7. **DO NOT** use `= NULL` in your query, use `IS NULL` instead.\n"
+    "8. Ensure your query is efficient and follows best practices\n"
+    "9. Return ONLY the SQL query without any additional text, comments, or explanations\n"
     "\n\n"
     "### Response Format:\n"
     "Return only the {dialect} SQL query with no additional text."
@@ -115,7 +115,25 @@ SQL_JUDGER_SKELETON = (
     "Return only the boolean value (True or False) with no additional text."
 )
 
-
+QUESTION_SUGGESTION_SKELETON = (
+    "You are a database analyst who specializes in understanding data models and suggesting insightful questions "
+    "that can be answered using SQL queries against a database.\n\n"
+    "### Database Description:\n{database_description}\n\n"
+    "### Database Schema:\n{schema}\n\n"
+    "### Instructions:\n"
+    "1. Analyze the database schema and understand the relationships between tables\n"
+    "2. Generate {top_k} unique, insightful, and specific questions that can be answered using SQL queries against this database\n"
+    "3. Focus on questions that:\n"
+    "   - Provide valuable business insights that related to the tables provided\n"
+    "   - Question MUST BE short (less than 9 words) and concise\n"
+    "   - Require joining multiple tables\n"
+    "   - Involve aggregations, grouping, or analytical operations\n"
+    "   - Cover different aspects of the database\n"
+    "   - Are specific rather than general\n"
+    "   - Make sure the questions can be answered using SQL queries against the database and have few rows in the result\n"
+    "### Response Format:\n"
+    "Return only valid JSON with 'questions' array, with no additional text."
+)
 
 
 def text2sql_prompt_routing(prompt_type: int) -> str:
@@ -125,5 +143,5 @@ def text2sql_prompt_routing(prompt_type: int) -> str:
         prompt = TEXT_TO_SQL_SKELETON_FINETUNED
     else:
         raise ValueError("Invalid prompt type")
-    
+
     return prompt

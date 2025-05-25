@@ -9,13 +9,21 @@ def create_api_models(api):
         'username': fields.String(required=True, description='Database username'),
         'password': fields.String(required=True, description='Database password'),
         'dbType': fields.String(required=True, description='Database type (postgresql, mysql, sqlite)'),
-        'schema_enrich_info': fields.Raw(required=False, description='Schema enrichment information'),
-        'session_information': fields.Raw(required=False, description='Session information')
+        'schema_enrich_info': fields.Raw(required=False, description='Schema enrichment information')
     })
 
     query_request_model = api.model('QueryRequest', {
         'query': fields.String(required=True, description='Natural language query'),
         'connection_payload': fields.Nested(connection_payload_model, required=True)
+    })
+
+    schema_enrich_request_model = api.model('SchemaEnrichRequest', {
+        'connection_payload': fields.Nested(connection_payload_model, required=True)
+    })
+    
+    question_request_model = api.model('QuestionRequest', {
+        'top_k': fields.Integer(required=False, description='Number of question suggestions to generate', default=5),
+        'tables': fields.List(fields.String, required=True, description='List of table names')
     })
 
     settings_model = api.model('Settings', {
@@ -34,5 +42,7 @@ def create_api_models(api):
     return {
         'connection_payload_model': connection_payload_model,
         'query_request_model': query_request_model,
-        'settings_model': settings_model
+        'question_request_model': question_request_model,
+        'settings_model': settings_model,
+        'schema_enrich_request_model': schema_enrich_request_model
     } 

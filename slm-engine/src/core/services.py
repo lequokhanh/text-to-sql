@@ -444,5 +444,10 @@ def llm_chat(llm: Ollama | GoogleGenAI, fmt_messages: PromptTemplate):
             raise e
         
 def llm_chat_with_pydantic(llm: Ollama | GoogleGenAI, prompt: PromptTemplate, pydantic_model: BaseModel):
-    chat_response = llm.structured_predict(pydantic_model, prompt)
-    return chat_response
+    try:
+        chat_response = llm.structured_predict(pydantic_model, prompt)
+        return chat_response
+    except Exception as e:
+        error_str = str(e)
+        print(f"\033[91mError in llm_chat_with_pydantic: {error_str}\033[0m")
+        raise AppException(error_str, 500)
