@@ -13,7 +13,7 @@ public interface ChatService {
 
     BotResponseDTO askQuestion(UserAccount user, AskQuestionRequestDTO request);
 
-    List<ChatSessionDTO> getAllChatSessions(UserAccount user);
+    List<ChatSessionDTO> getAllChatSessions(UserAccount user, Integer dataSourceId);
 
     List<ChatMessageDTO> getChatSessionMessages(UserAccount user, Integer sessionId);
 } 

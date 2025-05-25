@@ -28,6 +28,7 @@ public class DataSourceConfiguration {
     private String databaseName;
     private String username;
     private String password;
+    @Lob
     private String databaseDescription;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REFRESH})

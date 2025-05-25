@@ -9,6 +9,7 @@ import com.slm.slmbackend.dto.datasource.ChatSessionDTO;
 import com.slm.slmbackend.dto.datasource.DataSourceConfigurationDetailDTO;
 import com.slm.slmbackend.entity.ChatMessage;
 import com.slm.slmbackend.entity.ChatSession;
+import com.slm.slmbackend.entity.DataSourceConfiguration;
 import com.slm.slmbackend.entity.UserAccount;
 import com.slm.slmbackend.enums.ResponseEnum;
 import com.slm.slmbackend.enums.UserRole;
@@ -82,7 +83,7 @@ public class ChatServiceImpl implements ChatService {
             }
 
             // Get data source configuration
-            DataSourceConfigurationDetailDTO dataSource = dataSourceConfigurationService.getDataSourceConfigurationById(user, request.getDataSourceId());
+            DataSourceConfigurationDetailDTO dataSource = dataSourceConfigurationService.getDataSourceConfigurationById(user, request.getDataSourceId(), true);
 
             // Create user message
             ChatMessage userMessage = new ChatMessage();
@@ -240,11 +241,24 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public List<ChatSessionDTO> getAllChatSessions(UserAccount user) {
+    public List<ChatSessionDTO> getAllChatSessions(UserAccount user, Integer dataSourceId) {
         if (user == null) {
             throw new AppException(ResponseEnum.UNAUTHORIZED);
         }
-        return chatSessionRepository.findByUser(user)
+
+        if (dataSourceId == null) {
+            throw new AppException(ResponseEnum.INVALID_REQUEST, "Data source ID cannot be null");
+        }
+
+        DataSourceConfiguration dataSource = dataSourceConfigurationRepository.findById(dataSourceId)
+                .orElseThrow(() -> new AppException(ResponseEnum.DATA_SOURCE_CONFIGURATION_NOT_FOUND));
+
+        if (dataSource.getOwners().stream().noneMatch(owner -> owner.getId().equals(user.getId()))
+        && dataSource.getGroups().stream().noneMatch(group -> group.getMembers().stream().anyMatch(member -> member.getId().equals(user.getId())))) {
+            throw new AppException(ResponseEnum.DATA_SOURCE_NOT_BELONG_TO_USER);
+        }
+
+        return chatSessionRepository.findByUserAndDataSource(user, dataSource)
                 .stream().map(
                         chatSession -> {
                             ChatSessionDTO chatSessionDTO = MapperUtil.mapObject(

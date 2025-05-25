@@ -20,6 +20,7 @@ import axiosInstance, { endpoints } from 'src/utils/axios';
 import Iconify from 'src/components/iconify';
 import { DataSourceManagement } from 'src/components/text-to-sql/management';
 import GroupManagement from 'src/components/text-to-sql/management/group-management';
+import OwnerManagement from 'src/components/text-to-sql/management/owner-management';
 import { TableDefinitionView } from 'src/components/text-to-sql/dialogs/table-definition-view';
 
 import { DatabaseSource } from 'src/types/database';
@@ -96,12 +97,46 @@ export default function DatasourceManagementView() {
     }
   }, [sourceId]);
 
+  useEffect(() => {
+    console.log('DataSource updated:', dataSource);
+  }, [dataSource]);
+
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
-  const handleDataSourceUpdate = (updatedSource: DatabaseSource) => {
-    setDataSource(updatedSource);
+  const handleDataSourceUpdate = async (updatedSource: DatabaseSource) => {
+    if (!sourceId) return;
+    
+    // Refresh the data source to get the latest data including descriptions
+    try {
+      await axiosInstance.put(
+        endpoints.dataSource.update(sourceId),
+        {
+          databaseDescription: updatedSource.databaseDescription || '',
+        }
+      );
+      const response = await axiosInstance.get(`${endpoints.dataSource.base}/${sourceId}`);
+      setDataSource(response.data);
+    } catch (err) {
+      console.error('Error updating data source:', err);
+      setDataSource(updatedSource);
+    }
+  };
+
+  const handleAutoFill = async (updatedTables: any, databaseDescription: string) => {
+    try {
+      await axiosInstance.put(endpoints.dataSource.tables.updateBatch(sourceId!), {
+        tables: updatedTables,
+      });
+      await axiosInstance.put(endpoints.dataSource.update(sourceId!), {
+        databaseDescription: databaseDescription || '',
+      });
+      const response = await axiosInstance.get(`${endpoints.dataSource.base}/${sourceId}`);
+      setDataSource(response.data);
+    } catch (err) {
+      console.error('Error auto filling data source:', err);
+    }
   };
 
   const handleDataSourceDelete = async (targetSourceId: string) => {
@@ -219,8 +254,14 @@ export default function DatasourceManagementView() {
               iconPosition="start"
             />
             <Tab
-              label="Schema"
+              label="Owners"
               {...a11yProps(2)}
+              icon={<Iconify icon="eva:shield-fill" width={20} height={20} />}
+              iconPosition="start"
+            />
+            <Tab
+              label="Schema"
+              {...a11yProps(3)}
               icon={<Iconify icon="eva:grid-fill" width={20} height={20} />}
               iconPosition="start"
             />
@@ -239,21 +280,46 @@ export default function DatasourceManagementView() {
           <TabPanel value={value} index={1}>
             <GroupManagement
               sourceId={sourceId!}
-              tables={dataSource.tableDefinitions.map(t => t.tableIdentifier)}
+              tables={dataSource.tableDefinitions.map(t => ({ id: t.id, tableIdentifier: t.tableIdentifier }))}
               onGroupsChange={() => {
                 // Refresh data if needed
               }}
             />
           </TabPanel>
-          
+
           <TabPanel value={value} index={2}>
+            <OwnerManagement
+              sourceId={sourceId!}
+              onOwnersChange={() => {
+                // Refresh data if needed
+              }}
+            />
+          </TabPanel>
+          
+          <TabPanel value={value} index={3}>
             <TableDefinitionView
               tables={dataSource.tableDefinitions}
+              databaseDescription={dataSource.databaseDescription}
+              connectionPayload={{
+                url: `${dataSource.host}:${dataSource.port}/${dataSource.databaseName}`,
+                username: dataSource.username,
+                password: dataSource.password,
+                dbType: dataSource.databaseType.toLowerCase() as 'mysql' | 'postgresql',
+              }}
               onTablesUpdate={(updatedTables) => {
                 setDataSource({
                   ...dataSource,
                   tableDefinitions: updatedTables,
                 });
+              }}
+              onDatabaseDescriptionUpdate={(description) => {
+                handleDataSourceUpdate({
+                  ...dataSource,
+                  databaseDescription: description,
+                });
+              }}
+              onAutoFill={(updatedTables, databaseDescription) => {
+                handleAutoFill(updatedTables, databaseDescription);
               }}
             />
           </TabPanel>

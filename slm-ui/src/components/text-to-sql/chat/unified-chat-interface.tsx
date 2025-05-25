@@ -579,7 +579,7 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
 
     } catch (err) {
       console.error('Error sending message:', err);
-      const errorMsg = err instanceof Error ? err.message : 'Failed to send message';
+      const errorMsg = err ?? 'Failed to send message';
       
       // Create a bot error message instead of showing an alert
       const errorBotMessage: IChatMessage = {

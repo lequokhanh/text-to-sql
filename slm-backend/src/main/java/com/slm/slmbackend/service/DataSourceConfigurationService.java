@@ -16,7 +16,7 @@ import java.util.List;
 public interface DataSourceConfigurationService {
     List<DataSourceConfigurationDTO> getAllDataSourceOwnedByUser(UserAccount user);
     List<DataSourceConfigurationViewDTO> getAllDataSourceAvailableForUser(UserAccount user);
-    DataSourceConfigurationDetailDTO getDataSourceConfigurationById(UserAccount user, Integer id);
+    DataSourceConfigurationDetailDTO getDataSourceConfigurationById(UserAccount user, Integer id, Boolean responseCredentialsForMember);
 
     List<UserAccountDTO> getAllOwnersOfDataSourceConfiguration(UserAccount user, Integer id);
     List<GroupDTO> getAllGroupsOfDataSourceConfiguration(UserAccount user, Integer id);
@@ -42,9 +42,11 @@ public interface DataSourceConfigurationService {
     void addUserToGroup(UserAccount authenticatedUser, Integer id, Integer groupId, AddUserToGroupDTO userDTO);
     void updateGroup(UserAccount authenticatedUser, Integer id, Integer groupId, GroupUpsertDTO groupDTO);
     void removeGroupFromDataSource(UserAccount authenticatedUser, Integer id, Integer groupId);
-    void removeUserFromGroup(UserAccount authenticatedUser, Integer id, Integer groupId, Integer userId);
+    void removeUserFromGroup(UserAccount authenticatedUser, Integer id, Integer groupId, RemoveUserFromGroupDTO userDTO);
 
     void testConnection(UserAccount authenticatedUser, Integer id);
 
-    void updateMultipleColumns(UserAccount authenticatedUser, Integer id, UpdateColumnsDTO updateColumnsDTO);
+    void updateMultipleTables(UserAccount authenticatedUser, Integer id, UpdateTablesDTO updateTablesDTO);
+    void addOwnerToDataSource(UserAccount authenticatedUser, Integer id, String username);
+    void removeOwnerFromDataSource(UserAccount authenticatedUser, Integer id, Integer ownerId);
 }

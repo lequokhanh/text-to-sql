@@ -23,7 +23,7 @@ import {
   TableCell, TableHead, TextField, CardHeader,
   IconButton, Typography, InputLabel, DialogTitle,
   ButtonGroup, FormControl, DialogActions, DialogContent,
-  useMediaQuery, TableContainer, 
+  useMediaQuery, TableContainer,
   CircularProgress, DialogContentText
 } from '@mui/material';
 
@@ -33,9 +33,9 @@ import axiosInstance, { endpoints } from 'src/utils/axios';
 
 import Iconify from 'src/components/iconify';
 
-import { 
-  ColumnRelation, 
-  TableDefinition, 
+import {
+  ColumnRelation,
+  TableDefinition,
   UpdateColumnDTO,
   ColumnDefinition,
   CreateRelationDTO
@@ -61,7 +61,7 @@ interface OutgoingRelation {
 
 // Helper function to find table and column by column ID - keep this outside since it's pure
 const findTableAndColumnById = (tables: TableDefinition[], columnId: number): { tableIdentifier: string; columnIdentifier: string } | null => {
-  const foundTable = tables.find(table => 
+  const foundTable = tables.find(table =>
     table.columns.some(col => col.id === columnId)
   );
 
@@ -1014,16 +1014,27 @@ interface AppState {
   relationDialog: RelationDialogState;
 }
 
+export interface ConnectionPayload {
+  url: string;
+  username: string;
+  password: string;
+  dbType: 'mysql' | 'postgresql';
+}
+
 // Main component interface
 interface TableDefinitionViewProps {
   tables: TableDefinition[];
+  databaseDescription?: string;
+  onAutoFill?: (updatedTables: TableDefinition[], databaseDescription: string) => void;
   onTablesUpdate?: (updatedTables: TableDefinition[]) => void;
+  onDatabaseDescriptionUpdate?: (description: string) => void;
+  connectionPayload?: ConnectionPayload;
 }
 
 // Add search highlight component
 const HighlightedText = ({ text, searchQuery }: { text: string | undefined | null, searchQuery: string | undefined | null }) => {
   const theme = useTheme();
-  
+
   if (!searchQuery?.trim() || !text) return <>{text || ''}</>;
 
   try {
@@ -1042,7 +1053,7 @@ const HighlightedText = ({ text, searchQuery }: { text: string | undefined | nul
             <m.span
               key={index}
               initial={{ backgroundColor: 'transparent' }}
-              animate={{ 
+              animate={{
                 backgroundColor: alpha(theme.palette.primary.main, 0.2)
               }}
               transition={{ duration: 0.2 }}
@@ -1193,8 +1204,8 @@ const useKeyboardNavigation = (
       // Tab navigation between tables
       if (e.key === 'Tab') {
         e.preventDefault();
-        const nextIndex = e.shiftKey 
-          ? (currentIndex - 1 + tables.length) % tables.length 
+        const nextIndex = e.shiftKey
+          ? (currentIndex - 1 + tables.length) % tables.length
           : (currentIndex + 1) % tables.length;
         toggleTable(tables[nextIndex].tableIdentifier);
       }
@@ -1239,7 +1250,14 @@ const StyledTableHeader = styled(CardHeader)(({ theme }) => ({
 }));
 
 // Main component
-export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionViewProps): JSX.Element {
+export function TableDefinitionView({ 
+  tables, 
+  databaseDescription,
+  onAutoFill,
+  onTablesUpdate,
+  onDatabaseDescriptionUpdate,
+  connectionPayload 
+}: TableDefinitionViewProps): JSX.Element {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -1351,14 +1369,14 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
 
         // Check columns
         if (!Array.isArray(table.columns)) return false;
-        
+
         return table.columns.some(col => {
           if (!col || typeof col !== 'object') return false;
-          
+
           const colId = col.columnIdentifier?.toLowerCase() || '';
           const colDesc = col.columnDescription?.toLowerCase() || '';
           const colType = col.columnType?.toLowerCase() || '';
-          
+
           return (
             colId.includes(query) ||
             colDesc.includes(query) ||
@@ -1453,7 +1471,7 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
       // Call API to update the column if we're in management mode
       const sourceId = window.location.pathname.split('/')[2];
       const isManagementPage = window.location.pathname.includes('/manage');
-      
+
       if (isManagementPage && sourceId) {
         try {
           const updateColumnDTO: UpdateColumnDTO = {
@@ -1465,8 +1483,8 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
 
           await axiosInstance.put(
             endpoints.dataSource.tables.columns.update(
-              sourceId.toString(), 
-              sourceTable.id.toString(), 
+              sourceId.toString(),
+              sourceTable.id.toString(),
               sourceColumn.id.toString()
             ),
             updateColumnDTO
@@ -1541,12 +1559,12 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
   // Move normalizeRelations inside component and wrap with useCallback
   const normalizeRelations = useCallback((column: ColumnDefinition, tablesToSearch: TableDefinition[]): ColumnRelation[] => {
     const relations: ColumnRelation[] = [];
-    
+
     // Handle standard relations
     if (column.relations && Array.isArray(column.relations)) {
       relations.push(...column.relations);
     }
-    
+
     // Handle outgoing relations if they exist
     if ('outgoingRelations' in column && Array.isArray((column as any).outgoingRelations)) {
       const outgoingRelations = (column as any).outgoingRelations as OutgoingRelation[];
@@ -1560,14 +1578,14 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
         };
       }));
     }
-    
+
     return relations;
   }, []); // Empty dependency array since it's a pure function
 
   const getRelationCount = useCallback((tableId: string): number => {
     const table = editableTables.find(t => t.tableIdentifier === tableId);
     if (!table) return 0;
-    
+
     return table.columns.reduce((count, column) => {
       const normalizedRelations = normalizeRelations(column, editableTables);
       return count + normalizedRelations.length;
@@ -1588,139 +1606,96 @@ export function TableDefinitionView({ tables, onTablesUpdate }: TableDefinitionV
     return key;
   }, []);
 
-  // AI description generation
-const generateAIDescription = useCallback(async (column: ColumnDefinition, table: TableDefinition): Promise<string> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800));
+    const fillAllDescriptionsWithAI = useCallback(async () => {
+    try {
+      if (!connectionPayload) {
+        showToast('Connection information is required', 'error');
+        return;
+      }
 
-  // Context-aware descriptions
-  const isForeignKey = column.relations && column.relations.length > 0;
-  const colName = column.columnIdentifier.toLowerCase();
+      setState(prev => ({ ...prev, aiLoading: true, aiButtonTooltipOpen: false }));
 
-  if (column.isPrimaryKey) {
-    return `Unique identifier for each record in the ${table.tableIdentifier} table`;
-  }
-
-  if (isForeignKey) {
-    const relations = column.relations || [];
-    const targetTables = relations.map(r => r.tableIdentifier).join(', ');
-    return `Foreign key referencing ${targetTables} ${relations.length > 1 ? 'tables' : 'table'}`;
-  }
-
-  if (colName.includes('id') && colName.endsWith('id')) {
-    return `Reference to ${colName.replace(/_?id$/, '')} record`;
-  }
-
-  if (colName.includes('name')) {
-    return `Name or title of the ${table.tableIdentifier} record`;
-  }
-
-  if (colName.includes('date') || colName.includes('time')) {
-    let action = 'event occurred';
-    if (colName.includes('created')) action = 'record was created';
-    else if (colName.includes('updated')) action = 'record was last modified';
-    else if (colName.includes('deleted')) action = 'record was removed';
-
-    return `Timestamp indicating when the ${action}`;
-  }
-
-  if (/price|cost|amount/.test(colName)) {
-    return `Monetary value representing the ${colName.replace(/_/g, ' ')}`;
-  }
-
-  if (colName.includes('status')) {
-    return `Current state of the ${table.tableIdentifier} record`;
-  }
-
-  if (colName.includes('description')) {
-    return `Detailed description of the ${table.tableIdentifier} record`;
-  }
-
-  if (/bool|flag/.test(column.columnType.toLowerCase())) {
-    const flagDescription = colName
-      .replace(/^is_|^has_/, '')
-      .replace(/_/g, ' ');
-    return `Flag indicating whether the ${table.tableIdentifier} ${flagDescription}`;
-  }
-
-  return `Stores ${column.columnType} data for ${table.tableIdentifier} records`;
-}, []);
-
-  // Add this before the fillAllDescriptionsWithAI function
-const generateAITableDescription = useCallback(async (table: TableDefinition): Promise<string> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800));
-
-  const columnTypes = table.columns.map(col => `${col.columnIdentifier} (${col.columnType})`).join(', ');
-  const primaryKeys = table.columns.filter(col => col.isPrimaryKey).map(col => col.columnIdentifier).join(', ');
-  const hasRelations = table.columns.some(col => (col.relations && col.relations.length > 0));
-
-  let description = `Table storing ${table.tableIdentifier} records with columns: ${columnTypes}.`;
-  
-  if (primaryKeys) {
-    description += ` Primary key(s): ${primaryKeys}.`;
-  }
-
-  if (hasRelations) {
-    description += ` Contains relationships with other tables.`;
-  }
-
-  return description;
-}, []);
-
-  // Update the fillAllDescriptionsWithAI function
-const fillAllDescriptionsWithAI = useCallback(async () => {
-  try {
-    setState(prev => ({ ...prev, aiLoading: true, aiButtonTooltipOpen: false }));
-
-    const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
-    let generatedCount = 0;
-
-    // Generate table descriptions first
-    await Promise.all(
-      tablesDeepCopy.map(async (table: TableDefinition) => {
-        if (!table.tableDescription) {
-          table.tableDescription = await generateAITableDescription(table);
-          generatedCount += 1;
+      // Call the schema enrichment API
+      const response = await axiosInstance.post(
+        endpoints.engine.schemaEnrichment,
+        {
+          connection_payload: connectionPayload
         }
-      })
-    );
+      );
+      console.log(response.data);
 
-    // Then generate column descriptions
-    await Promise.all(
-      tablesDeepCopy.flatMap((table: TableDefinition) =>
-        table.columns.map(async (column: ColumnDefinition) => {
-          if (!column.columnDescription) {
-            column.columnDescription = await generateAIDescription(column, table);
+      if (!response.data) {
+        throw new Error('Invalid API response format');
+      }
+
+      const enrichmentData = response.data;
+      let generatedCount = 0;
+
+      // Update database description
+      if (enrichmentData.database_description) {
+        generatedCount += 1;
+      }
+
+      // Update table and column descriptions
+      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
+      
+      enrichmentData.tables.forEach((enrichedTable: any) => {
+        const targetTable = tablesDeepCopy.find(
+          (t: TableDefinition) => t.tableIdentifier === enrichedTable.tableIdentifier
+        );
+
+        if (targetTable) {
+          // Update table description
+          if (enrichedTable.tableDescription) {
+            targetTable.tableDescription = enrichedTable.tableDescription;
             generatedCount += 1;
           }
-        })
-      )
-    );
 
-    setState(prev => ({
-      ...prev,
-      editableTables: tablesDeepCopy,
-      filteredTables: tablesDeepCopy,
-      aiLoading: false
-    }));
+          // Update column descriptions
+          enrichedTable.columns.forEach((enrichedColumn: any) => {
+            const targetColumn = targetTable.columns.find(
+              (c: ColumnDefinition) => c.columnIdentifier === enrichedColumn.columnIdentifier
+            );
 
-    if (onTablesUpdate && generatedCount > 0) {
-      onTablesUpdate(tablesDeepCopy);
+            if (targetColumn && enrichedColumn.columnDescription) {
+              targetColumn.columnDescription = enrichedColumn.columnDescription;
+              generatedCount += 1;
+            }
+          });
+        }
+      });
+
+      // Update state with enriched data while preserving editing state
+      setState(prev => ({
+        ...prev,
+        editableTables: tablesDeepCopy,
+        filteredTables: tablesDeepCopy,
+        aiLoading: false,
+        // Preserve editing states
+        editingTableId: prev.editingTableId,
+        editingColumnId: prev.editingColumnId,
+        editingTableDescription: prev.editingTableDescription
+      }));
+
+        if (onAutoFill && generatedCount > 0) {
+          onAutoFill(tablesDeepCopy, enrichmentData.database_description);
+        }
+
+      showToast(
+        generatedCount > 0
+          ? `Successfully generated ${generatedCount} descriptions!`
+          : 'All descriptions are already present',
+        generatedCount > 0 ? 'success' : 'info'
+      );
+    } catch (error: any) {
+      console.error('AI description generation failed:', error);
+      showToast(
+        error || 'Failed to generate AI descriptions',
+        'error'
+      );
+      setState(prev => ({ ...prev, aiLoading: false }));
     }
-
-    showToast(
-      generatedCount > 0
-        ? `Successfully generated ${generatedCount} descriptions!`
-        : 'All tables and columns already have descriptions',
-      generatedCount > 0 ? 'success' : 'info'
-    );
-  } catch (error) {
-    console.error('AI description generation failed:', error);
-    showToast('Failed to generate AI descriptions', 'error');
-    setState(prev => ({ ...prev, aiLoading: false }));
-  }
-}, [editableTables, onTablesUpdate, showToast, generateAITableDescription, generateAIDescription]);
+  }, [editableTables, showToast, onAutoFill, connectionPayload]);
 
   // Relation management
   const openRelationDialog = useCallback((tableId: string, columnId: string) => {
@@ -1814,13 +1789,13 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
       // Call API to update the relation if we're in management mode
       const sourceId = window.location.pathname.split('/')[2];
       const isManagementPage = window.location.pathname.includes('/manage');
-      
+
       if (isManagementPage && sourceId) {
         try {
           await axiosInstance.post(
             endpoints.dataSource.tables.columns.relations.base(
-              sourceId.toString(), 
-              sourceTable.id.toString(), 
+              sourceId.toString(),
+              sourceTable.id.toString(),
               sourceColumn.id.toString()
             ),
             relationToAdd
@@ -1875,20 +1850,20 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
 
       // Find the relation - handle both standard relations and outgoing relations
       let relationId: number | undefined;
-      
+
       // Check standard relations first
-      const standardRelation = sourceColumn.relations?.find(r => 
+      const standardRelation = sourceColumn.relations?.find(r =>
         r.tableIdentifier === targetTableId && r.toColumn === targetColumnId
       );
-      
+
       if (standardRelation?.id) {
         relationId = standardRelation.id;
       } else {
         // Check outgoing relations if standard relation not found
-        const outgoingRelation = (sourceColumn as any).outgoingRelations?.find((r: OutgoingRelation) => 
+        const outgoingRelation = (sourceColumn as any).outgoingRelations?.find((r: OutgoingRelation) =>
           r.toColumn.columnIdentifier === targetColumnId && r.toColumn.id === targetColumnObj.id
         );
-        
+
         if (outgoingRelation?.id) {
           relationId = outgoingRelation.id;
         }
@@ -1906,21 +1881,21 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
               if (column.columnIdentifier === columnId) {
                 // Remove from both standard relations and outgoing relations
                 const updatedColumn = { ...column };
-                
+
                 // Update standard relations
                 if (updatedColumn.relations) {
                   updatedColumn.relations = updatedColumn.relations.filter(
                     (r: ColumnRelation) => r.id !== relationId
                   );
                 }
-                
+
                 // Update outgoing relations if they exist
                 if ((updatedColumn as any).outgoingRelations) {
                   (updatedColumn as any).outgoingRelations = (updatedColumn as any).outgoingRelations.filter(
                     (r: OutgoingRelation) => r.id !== relationId
                   );
                 }
-                
+
                 return updatedColumn;
               }
               return column;
@@ -1933,13 +1908,13 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
       // Call API to delete the relation if we're in management mode and we have a relation ID
       const sourceId = window.location.pathname.split('/')[2];
       const isManagementPage = window.location.pathname.includes('/manage');
-      
+
       if (isManagementPage && sourceId && relationId) {
         try {
           await axiosInstance.delete(
             endpoints.dataSource.tables.columns.relations.delete(
-              sourceId.toString(), 
-              sourceTable.id.toString(), 
+              sourceId.toString(),
+              sourceTable.id.toString(),
               sourceColumn.id.toString(),
               relationId.toString()
             )
@@ -2025,21 +2000,21 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
               if (column.columnIdentifier === columnId) {
                 // Update both standard relations and outgoing relations
                 const updatedColumn = { ...column };
-                
+
                 // Update standard relations if they exist
                 if (updatedColumn.relations) {
-                  updatedColumn.relations = updatedColumn.relations.map(r => 
+                  updatedColumn.relations = updatedColumn.relations.map(r =>
                     r.id === relationId ? { ...r, type: newType } : r
                   );
                 }
-                
+
                 // Update outgoing relations if they exist
                 if ((updatedColumn as any).outgoingRelations) {
                   (updatedColumn as any).outgoingRelations = (updatedColumn as any).outgoingRelations.map(
                     (r: OutgoingRelation) => r.id === relationId ? { ...r, type: newType } : r
                   );
                 }
-                
+
                 return updatedColumn;
               }
               return column;
@@ -2091,11 +2066,13 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
         exit="exit"
         variants={rowVariants}
         onMouseEnter={() => {
-          setState(prev => ({
-            ...prev,
-            hoveredTableId: table.tableIdentifier,
-            hoveredColumnId: column.columnIdentifier
-          }));
+          if (!aiLoading) {
+            setState(prev => ({
+              ...prev,
+              hoveredTableId: table.tableIdentifier,
+              hoveredColumnId: column.columnIdentifier
+            }));
+          }
         }}
         onMouseLeave={() => {
           setState(prev => ({
@@ -2106,16 +2083,16 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
         }}
         onClick={() => {
           // Add click handler to start editing when row is clicked
-          if (!isEditing) {
+          if (!isEditing && !aiLoading) {
             startEditing(table.tableIdentifier, column.columnIdentifier);
           }
         }}
         sx={{
           position: 'relative',
-          cursor: 'pointer',
+          cursor: aiLoading ? 'not-allowed' : 'pointer',
           '&:hover': {
-            backgroundColor: (t) => alpha(t.palette.primary.main, 0.05),
-            '& .MuiTableCell-root': { color: 'primary.main' }
+            backgroundColor: (t) => !aiLoading ? alpha(t.palette.primary.main, 0.05) : 'inherit',
+            '& .MuiTableCell-root': { color: !aiLoading ? 'primary.main' : 'inherit' }
           },
           '& .MuiTableCell-root': {
             py: 1.5,
@@ -2128,6 +2105,7 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
             }),
           },
           transition: 'all 0.15s ease-in-out',
+          opacity: aiLoading ? 0.7 : 1,
         }}
       >
         {/* Column Name Cell */}
@@ -2301,7 +2279,7 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
           </RelationsContainer>
 
           {/* Row action buttons */}
-          {!isEditing && isHovered && (
+          {!isEditing && isHovered && !aiLoading && (
             <RowActionButtons>
               <Tooltip title="Edit column">
                 <IconButton
@@ -2403,13 +2381,14 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
     startEditing,
     normalizeRelations,
     editableTables,
-    updateRelation
+    updateRelation,
+    aiLoading
   ]);
 
   // Apply keyboard navigation
   useKeyboardNavigation(
-    filteredTables, 
-    selectedTable, 
+    filteredTables,
+    selectedTable,
     toggleTable,
     expandedTables,
     editingTableId,
@@ -2435,7 +2414,7 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
   // Search input ref for focus
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Add keyboard shortcut for search focus
+  // Add keyboard shortcuts and escape handling
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl/Cmd+F to focus search
@@ -2444,10 +2423,44 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
         searchInputRef.current.focus();
       }
 
-      // Escape key to clear search if it's not empty
-      if (e.key === 'Escape' && searchQuery && document.activeElement !== searchInputRef.current) {
+      // Escape key handling for various edit modes
+      if (e.key === 'Escape') {
         e.preventDefault();
-        setState(prev => ({ ...prev, searchQuery: '' }));
+
+        // Handle search clear
+        if (searchQuery && document.activeElement !== searchInputRef.current) {
+          setState(prev => ({ ...prev, searchQuery: '' }));
+        }
+
+        // Handle column editing
+        if (editingTableId && editingColumnId) {
+          cancelEditing();
+        }
+
+        // Handle table description editing
+        if (editingTableDescription) {
+          setState(prev => ({
+            ...prev,
+            editingTableDescription: false,
+            editingTableId: null
+          }));
+        }
+
+        // Handle relation dialog
+        if (relationDialog.open) {
+          handleRelationDialogClose();
+        }
+
+        // Handle database description editing - check if the database description field is focused
+        const dbDescField = document.activeElement as HTMLElement;
+        if (dbDescField?.getAttribute('placeholder')?.includes('Enter database description')) {
+          dbDescField.blur();
+        }
+
+        // Handle shortcuts dialog
+        if (shortcutsDialogOpen) {
+          setShortcutsDialogOpen(false);
+        }
       }
     };
 
@@ -2456,7 +2469,16 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [searchQuery]);
+  }, [
+    searchQuery,
+    editingTableId,
+    editingColumnId,
+    editingTableDescription,
+    relationDialog.open,
+    shortcutsDialogOpen,
+    cancelEditing,
+    handleRelationDialogClose
+  ]);
 
   // Add this function to handle table description changes
   const handleTableDescriptionChange = useCallback((
@@ -2503,7 +2525,7 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
       // Call API to update the table if we're in management mode
       const sourceId = window.location.pathname.split('/')[2];
       const isManagementPage = window.location.pathname.includes('/manage');
-      
+
       if (isManagementPage && sourceId) {
         try {
           await axiosInstance.put(
@@ -2638,10 +2660,10 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
             <Grid item xs={12}>
               <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box component="span" sx={{ color: 'primary.main' }}>Source</Box>
-                <Chip 
-                  size="small" 
-                  label="Starting point" 
-                  color="primary" 
+                <Chip
+                  size="small"
+                  label="Starting point"
+                  color="primary"
                   variant="outlined"
                   sx={{ height: 20 }}
                 />
@@ -2665,10 +2687,10 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
             <Grid item xs={12}>
               <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box component="span" sx={{ color: 'info.main' }}>Target</Box>
-                <Chip 
-                  size="small" 
-                  label="Destination" 
-                  color="info" 
+                <Chip
+                  size="small"
+                  label="Destination"
+                  color="info"
                   variant="outlined"
                   sx={{ height: 20 }}
                 />
@@ -2686,8 +2708,8 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
                   sx={{ borderRadius: 3 }}
                 >
                   {editableTables.map((table) => (
-                    <MenuItem 
-                      key={table.tableIdentifier} 
+                    <MenuItem
+                      key={table.tableIdentifier}
                       value={table.tableIdentifier}
                       sx={{
                         display: 'flex',
@@ -2695,19 +2717,19 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
                         gap: 1,
                       }}
                     >
-                      <Box component="span" sx={{ 
-                        width: 8, 
-                        height: 8, 
+                      <Box component="span" sx={{
+                        width: 8,
+                        height: 8,
                         borderRadius: '50%',
                         bgcolor: table.tableIdentifier === relationDialog.sourceTableId ? 'warning.main' : 'success.main',
                         flexShrink: 0
                       }} />
                       {table.tableIdentifier}
                       {table.tableIdentifier === relationDialog.sourceTableId && (
-                        <Chip 
-                          size="small" 
-                          label="Current" 
-                          color="warning" 
+                        <Chip
+                          size="small"
+                          label="Current"
+                          color="warning"
                           variant="outlined"
                           sx={{ ml: 'auto', height: 20 }}
                         />
@@ -2731,8 +2753,8 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
                   {editableTables
                     .find((t) => t.tableIdentifier === relationDialog.targetTableId)
                     ?.columns.map((column) => (
-                      <MenuItem 
-                        key={column.columnIdentifier} 
+                      <MenuItem
+                        key={column.columnIdentifier}
                         value={column.columnIdentifier}
                         sx={{
                           display: 'flex',
@@ -2787,7 +2809,7 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
                       {(() => {
                         const source = relationDialog.sourceTableId;
                         const target = relationDialog.targetTableId || 'target';
-                        
+
                         if (relationDialog.relationType === 'OTO') {
                           return `Each record in ${source} corresponds to exactly one record in ${target}, and vice versa.`;
                         }
@@ -2807,8 +2829,8 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
           </Grid>
         </DialogContent>
 
-        <DialogActions sx={{ 
-          px: 3, 
+        <DialogActions sx={{
+          px: 3,
           py: 2.5,
           bgcolor: theme.palette.mode === 'dark'
             ? alpha(theme.palette.background.paper, 0.5)
@@ -2846,8 +2868,8 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
         sx={{ alignItems: 'stretch' }}
       >
         {/* Table List Panel */}
-        <Grid 
-          item 
+        <Grid
+          item
           {...gridSizes.tableList}
           key="table-list-panel"
         >
@@ -2992,6 +3014,106 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
                 </AIButtonWrapper>
               </Tooltip>
             </Box>
+
+            {/* Database Description */}
+            <Stack
+              spacing={1}
+              sx={{
+                mt: 1.5,
+                mb: 1.5,
+                px: 1.5,
+                py: 1,
+                borderRadius: 1.5,
+                bgcolor: (t) => alpha(t.palette.background.neutral, 0.4),
+                border: (t) => `1px solid ${alpha(t.palette.divider, 0.1)}`,
+                opacity: aiLoading ? 0.7 : 1,
+                pointerEvents: aiLoading ? 'none' : 'auto',
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Box
+                  sx={{
+                    p: 0.5,
+                    borderRadius: 0.75,
+                    bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Iconify
+                    icon="eva:file-text-fill"
+                    width={16}
+                    height={16}
+                    sx={{ color: 'primary.main' }}
+                  />
+                </Box>
+                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
+                  Database Description
+                </Typography>
+              </Stack>
+
+              <Box sx={{ width: '100%' }}>
+                <DescriptionTextField
+                  fullWidth
+                  size="small"
+                  value={databaseDescription || ''}
+                  onChange={(e) => onDatabaseDescriptionUpdate?.(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      (e.target as HTMLElement).blur();
+                    }
+                  }}
+                  disabled={aiLoading}
+                  multiline
+                  rows={2}
+                  maxRows={4}
+                  placeholder="Enter database description or use Auto-fill button to generate"
+                  sx={(t) => ({
+                    '& .MuiInputBase-root': {
+                      borderRadius: 1,
+                      bgcolor: alpha(t.palette.background.paper, 0.6),
+                      '&:hover': {
+                        bgcolor: aiLoading ? alpha(t.palette.background.paper, 0.6) : alpha(t.palette.background.paper, 0.8),
+                      },
+                      '&.Mui-focused': {
+                        bgcolor: 'background.paper',
+                        '& .MuiInputBase-input': {
+                          maxHeight: '120px !important', // Approximately 4 lines
+                          overflow: 'auto !important',
+                          display: 'block !important',
+                          WebkitLineClamp: 'unset !important',
+                        }
+                      },
+                      '& .MuiInputBase-input': {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        lineHeight: 1.5,
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: `${alpha(t.palette.primary.main, 0.2)} ${alpha(t.palette.common.black, 0.05)}`,
+                        '&::-webkit-scrollbar': {
+                          width: '8px',
+                        },
+                        '&::-webkit-scrollbar-track': {
+                          backgroundColor: alpha(t.palette.common.black, 0.05),
+                          borderRadius: '4px',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          backgroundColor: alpha(t.palette.primary.main, 0.2),
+                          borderRadius: '4px',
+                          '&:hover': {
+                            backgroundColor: alpha(t.palette.primary.main, 0.3),
+                          },
+                        },
+                      },
+                    }
+                  })}
+                />
+              </Box>
+            </Stack>
 
             {/* Table list with scrolling */}
             <Box
@@ -3214,21 +3336,21 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
                                             (col?.columnType?.toLowerCase() || '').includes(query)
                                           );
                                         }) && (
-                                          <Chip
-                                            size="small"
-                                            label="Has matches"
-                                            color="primary"
-                                            variant="outlined"
-                                            sx={{
-                                              height: 20,
-                                              ml: 1,
-                                              '& .MuiChip-label': {
-                                                px: 1,
-                                                fontSize: '0.7rem',
-                                              }
-                                            }}
-                                          />
-                                        )}
+                                            <Chip
+                                              size="small"
+                                              label="Has matches"
+                                              color="primary"
+                                              variant="outlined"
+                                              sx={{
+                                                height: 20,
+                                                ml: 1,
+                                                '& .MuiChip-label': {
+                                                  px: 1,
+                                                  fontSize: '0.7rem',
+                                                }
+                                              }}
+                                            />
+                                          )}
                                       </Box>
                                     </Stack>
                                     <Stack
@@ -3304,10 +3426,12 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
                                         rows={2}
                                         placeholder="Enter table description..."
                                         aria-label="Edit table description"
+                                        disabled={aiLoading}
                                       />
                                     ) : (
                                       <Box
                                         onClick={(e) => {
+                                          if (aiLoading) return; // Prevent editing when AI is loading
                                           e.stopPropagation();
                                           setState(prev => ({
                                             ...prev,
@@ -3315,7 +3439,7 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
                                             editingTableId: table.tableIdentifier
                                           }));
                                         }}
-                                        sx={{ cursor: 'text' }}
+                                        sx={{ cursor: aiLoading ? 'not-allowed' : 'text' }}
                                       >
                                         <Typography
                                           variant="body2"
@@ -3323,6 +3447,7 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
                                           sx={{
                                             fontStyle: table.tableDescription ? 'normal' : 'italic',
                                             wordBreak: 'break-word',
+                                            opacity: aiLoading ? 0.7 : 1,
                                           }}
                                         >
                                           {table.tableDescription ? (
@@ -3374,8 +3499,8 @@ const fillAllDescriptionsWithAI = useCallback(async () => {
         </Grid>
 
         {/* Schema Diagram Panel */}
-        <Grid 
-          item 
+        <Grid
+          item
           {...gridSizes.diagram}
           key="schema-diagram-panel"
         >

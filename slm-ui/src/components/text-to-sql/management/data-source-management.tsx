@@ -401,28 +401,6 @@ export default function DataSourceManagement({
 
                   <FieldContainer>
                     <Controller
-                      name="databaseDescription"
-                      control={control}
-                      render={({ field }) => (
-                        <SourceField
-                          {...field}
-                          value={field.value || ''}
-                          label="Database Description"
-                          icon="eva:file-text-fill"
-                          disabled={!isEditing}
-                          error={!!errors.databaseDescription}
-                          helperText={errors.databaseDescription?.message}
-                          multiline
-                          rows={3}
-                          onFocus={() => {}}
-                          onBlur={() => {}}
-                        />
-                      )}
-                    />
-                  </FieldContainer>
-
-                  <FieldContainer>
-                    <Controller
                       name="databaseType"
                       control={control}
                       rules={{ required: 'Database type is required' }}

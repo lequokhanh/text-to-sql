@@ -29,7 +29,7 @@ export function useConversations() {
   const fetchSessions = useCallback(async (sourceId: string) => {
     try {
       setIsLoading(true);
-      const { data: sessions } = await axiosInstance.get<ChatSession[]>(endpoints.chat.sessions);
+      const { data: sessions } = await axiosInstance.get<ChatSession[]>(endpoints.chat.sessions(sourceId));
       
       // Transform sessions to conversations
       const transformedSessions = sessions.map((session) => ({

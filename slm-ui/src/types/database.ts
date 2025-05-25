@@ -117,7 +117,7 @@ export type DatabaseType = 'POSTGRESQL' | 'MYSQL';
 
 export type DatabaseSource = {
   id: string;
-  databaseType: 'POSTGRESQL' | 'MYSQL' | 'ORACLE';
+  databaseType: DatabaseType;
   host: string;
   port: string;
   databaseName: string;

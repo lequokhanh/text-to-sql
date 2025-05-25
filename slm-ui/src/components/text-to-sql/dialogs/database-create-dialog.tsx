@@ -32,7 +32,7 @@ import axiosInstance, { endpoints } from 'src/utils/axios';
 
 import Iconify from 'src/components/iconify';
 
-import { DatabaseSource, DatabaseConnectionConfig } from 'src/types/database';
+import { DatabaseSource, TableDefinition, DatabaseConnectionConfig } from 'src/types/database';
 
 import { TableDefinitionView } from './table-definition-view';
 
@@ -364,10 +364,6 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
         return 'localhost:5432/postgres';
       case 'mysql':
         return 'localhost:3306/mysql';
-      case 'mongodb':
-        return 'localhost:27017/admin';
-      case 'sqlserver':
-        return 'localhost:1433/master';
       default:
         return 'hostname:port/database';
     }
@@ -846,7 +842,29 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
                     minHeight: 400,
                   }}
                 >
-                  <TableDefinitionView tables={schemaData.tableDefinitions} />
+                  <TableDefinitionView 
+                    tables={schemaData.tableDefinitions}
+                    connectionPayload={{
+                      url: `${schemaData.host}:${schemaData.port}/${schemaData.databaseName}`,
+                      username: schemaData.username,
+                      password: schemaData.password,
+                      dbType: schemaData.databaseType.toLowerCase() as 'mysql' | 'postgresql',
+                    }}
+                    databaseDescription={schemaData.databaseDescription}
+                    onDatabaseDescriptionUpdate={(description) => {
+                      setSchemaData({
+                        ...schemaData,
+                        databaseDescription: description,
+                      });
+                    }}
+                    onAutoFill={(updatedTables: TableDefinition[], databaseDescription: string) => {
+                      setSchemaData({
+                        ...schemaData,
+                        tableDefinitions: updatedTables,
+                        databaseDescription,
+                      });
+                    }}
+                     />
                 </Box>
               </Box>
             </Fade>
@@ -1032,6 +1050,36 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
                         sx={{ height: 24 }}
                       />
                     </Stack>
+
+                    {schemaData.databaseDescription && (
+                      <Stack
+                        direction="column"
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 1,
+                          bgcolor: (t) =>
+                            t.palette.mode === 'dark'
+                              ? alpha(t.palette.background.default, 0.6)
+                              : alpha(t.palette.background.default, 1),
+                        }}
+                      >
+                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                          <Iconify icon="eva:file-text-outline" width={20} sx={{ color: 'text.secondary' }} />
+                          <Typography variant="subtitle2">Database Description:</Typography>
+                        </Stack>
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{ 
+                            pl: 3.5,
+                            fontStyle: 'italic',
+                            lineHeight: 1.6 
+                          }}
+                        >
+                          {schemaData.databaseDescription}
+                        </Typography>
+                      </Stack>
+                    )}
                   </Stack>
                 </Paper>
 

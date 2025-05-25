@@ -116,6 +116,7 @@ export function useDataSources() {
           password: source.password,
           name: source.name,
           tableDefinitions: source.tableDefinitions || [],
+          databaseDescription: source.databaseDescription || '',
         };
 
         await axiosInstance.post(endpoints.dataSource.create, apiPayload);

@@ -14,7 +14,8 @@ public class Whitelist {
         WHITELIST.put("/swagger-ui/**", "ANY");
         WHITELIST.put("/v3/api-docs/**", "ANY");
         WHITELIST.put("/health-check", "GET");
-        WHITELIST.put("api/proxy/embed/**", "ANY");
+        WHITELIST.put("/api/proxy/embed/**", "ANY");
+        WHITELIST.put("/api/proxy/engine/schema-enrichment-lite", "POST");
     }
 
     public static Map<String, String> get() {

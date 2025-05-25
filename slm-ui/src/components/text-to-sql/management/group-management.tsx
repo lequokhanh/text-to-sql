@@ -21,7 +21,6 @@ import {
   Typography,
   IconButton,
   DialogTitle,
-  Autocomplete,
   DialogContent,
   DialogActions,
   TableContainer,
@@ -29,29 +28,43 @@ import {
 
 import { useDebounce } from 'src/hooks/use-debounce';
 
-import axiosInstance, { endpoints } from 'src/utils/axios';
+import axios, { endpoints } from 'src/utils/axios';
 
 import Iconify from 'src/components/iconify';
 
 // Types
-interface Group {
-  id: string;
+interface BasicGroup {
+  id: number;
   name: string;
-  description: string;
-  tables: string[] | null;
-  members: User[];
 }
 
-interface User {
-  id: string;
+interface Member {
+  id: number;
+  username: string;
+}
+
+interface Group extends BasicGroup {
+  tableIds: number[];
+  members: Member[];
   name: string;
-  email: string;
 }
 
 interface GroupManagementProps {
   sourceId: string;
-  tables?: string[];
+  tables?: { id: number; tableIdentifier: string }[];
   onGroupsChange: () => void;
+}
+
+interface MemberChanges {
+  added: Member[];
+  removed: Member[];
+}
+
+interface GroupUpdateData extends Partial<Group> {
+  memberChanges?: {
+    added: string[];
+    removed: string[];
+  };
 }
 
 // Styled components
@@ -73,10 +86,9 @@ interface GroupDialogProps {
   open: boolean;
   onClose: () => void;
   selectedGroup: Group | null;
-  onSave: (group: Partial<Group>) => void;
-  tables?: string[];
+  onSave: (group: GroupUpdateData) => void;
+  tables?: { id: number; tableIdentifier: string }[];
   nameInputRef: React.RefObject<HTMLInputElement>;
-  descriptionInputRef: React.RefObject<HTMLInputElement>;
 }
 
 // Group dialog component
@@ -87,30 +99,53 @@ const GroupDialog = ({
   onSave,
   tables = [],
   nameInputRef,
-  descriptionInputRef,
 }: GroupDialogProps) => {
-  const [newGroup, setNewGroup] = useState<Partial<Group>>(
-    selectedGroup || {
-      name: '',
-      description: '',
-      tables: [],
-      members: [],
+  const [newGroup, setNewGroup] = useState<Partial<Group>>({
+    name: '',
+    tableIds: []
+  });
+  
+  // Reset form when dialog opens with selected group
+  useEffect(() => {
+    if (selectedGroup) {
+      setNewGroup({
+        id: selectedGroup.id,
+        name: selectedGroup.name,
+        tableIds: selectedGroup.tableIds,
+        members: selectedGroup.members
+      });
+    } else {
+      setNewGroup({
+        name: '',
+        tableIds: []
+      });
     }
-  );
+  }, [selectedGroup]);
+
   const [inputValue, setInputValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentUser, setCurrentUser] = useState<string>('');
   const [inputError, setInputError] = useState('');
   const [formErrors, setFormErrors] = useState<{
     name?: string;
-    tables?: string;
   }>({});
+  const [memberChanges, setMemberChanges] = useState<MemberChanges>({
+    added: [],
+    removed: []
+  });
+
+  // Reset member changes when dialog opens/closes
+  useEffect(() => {
+    if (open) {
+      setMemberChanges({ added: [], removed: [] });
+    }
+  }, [open]);
 
   // Fetch current user when component mounts
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const response = await axiosInstance.get(endpoints.auth.me);
+        const response = await axios.get(endpoints.auth.me);
         setCurrentUser(response.data.username || '');
       } catch (error) {
         console.error('Error fetching current user:', error);
@@ -132,29 +167,33 @@ const GroupDialog = ({
         return false;
       }
 
-      // Check if user is already in group
-      if (newGroup.members?.some(member => member.name.toLowerCase() === username.toLowerCase())) {
+      // Check if user is already in original members or newly added members
+      const isExistingMember = newGroup.members?.some(member => member.username.toLowerCase() === username.toLowerCase()) ||
+        memberChanges.added.some(member => member.username.toLowerCase() === username.toLowerCase());
+
+      if (isExistingMember) {
         setInputError('User is already in group');
         return false;
       }
 
       // Check if user exists in system
-      const response = await axiosInstance.get(`/api/v1/users/check-username/${username}`);
+      const response = await axios.get(`/api/v1/users/check-username/${username}`);
       if (!response.data) {
         setInputError('User not found');
         return false;
       }
 
-      // Add user to group
+      // Add user to added list
       const newMember = {
-        id: username,
-        name: username,
-        email: ''
+        id: response.data.id,
+        username
       };
 
-      setNewGroup(prev => ({
+      setMemberChanges(prev => ({
         ...prev,
-        members: [...(prev.members || []), newMember]
+        added: [...prev.added, newMember],
+        // If user was previously removed, remove them from the removed list
+        removed: prev.removed.filter(m => m.username.toLowerCase() !== username.toLowerCase())
       }));
 
       return true;
@@ -165,21 +204,25 @@ const GroupDialog = ({
     } finally {
       setIsProcessing(false);
     }
-  }, [currentUser, newGroup.members]);
+  }, [currentUser, newGroup.members, memberChanges]);
+
+  const handleRemoveMember = (member: Member) => {
+    const isNewlyAdded = memberChanges.added.some(m => m.id === member.id);
+    const isAlreadyRemoved = memberChanges.removed.some(m => m.id === member.id);
+
+    setMemberChanges(prev => ({
+      ...prev,
+      added: isNewlyAdded ? prev.added.filter(m => m.id !== member.id) : prev.added,
+      removed: !isNewlyAdded && !isAlreadyRemoved ? [...prev.removed, member] : prev.removed
+    }));
+  };
 
   const validateForm = (): boolean => {
-    const errors: { name?: string; tables?: string } = {};
+    const errors: { name?: string; } = {};
     let isValid = true;
 
-    // Validate group name
     if (!newGroup.name?.trim()) {
       errors.name = 'Group name is required';
-      isValid = false;
-    }
-
-    // Validate tables (either some tables selected or "All Tables" option)
-    if (newGroup.tables !== null && (!newGroup.tables || newGroup.tables.length === 0)) {
-      errors.tables = 'Please select at least one table or choose "All Tables"';
       isValid = false;
     }
 
@@ -189,7 +232,19 @@ const GroupDialog = ({
 
   const handleSave = () => {
     if (validateForm()) {
-      onSave(newGroup);
+      // If editing, include member changes
+      if (selectedGroup) {
+        onSave({
+          ...newGroup,
+          memberChanges: {
+            added: memberChanges.added.map(m => m.username),
+            removed: memberChanges.removed.map(m => m.username)
+          }
+        });
+      } else {
+        // If creating, just send basic info
+        onSave(newGroup);
+      }
     }
   };
 
@@ -212,7 +267,6 @@ const GroupDialog = ({
             value={newGroup.name}
             onChange={(e) => {
               setNewGroup({ ...newGroup, name: e.target.value });
-              // Clear error when user types
               if (formErrors.name) {
                 setFormErrors(prev => ({ ...prev, name: undefined }));
               }
@@ -224,19 +278,9 @@ const GroupDialog = ({
             required
           />
           
-          <TextField
-            fullWidth
-            label="Description"
-            value={newGroup.description}
-            onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-            inputRef={descriptionInputRef}
-            multiline
-            rows={2}
-          />
-          
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Accessible Tables <span style={{ color: 'error.main' }}>*</span>
+              Accessible Tables
             </Typography>
             <Paper 
               variant="outlined" 
@@ -244,21 +288,16 @@ const GroupDialog = ({
                 p: 2, 
                 maxHeight: 200, 
                 overflow: 'auto',
-                borderColor: formErrors.tables ? 'error.main' : undefined
               }}
             >
               <Box sx={{ mb: 1 }}>
                 <Checkbox
-                  checked={newGroup.tables === null}
+                  checked={newGroup.tableIds?.length === 0}
                   onChange={(e) => {
                     setNewGroup(prev => ({
                       ...prev,
-                      tables: e.target.checked ? null : []
+                      tableIds: e.target.checked ? [] : tables.map(t => t.id)
                     }));
-                    // Clear error when user selects "All Tables"
-                    if (formErrors.tables) {
-                      setFormErrors(prev => ({ ...prev, tables: undefined }));
-                    }
                   }}
                 />
                 <Typography 
@@ -272,91 +311,74 @@ const GroupDialog = ({
                 </Typography>
               </Box>
               
-              {newGroup.tables !== null && (tables || []).map((table) => (
-                <Box key={table} sx={{ mb: 1 }}>
+              {tables.map((table) => (
+                <Box key={table.id} sx={{ mb: 1 }}>
                   <Checkbox
-                    checked={(newGroup.tables || []).includes(table)}
+                    checked={newGroup.tableIds?.includes(table.id)}
                     onChange={(e) => {
-                      const updatedTables = e.target.checked
-                        ? [...(newGroup.tables || []), table]
-                        : (newGroup.tables || []).filter((t) => t !== table);
-                      setNewGroup({ ...newGroup, tables: updatedTables });
-                      // Clear error when user selects tables
-                      if (formErrors.tables) {
-                        setFormErrors(prev => ({ ...prev, tables: undefined }));
-                      }
+                      const updatedTableIds = e.target.checked
+                        ? [...(newGroup.tableIds || []), table.id]
+                        : (newGroup.tableIds || []).filter((id) => id !== table.id);
+                      setNewGroup({ ...newGroup, tableIds: updatedTableIds });
                     }}
-                    disabled={newGroup.tables === null}
+                    disabled={newGroup.tableIds?.length === 0}
                   />
-                  <Typography component="span">{table}</Typography>
+                  <Typography component="span">{table.tableIdentifier}</Typography>
                 </Box>
               ))}
-              {formErrors.tables && (
-                <Typography 
-                  variant="caption" 
-                  color="error" 
-                  sx={{ display: 'block', mt: 1 }}
-                >
-                  {formErrors.tables}
-                </Typography>
-              )}
             </Paper>
           </Box>
 
-          <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Group Members
-            </Typography>
-            <Autocomplete
-              multiple
-              freeSolo
-              value={newGroup.members || []}
-              onChange={(_, newValue) => {
-                setNewGroup(prev => ({
-                  ...prev,
-                  members: newValue.filter((item): item is User => typeof item !== 'string')
-                }));
-              }}
-              inputValue={inputValue}
-              onInputChange={(_, newInputValue) => {
-                setInputValue(newInputValue);
-              }}
-              onKeyDown={async (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  if (inputValue.trim()) {
-                    const success = await validateAndAddUser(inputValue.trim());
-                    if (success) {
-                      setInputValue('');
+          {selectedGroup && (
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Group Members
+              </Typography>
+              <TextField
+                fullWidth
+                placeholder="Type username and press Enter"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (inputValue.trim()) {
+                      const success = await validateAndAddUser(inputValue.trim());
+                      if (success) {
+                        setInputValue('');
+                      }
                     }
                   }
-                }
-              }}
-              options={[]}
-              getOptionLabel={(option) => {
-                if (typeof option === 'string') return option;
-                return option.name;
-              }}
-              renderTags={(value, getTagProps) =>
-                value.map((option, index) => (
+                }}
+                error={!!inputError}
+                helperText={inputError}
+                disabled={isProcessing}
+              />
+              <Box sx={{ mt: 2 }}>
+                {/* Show original members that haven't been removed */}
+                {newGroup.members?.filter(member => 
+                  !memberChanges.removed.some(m => m.id === member.id)
+                ).map((member) => (
                   <Chip
-                    label={typeof option === 'string' ? option : option.name}
-                    {...getTagProps({ index })}
-                    key={typeof option === 'string' ? option : option.id}
+                    key={member.id}
+                    label={member.username}
+                    onDelete={() => handleRemoveMember(member)}
+                    sx={{ m: 0.5 }}
                   />
-                ))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  placeholder="Type username and press Enter"
-                  error={!!inputError}
-                  helperText={inputError}
-                  disabled={isProcessing}
-                />
-              )}
-            />
-          </Box>
+                ))}
+                {/* Show newly added members */}
+                {memberChanges.added.map((member) => (
+                  <Chip
+                    key={member.id}
+                    label={member.username}
+                    onDelete={() => handleRemoveMember(member)}
+                    color="primary"
+                    sx={{ m: 0.5 }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          )}
         </Stack>
       </DialogContent>
       
@@ -374,55 +396,82 @@ const GroupDialog = ({
 };
 
 export default function GroupManagement({ sourceId, tables = [], onGroupsChange }: GroupManagementProps) {
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [groups, setGroups] = useState<BasicGroup[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   // Refs for cursor optimization
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const descriptionInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Load groups
+  // Load basic group list
   const loadGroups = useCallback(async () => {
     try {
-      const response = await axiosInstance.get(endpoints.dataSource.groups.base(sourceId));
-      setGroups(response.data);
+      const response = await axios.get(endpoints.dataSource.groups.base(sourceId));
+      setGroups(response.data.map((group: Group) => ({ id: group.id, name: group.name })));
     } catch (error) {
       console.error('Error loading groups:', error);
     }
   }, [sourceId]);
 
+  // Load group details
+  const loadGroupDetails = async (groupId: number) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(endpoints.dataSource.groups.details(groupId.toString()));
+      console.log(response);
+      setSelectedGroup(response.data);
+      setOpenDialog(true);
+    } catch (error) {
+      console.error('Error loading group details:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Create/Update group
-  const handleSaveGroup = async (group: Partial<Group>) => {
+  const handleSaveGroup = async (group: GroupUpdateData) => {
     try {
       const isNew = !group.id;
-      const url = isNew
-        ? endpoints.dataSource.groups.base(sourceId)
-        : endpoints.dataSource.groups.details(sourceId, group.id!);
-      
-      const response = await axiosInstance({
-        url,
-        method: isNew ? 'POST' : 'PUT',
-        data: group,
-      });
+      const { memberChanges, ...groupData } = group;
 
-      if (response.data) {
-        await loadGroups();
-        onGroupsChange();
-        setOpenDialog(false);
+      const response = isNew
+        ? await axios.post(endpoints.dataSource.groups.base(sourceId), groupData)
+        : await axios.put(endpoints.dataSource.groups.update(sourceId, group.id!.toString()), {
+            ...groupData
+          });
+
+      // Handle member changes only if there are actual changes
+      if (memberChanges?.removed && memberChanges.removed.length > 0) {
+        await axios.delete(endpoints.dataSource.groups.members.delete(sourceId, group.id!.toString()), {
+          data: {
+            usernames: memberChanges.removed
+          }
+        });
       }
+      if (memberChanges?.added && memberChanges.added.length > 0) {
+        await axios.post(endpoints.dataSource.groups.members.base(sourceId, group.id!.toString()), {
+          usernames: memberChanges.added
+        });
+      }
+
+      console.log(response);
+
+      await loadGroups();
+      onGroupsChange();
+      setOpenDialog(false);
     } catch (error) {
       console.error('Error saving group:', error);
     }
   };
 
   // Delete group
-  const handleDeleteGroup = async (groupId: string) => {
+  const handleDeleteGroup = async (groupId: number) => {
     try {
-      await axiosInstance.delete(endpoints.dataSource.groups.details(sourceId, groupId));
+      await axios.delete(endpoints.dataSource.groups.details(groupId.toString()));
       await loadGroups();
       onGroupsChange();
     } catch (error) {
@@ -489,51 +538,31 @@ export default function GroupManagement({ sourceId, tables = [], onGroupsChange 
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Name</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Tables</TableCell>
-                <TableCell>Members</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {(groups || [])
+              {groups
                 .filter((group) =>
                   group.name.toLowerCase().includes((debouncedSearch || '').toLowerCase())
                 )
                 .map((group) => (
                   <TableRow key={group.id}>
+                    <TableCell>{group.id}</TableCell>
                     <TableCell>{group.name}</TableCell>
-                    <TableCell>{group.description}</TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={1}>
-                        <Chip
-                          size="small"
-                          label={`${(group.tables || []).length} tables`}
-                        />
-                      </Stack>
-                    </TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={1}>
-                        <Chip
-                          size="small"
-                          label={`${(group.members || []).length} members`}
-                        />
-                      </Stack>
-                    </TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={1} justifyContent="flex-end">
-                        <Tooltip title="Edit">
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setSelectedGroup(group);
-                              setOpenDialog(true);
-                            }}
-                          >
-                            <Iconify icon="eva:edit-fill" />
-                          </IconButton>
-                        </Tooltip>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => loadGroupDetails(group.id)}
+                          disabled={isLoading}
+                          startIcon={<Iconify icon="eva:eye-fill" />}
+                        >
+                          View Details
+                        </Button>
                         <Tooltip title="Delete">
                           <IconButton
                             size="small"
@@ -552,14 +581,13 @@ export default function GroupManagement({ sourceId, tables = [], onGroupsChange 
         </TableContainer>
       </Stack>
 
-      <GroupDialog 
+      <GroupDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         selectedGroup={selectedGroup}
         onSave={handleSaveGroup}
         tables={tables}
         nameInputRef={nameInputRef}
-        descriptionInputRef={descriptionInputRef}
       />
     </StyledCard>
   );

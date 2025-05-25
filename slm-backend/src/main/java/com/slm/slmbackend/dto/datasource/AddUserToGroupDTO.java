@@ -5,5 +5,5 @@ import lombok.Data;
 import java.util.List;
 @Data
 public class AddUserToGroupDTO {
-    private List<Integer> userIds;
+    private List<String> usernames;
 }

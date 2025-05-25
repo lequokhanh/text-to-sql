@@ -166,7 +166,7 @@ export function useChatSessions() {
     const currentDataSourceId = activeSession?.dataSourceId;
     
     try {
-      const response = await axiosInstance.get(endpoints.chat.sessions);
+      const response = await axiosInstance.get(endpoints.chat.sessions(dataSourceId));
       
       // API returns a nested structure with data array
       const sessionsData = response.data || [];

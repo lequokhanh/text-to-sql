@@ -37,7 +37,7 @@ export const endpoints = {
   chat: {
     session: '/api/v1/chat/session',
     ask: '/api/v1/chat/ask',
-    sessions: '/api/v1/chat/sessions',
+    sessions: (dataSourceId: string) => `/api/v1/chat/sessions/${dataSourceId}`,
     messages: (sessionId: string) => `/api/v1/chat/sessions/${sessionId}/messages`,
   },
   kanban: '/api/kanban',
@@ -58,12 +58,17 @@ export const endpoints = {
     shared: '/api/v1/data-sources/available',
     available: '/api/v1/data-sources/available',
     testConnection: (id: string) => `/api/v1/data-sources/${id}/test-connection`,
+    owners: {
+      list: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/owners`,
+      create: (dataSourceId: string, username: string) => `/api/v1/data-sources/${dataSourceId}/owners/${username}`,
+      delete: (dataSourceId: string, ownerId: string) => `/api/v1/data-sources/${dataSourceId}/owners/${ownerId}`,
+    },
     groups: {
       base: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/groups`,
       list: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/groups`,
       create: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/groups`,
-      details: (dataSourceId: string, groupId: string) => 
-        `/api/v1/data-sources/${dataSourceId}/groups/${groupId}`,
+      details: (groupId: string) => 
+        `/api/v1/data-sources/groups/${groupId}`,
       update: (dataSourceId: string, groupId: string) => 
         `/api/v1/data-sources/${dataSourceId}/groups/${groupId}`,
       delete: (dataSourceId: string, groupId: string) => 
@@ -71,11 +76,12 @@ export const endpoints = {
       members: {
         base: (dataSourceId: string, groupId: string) => 
           `/api/v1/data-sources/${dataSourceId}/groups/${groupId}/members`,
-        delete: (dataSourceId: string, groupId: string, userId: string) => 
-          `/api/v1/data-sources/${dataSourceId}/groups/${groupId}/members/${userId}`,
+        delete: (dataSourceId: string, groupId: string) => 
+          `/api/v1/data-sources/${dataSourceId}/groups/${groupId}/members`,
       },
     },
     tables: {
+      updateBatch: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/tables/batch`,
       base: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/tables`,
       list: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/tables`,
       create: (dataSourceId: string) => `/api/v1/data-sources/${dataSourceId}/tables`,
@@ -112,5 +118,8 @@ export const endpoints = {
   embed: {
     testConnection: `/api/proxy/embed/api/v1/db/test-connection`,
     connect: `/api/proxy/embed/api/v1/db/get-schema`,
+  },
+  engine: {
+    schemaEnrichment: '/api/proxy/engine/schema-enrichment-lite',
   },
 };

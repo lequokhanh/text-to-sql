@@ -63,7 +63,7 @@ public class DataSourceConfigurationController {
     @GetMapping("/{id}")
     public ResponseWrapper<DataSourceConfigurationDetailDTO> getDataSourceById(
             @Parameter(description = "ID of the data source") @PathVariable Integer id) {
-        return ResponseWrapper.success(dataSourceConfigurationService.getDataSourceConfigurationById(getAuthenticatedUser(), id));
+        return ResponseWrapper.success(dataSourceConfigurationService.getDataSourceConfigurationById(getAuthenticatedUser(), id, false));
     }
 
     @Operation(summary = "Update data source", 
@@ -198,6 +198,28 @@ public class DataSourceConfigurationController {
         return ResponseWrapper.success();
     }
 
+    @Operation(summary = "Add owner to data source",
+            description = "Adds an owner to a data source")
+    @ApiResponse(responseCode = "200", description = "Owner added successfully")
+    @PostMapping("/{id}/owners/{username}")
+    public ResponseWrapper<Void> addOwnerToDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id,
+            @Parameter(description = "Username of the owner") @PathVariable String username) {
+        dataSourceConfigurationService.addOwnerToDataSource(getAuthenticatedUser(), id, username);
+        return ResponseWrapper.success();
+    }
+
+    @Operation(summary = "Remove owner from data source",
+            description = "Removes an owner from a data source")
+    @ApiResponse(responseCode = "200", description = "Owner removed successfully")
+    @DeleteMapping("/{id}/owners/{ownerId}")
+    public ResponseWrapper<Void> removeOwnerFromDataSource(
+            @Parameter(description = "ID of the data source") @PathVariable Integer id,
+            @Parameter(description = "ID of the owner") @PathVariable Integer ownerId) {
+        dataSourceConfigurationService.removeOwnerFromDataSource(getAuthenticatedUser(), id, ownerId);
+        return ResponseWrapper.success();
+    }
+
     @Operation(summary = "Get all owners of a data source",
             description = "Retrieves all users who own a specific data source")
     @ApiResponse(responseCode = "200", description = "List of owners retrieved successfully")
@@ -274,12 +296,12 @@ public class DataSourceConfigurationController {
     @Operation(summary = "Remove user from group",
             description = "Removes a user from a group")
     @ApiResponse(responseCode = "200", description = "User removed from group successfully")
-    @DeleteMapping("/{id}/groups/{groupId}/members/{userId}")
+    @DeleteMapping("/{id}/groups/{groupId}/members")
     public ResponseWrapper<Void> removeUserFromGroup(
             @Parameter(description = "ID of the data source") @PathVariable Integer id,
             @Parameter(description = "ID of the group") @PathVariable Integer groupId,
-            @Parameter(description = "ID of the user") @PathVariable Integer userId) {
-        dataSourceConfigurationService.removeUserFromGroup(getAuthenticatedUser(), id, groupId, userId);
+            @Valid @RequestBody RemoveUserFromGroupDTO userDTO) {
+        dataSourceConfigurationService.removeUserFromGroup(getAuthenticatedUser(), id, groupId, userDTO);
         return ResponseWrapper.success();
     }
 
@@ -295,11 +317,11 @@ public class DataSourceConfigurationController {
     @Operation(summary = "Update multiple columns",
             description = "Updates multiple columns in a data source in a single request")
     @ApiResponse(responseCode = "200", description = "Columns updated successfully")
-    @PutMapping("/{id}/columns/batch")
+    @PutMapping("/{id}/tables/batch")
     public ResponseWrapper<Void> updateMultipleColumns(
             @Parameter(description = "ID of the data source") @PathVariable Integer id,
-            @Valid @RequestBody UpdateColumnsDTO updateColumnsDTO) {
-        dataSourceConfigurationService.updateMultipleColumns(getAuthenticatedUser(), id, updateColumnsDTO);
+            @Valid @RequestBody UpdateTablesDTO updateColumnsDTO) {
+        dataSourceConfigurationService.updateMultipleTables(getAuthenticatedUser(), id, updateColumnsDTO);
         return ResponseWrapper.success();
     }
     

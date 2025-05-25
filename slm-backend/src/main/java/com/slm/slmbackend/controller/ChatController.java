@@ -43,9 +43,10 @@ public class ChatController {
     @Operation(summary = "Get all chat sessions", 
                description = "Retrieves all chat sessions for the authenticated user")
     @ApiResponse(responseCode = "200", description = "List of chat sessions retrieved successfully")
-    @GetMapping("/sessions")
-    public ResponseWrapper<List<ChatSessionDTO>> getAllChatSessions() {
-        return ResponseWrapper.success(chatService.getAllChatSessions(getAuthenticatedUser()));
+    @GetMapping("/sessions/{dataSourceId}")
+    public ResponseWrapper<List<ChatSessionDTO>> getAllChatSessions(
+            @Parameter(description = "ID of the data source") @PathVariable Integer dataSourceId) {
+        return ResponseWrapper.success(chatService.getAllChatSessions(getAuthenticatedUser(), dataSourceId));
     }
 
     @Operation(summary = "Get chat session messages", 
