@@ -45,6 +45,10 @@ public class DataSourceConfiguration {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "data_source_id")
     private List<TableDefinition> tableDefinitions = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "data_source")
+    private List<ChatSession> chatSessions;
 }
 
 

@@ -37,7 +37,7 @@ import { DatabaseSource, ColumnRelation, TableDefinition, ColumnDefinition } fro
 // Constants for layout
 const MAIN_SIDEBAR_WIDTH = 80; // Width of the main sidebar
 const CHAT_SIDEBAR_WIDTH = { xs: 280, sm: 320 }; // Width of the chat sidebar
-const HEADER_HEIGHT = 80; // Height of the header
+const HEADER_HEIGHT = 104; // Height of the header with equal top and bottom padding
 
 const DATABASE_ICONS = {
   POSTGRESQL: 'logos:postgresql',
@@ -51,7 +51,7 @@ const HeaderContainer = styled(Paper)(({ theme }) => ({
   left: MAIN_SIDEBAR_WIDTH, // Offset by the main sidebar width
   right: 0,
   zIndex: 1100, // Below main sidebar but above other content
-  padding: theme.spacing(3),
+  padding: theme.spacing(4), // Equal padding all around
   borderRadius: 0,
   backgroundColor: alpha(theme.palette.background.default, 0.9),
   backdropFilter: 'blur(20px)',

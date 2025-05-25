@@ -24,7 +24,7 @@ public class ChatSession {
     @JoinColumn(name = "user")
     private UserAccount user;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "conversation_id")
     private List<ChatMessage> messages;
 }
