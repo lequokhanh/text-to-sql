@@ -5,9 +5,10 @@ def create_api_models(api):
     """Create and return Flask-RESTX models for API documentation"""
     
     connection_payload_model = api.model('ConnectionPayload', {
-        'url': fields.String(required=True, description='Database host'),
-        'username': fields.String(required=True, description='Database username'),
-        'password': fields.String(required=True, description='Database password'),
+        'url': fields.String(required=False, description='Database host (required for postgresql, mysql)'),
+        'username': fields.String(required=False, description='Database username (required for postgresql, mysql)'),
+        'password': fields.String(required=False, description='Database password (required for postgresql, mysql)'),
+        'file': fields.String(required=False, description='Base64 encoded SQLite file (required for sqlite file upload)'),
         'dbType': fields.String(required=True, description='Database type (postgresql, mysql, sqlite)'),
         'schema_enrich_info': fields.Raw(required=False, description='Schema enrichment information')
     })

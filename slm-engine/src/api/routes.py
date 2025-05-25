@@ -357,6 +357,125 @@ def initialize_routes(api, api_models, workflows):
                     )
                 raise AppException(str(e), 500)
 
+    @api.route('/schema-enrichment-lite')
+    class SchemaEnrichmentLite(Resource):
+        @api.expect(schema_enrich_request_model)
+        @api.doc('schema_enrichment_lite',
+            responses={
+                200: 'Success',
+                400: 'Bad Request - Missing or invalid parameters',
+                500: 'Internal Server Error'
+            }
+        )
+        @async_route
+        async def post(self):
+            """Enrich database schema with additional information (lite version)"""
+            logger.info("Received request to /schema-enrichment-lite endpoint")
+            try:
+                data = request.json
+                connection_payload = data.get("connection_payload")
+                
+                # Create a Langfuse trace for schema enrichment lite
+                trace = observability_service.langfuse.trace(
+                    name="schema_enrichment_lite",
+                    user_id=connection_payload.get("username", "unknown"),
+                    metadata={
+                        "db_type": connection_payload.get("dbType", "unknown")
+                    }
+                )
+
+                if not connection_payload:
+                    logger.warning("Missing required parameters in request")
+                    trace.update(
+                        status="failed",
+                        metadata={"error": "Missing 'connection_payload'"}
+                    )
+                    return jsonify({"error": "Missing 'connection_payload'"}), 400
+                
+                is_valid, error_message = validate_connection_payload(connection_payload)
+                if not is_valid:
+                    logger.warning(f"Invalid connection payload: {error_message}")
+                    trace.update(
+                        status="failed",
+                        metadata={"error": error_message}
+                    )
+                    return jsonify({"error": error_message}), 400
+                
+                # Create a span for schema retrieval
+                schema_span = observability_service.langfuse.span(
+                    name="schema_retrieval",
+                    parent_id=trace.id
+                )
+                
+                logger.info("Retrieving database schema...")
+                table_details = get_schema(connection_payload)
+                
+                schema_span.update(
+                    metadata={
+                        "table_count": len(table_details)
+                    }
+                )
+                
+                logger.info(f"Retrieved schema with {len(table_details)} tables")
+
+                # Trace the enrichment workflow using LlamaIndex instrumentor
+                logger.info("Executing workflow")
+                with observability_service.llama_index_instrumentor.observe(trace_id=trace.id):
+                    response = await schema_workflow.run(
+                        connection_payload=connection_payload,
+                        database_schema=table_details
+                    )
+                
+                # Transform the response to lite format
+                lite_response = {
+                    "database_description": response.get("database_description", ""),
+                    "tables": []
+                }
+                
+                # Extract enriched schema and transform to lite format
+                enriched_schema = response.get("enriched_schema", [])
+                for table in enriched_schema:
+                    lite_table = {
+                        "tableIdentifier": table.get("tableIdentifier", ""),
+                        "tableDescription": table.get("tableDescription", ""),
+                        "columns": []
+                    }
+                    
+                    # Transform columns to lite format
+                    for column in table.get("columns", []):
+                        lite_column = {
+                            "columnIdentifier": column.get("columnIdentifier", ""),
+                            "columnDescription": column.get("columnDescription", "")
+                        }
+                        lite_table["columns"].append(lite_column)
+                    
+                    lite_response["tables"].append(lite_table)
+                
+                # Update trace with enrichment results
+                if lite_response:
+                    trace.update(
+                        status="success",
+                        metadata={
+                            "data": lite_response
+                        }
+                    )
+                else:
+                    trace.update(
+                        status="failed",
+                        metadata={"error": "Failed to enrich schema"}
+                    )
+                
+                return ResponseWrapper.success(lite_response)
+
+            except Exception as e:
+                logger.error(f"Error processing schema enrichment lite: {str(e)}", exc_info=True)
+                if 'trace' in locals():
+                    trace.update(
+                        status="failed",
+                        metadata={"error": str(e)}
+                    )
+                raise AppException(str(e), 500)
+
     @api.route('/settings')
     class Settings(Resource):
         @api.doc('get_settings',
