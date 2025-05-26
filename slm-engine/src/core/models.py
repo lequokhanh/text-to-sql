@@ -1,6 +1,10 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
+
+class TranslatedQuery(BaseModel):
+    translated_query: str = Field(..., description="The translated question in English")
+
 class ListOfRelevantTables(BaseModel):
     relevant_tables: List[str] = Field(..., description="The list of ***ALL POTENTIALLY RELEVANT*** tables to use in the SQL query")
 

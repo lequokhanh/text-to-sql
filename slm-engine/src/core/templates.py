@@ -9,6 +9,7 @@ SCHEMA_ENRICHMENT_SKELETON = (
     "1. Analyze each table and column's semantic purpose\n"
     "2. Use brief and clear semantic descriptions for each table and column\n"
     "3. Format as JSON exactly as shown below\n\n"
+    "4. If adding sample data to the description to clarify the meaning of the column, make sure it is relevant to the existing values in the column\n"
     "### Response Format:\n"
     "Return only the JSON output with no additional text."
 )
@@ -75,6 +76,17 @@ TABLE_RETRIEVAL_SKELETON = (
     "Return only the Python list with no additional text."
 )
 
+QUERY_REFINEMENT_SKELETON = (
+    "Translate the user's question from its original language to English without altering its original meaning. If—and only if—the translated question directly relates to the provided database schema for a Text-to-SQL task, refine the translation slightly to match the schema clearly and concisely. Do not introduce any additional details or modifications unrelated to the user's original intent.\n\n"
+    "### User question: {user_question}\n"
+    "### Database schema: {database_schema}\n"
+    "### Rules:\n"
+    "1. Translate the user's question from its original language to English without altering its original meaning.\n"
+    "2. If—and only if—the translated question directly relates to the provided database schema for a Text-to-SQL task, refine the translation slightly to match the schema clearly and concisely. Do not introduce any additional details or modifications unrelated to the user's original intent.\n"
+    "### Response Format:\n"
+    "Return only the rewritten English question with no additional text."
+)
+
 SQL_ERROR_REFLECTION_SKELETON = (
     "You are a {dialect} SQL expert. Reflect on the given SQL query and error message to determine the cause of the error and suggest a possible solution.\n\n"
     "# User query: {user_query}\n"
@@ -127,7 +139,7 @@ QUESTION_SUGGESTION_SKELETON = (
     "   - Provide valuable business insights that related to the tables provided\n"
     "   - Question MUST BE short (less than 9 words) and concise\n"
     "   - Require joining multiple tables\n"
-    "   - Involve aggregations, grouping, or analytical operations\n"
+    "   - Involve aggregations, grouping, or analytical operations. Restrict filter-related questions (WHERE clause).\n"
     "   - Cover different aspects of the database\n"
     "   - Are specific rather than general\n"
     "   - Make sure the questions can be answered using SQL queries against the database and have few rows in the result\n"

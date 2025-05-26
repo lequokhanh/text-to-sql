@@ -21,6 +21,7 @@ from core.events import (
 from core.models import (
     ListOfRelevantTables,
     SQLQuery,
+    TranslatedQuery
 )
 from core.services import execute_sql, llm_chat, llm_chat_with_pydantic, get_sample_data_improved   
 from response.log_manager import (
@@ -98,11 +99,24 @@ class SQLAgentWorkflow(Workflow):
         database_description = await context.get("database_description")
 
         # Load the table retrieval template from configuration
-        from core.templates import TABLE_RETRIEVAL_SKELETON
+        from core.templates import TABLE_RETRIEVAL_SKELETON, QUERY_REFINEMENT_SKELETON
         schema = schema_parser(table_details, "Simple", include_sample_data=False)
+
+        # Translate the user's question to English
+        translated_query = llm_chat_with_pydantic(
+            llm=self.llm,
+            prompt=PromptTemplate(QUERY_REFINEMENT_SKELETON.format(
+                user_question=ev.query,
+                database_schema=schema
+            )),
+            pydantic_model=TranslatedQuery
+        )
+
+        log_success("RETRIEVE", f"Translated query: {translated_query.translated_query}")   
+
         TABLE_RETRIEVAL_PROMPT = TABLE_RETRIEVAL_SKELETON.format(
             database_description=database_description,
-            query=ev.query,
+            query=translated_query.translated_query,
             schema=schema
         )
         
