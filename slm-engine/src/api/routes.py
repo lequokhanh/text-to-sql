@@ -61,7 +61,10 @@ def initialize_routes(api, api_models, workflows):
                 connection_payload = data.get("connection_payload")
                 logger.info(f"Processing query: {query}")
                 session_information = data.get("session_information")
-                schema = connection_payload.get("schema_enrich_info")
+                schema = connection_payload.get("schema_enrich_info")["enrich_schema"]
+
+                list_available_tables = [table["tableIdentifier"] for table in schema]
+                logger.info(f"Available tables: {list_available_tables}")
                 
                 # Create a Langfuse trace for this query
                 trace = observability_service.langfuse.trace(
@@ -111,8 +114,9 @@ def initialize_routes(api, api_models, workflows):
                     table_details, database_description = enrich_schema_with_info(table_details, connection_payload)
                     logger.info(f"Retrieved schema with {len(table_details)} tables")
 
-                table_details = table_details
-                
+                # Filter tables that are not in the list of available tables
+                table_details = [table for table in table_details if table["tableIdentifier"] in list_available_tables]
+                logger.info(f"Filtered tables: {table_details}")
                 schema_span.update(
                     metadata={
                         "table_count": len(table_details),

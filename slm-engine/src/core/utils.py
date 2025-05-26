@@ -859,7 +859,7 @@ def enrich_schema_with_info(table_details: list, connection_payload: dict):
             
             # Add database description to response data if available
             if "database_description" in schema_enrich_info['enrich_schema']:
-                database_description = schema_enrich_info['enrich_schema']['database_description']
+                database_description = schema_enrich_info['database_description']
                 logger.info(f"Database description: {database_description}")
             
             for table in table_details:

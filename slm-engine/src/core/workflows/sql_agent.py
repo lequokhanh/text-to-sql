@@ -134,7 +134,7 @@ class SQLAgentWorkflow(Workflow):
 
         if len(relevant_tables) == 0:
             log_error("RETRIEVE", "No relevant tables found")
-            return StopEvent(result="Please ask a question that only references tables in the schema.")
+            return StopEvent(result="Cannot find any relevant tables in the database. Please try again with a different question.")
 
         log_llm_operation("RETRIEVE", "LLM response", llm_start_time, chat_response)
         
@@ -201,7 +201,7 @@ class SQLAgentWorkflow(Workflow):
 
         if "SELECT" not in sql_query.upper():
             log_error("GENERATE", "SQL query does not contain a SELECT statement")
-            return StopEvent(result="Please ask a question that only references tables in the schema.")
+            return StopEvent(result="Cannot find any relevant tables in the database. Please try again with a different question.")
         
         log_success("GENERATE", "Extracted SQL query: " + sql_query)
         
@@ -237,7 +237,7 @@ class SQLAgentWorkflow(Workflow):
         
         if not table_validation:
             log_error("VALIDATE", "SQL references tables not in provided schema")
-            return StopEvent(result="Please ask a question that only references tables in the schema.")
+            return StopEvent(result="Cannot find any relevant tables in the database. Please try again with a different question.")
 
         if not is_valid_sql:
             log_error("VALIDATE", f"Invalid SQL query: {error}")
