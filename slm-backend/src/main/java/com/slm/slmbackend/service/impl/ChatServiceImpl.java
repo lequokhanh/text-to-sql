@@ -71,6 +71,7 @@ public class ChatServiceImpl implements ChatService {
                 }
             } else {
                 ChatSession newSession = new ChatSession();
+                newSession.setConversationName(request.getQuestion());
                 newSession.setUser(user);
                 newSession.setDataSource(dataSourceConfigurationRepository.findById(request.getDataSourceId())
                         .orElseThrow(() -> new AppException(ResponseEnum.DATA_SOURCE_CONFIGURATION_NOT_FOUND)));
