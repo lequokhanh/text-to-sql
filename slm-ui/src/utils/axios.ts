@@ -35,6 +35,7 @@ export const fetcher = async (args: string | [string, AxiosRequestConfig]) => {
 
 export const endpoints = {
   chat: {
+    suggestions: (dataSourceId: string) => `/api/v1/chat/suggestions/${dataSourceId}`,
     session: '/api/v1/chat/session',
     ask: '/api/v1/chat/ask',
     sessions: (dataSourceId: string) => `/api/v1/chat/sessions/${dataSourceId}`,

@@ -16,4 +16,6 @@ public interface ChatService {
     List<ChatSessionDTO> getAllChatSessions(UserAccount user, Integer dataSourceId);
 
     List<ChatMessageDTO> getChatSessionMessages(UserAccount user, Integer sessionId);
+
+    List<String> getSuggestions(UserAccount user, Integer dataSourceId);
 } 

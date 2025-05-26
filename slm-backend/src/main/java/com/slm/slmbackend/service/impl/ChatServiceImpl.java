@@ -38,6 +38,7 @@ public class ChatServiceImpl implements ChatService {
     private static final String URL_FORMAT = "%s:%s/%s";
     private static final String ENGINE_QUERY_ENDPOINT = "/query";
     private static final String EMBED_QUERY_ENDPOINT = "/api/v1/db/query";
+    private static final String ENGINE_SUGGESTIONS_ENDPOINT = "/suggest-questions";
     private static final String SUCCESS_CODE = "0";
 
     private final ChatSessionRepository chatSessionRepository;
@@ -50,11 +51,6 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public BotResponseDTO askQuestion(UserAccount user, AskQuestionRequestDTO request) {
-        // Validate user and request
-        if (user == null) {
-            throw new AppException(ResponseEnum.UNAUTHORIZED);
-        }
-
         if (request == null || request.getDataSourceId() == null) {
             throw new AppException(ResponseEnum.INVALID_REQUEST);
         }
@@ -297,6 +293,54 @@ public class ChatServiceImpl implements ChatService {
     private void validateChatSessionOwnership(ChatSession chatSession, UserAccount user) {
         if (!Objects.equals(chatSession.getUser().getId(), user.getId())) {
             throw new AppException(ResponseEnum.CHAT_SESSION_NOT_BELONG_TO_USER);
+        }
+    }
+
+    @Override
+    public List<String> getSuggestions(UserAccount user, Integer dataSourceId) {
+        try {
+            DataSourceConfigurationDetailDTO dataSource = dataSourceConfigurationService.getDataSourceConfigurationById(user, dataSourceId, false);
+            Map<String, Object> request = new HashMap<>();
+            request.put("tables", dataSource.getTableDefinitions().stream().limit(4).toList());
+            request.put("top_k", 4);
+
+            return engineService.proxyRequest(ENGINE_SUGGESTIONS_ENDPOINT, request)
+                    .map(response -> {
+                        try {
+                            JsonNode responseNode = mapper.readTree(response);
+                            String code = responseNode.get("code").asText();
+                            boolean isSuccess = SUCCESS_CODE.equals(code);
+                            
+                            if (!isSuccess) {
+                                throw new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, 
+                                    "Error getting suggestions: " + responseNode.get("message").asText());
+                            }
+
+                            List<String> suggestions = new ArrayList<>();
+                            JsonNode suggestionsNode = responseNode.get("data").get("suggestions");
+                            for (JsonNode suggestion : suggestionsNode) {
+                                suggestions.add(suggestion.get("question").asText());
+                            }
+                            return suggestions;
+                        } catch (Exception e) {
+                            log.error("Error processing suggestions response: {}", e.getMessage());
+                            throw new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, 
+                                "Error processing suggestions: " + e.getMessage());
+                        }
+                    })
+                    .onErrorMap(error -> {
+                        log.error("Error getting suggestions: {}", error.getMessage());
+                        return new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, 
+                            "Error getting suggestions: " + error.getMessage());
+                    })
+                    .block();
+        } catch (Exception e) {
+            log.error("Error in getSuggestions: {}", e.getMessage());
+            if (e instanceof AppException) {
+                throw (AppException) e;
+            }
+            throw new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, 
+                "Error getting suggestions: " + e.getMessage());
         }
     }
 }

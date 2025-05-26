@@ -243,12 +243,25 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
     setActiveSession,
   } = useChatSessions();
 
-  const [suggestions] = useState([
-    'Show me all users from last month',
-    'What are the top 5 products by sales?',
-    'Count total orders by status',
-    'Find revenue for this quarter',
-  ]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedSource) {
+      const fetchSuggestions = async () => {
+        setIsSuggestionsLoading(true);
+        try {
+          const response = await axiosInstance.get(endpoints.chat.suggestions(selectedSource.id));
+          setSuggestions(response.data);
+        } catch (err) {
+          console.error('Error fetching suggestions:', err);
+        } finally {
+          setIsSuggestionsLoading(false);
+        }
+      };
+      fetchSuggestions();
+    }
+  }, [selectedSource]);
 
   const scrollToBottom = useCallback(() => {
     // Direct method: force scroll to the maximum possible value
@@ -716,17 +729,33 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
                 Try these examples:
               </Typography>
               <Stack direction="row" flexWrap="wrap" gap={1} justifyContent="center">
-                {suggestions.map((suggestion, index) => (
-                  <SuggestionChip
-                    key={index}
-                    variant="outlined"
-                    size="small"
-                    onClick={() => handleSendMessage(suggestion)}
-                    startIcon={<Iconify icon="eva:arrow-right-fill" width={16} height={16} />}
-                  >
-                    {suggestion}
-                  </SuggestionChip>
-                ))}
+                {isSuggestionsLoading ? (
+                  // Show 3 skeleton suggestions while loading
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      variant="rounded"
+                      width={120 + Math.random() * 80} // Random widths between 120-200px
+                      height={36}
+                      sx={{
+                        borderRadius: '20px',
+                        bgcolor: (t) => alpha(t.palette.primary.main, 0.04),
+                      }}
+                    />
+                  ))
+                ) : (
+                  suggestions.map((suggestion, index) => (
+                    <SuggestionChip
+                      key={index}
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleSendMessage(suggestion)}
+                      startIcon={<Iconify icon="eva:arrow-right-fill" width={16} height={16} />}
+                    >
+                      {suggestion}
+                    </SuggestionChip>
+                  ))
+                )}
               </Stack>
             </CardContent>
           </WelcomeCard>

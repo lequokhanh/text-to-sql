@@ -57,4 +57,13 @@ public class ChatController {
             @Parameter(description = "ID of the chat session") @PathVariable Integer sessionId) {
         return ResponseWrapper.success(chatService.getChatSessionMessages(getAuthenticatedUser(), sessionId));
     }
+
+    @Operation(summary = "Get suggestions", 
+               description = "Retrieves suggestions for a specific data source")
+    @ApiResponse(responseCode = "200", description = "List of suggestions retrieved successfully")
+    @GetMapping("/suggestions/{dataSourceId}")
+    public ResponseWrapper<List<String>> getSuggestions(
+            @Parameter(description = "ID of the data source") @PathVariable Integer dataSourceId) {
+        return ResponseWrapper.success(chatService.getSuggestions(getAuthenticatedUser(), dataSourceId));
+    }
 } 
