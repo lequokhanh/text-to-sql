@@ -1,50 +1,13 @@
 // File: src/sections/database-management/components/main-content/MainContent.tsx
 
-import { IChatMessage } from 'src/types/chat';
 import { DatabaseSource } from 'src/types/database';
 
-import ChatSection from '../chat/chat-section';
 import { NotOwner } from '../states/not-owner';
 import { NoSourceSelected } from '../states/no-source-selected';
 import { SelectDataSource } from '../states/select-data-source';
 import DatabaseCreateDialog from '../dialogs/database-create-dialog';
 import DataSourceManagement from '../management/data-source-management';
 import { NoConversationSelected } from '../states/no-conversation-selected';
-
-interface ChatProps {
-  source: DatabaseSource;
-  messages: IChatMessage[];
-  onSendMessage: (message: string) => void;
-  onClearChat?: () => void;
-  onExportChat?: () => void;
-  isConnected?: boolean;
-  messageCount?: number;
-  isLoading?: boolean;
-}
-
-function Chat({
-  source,
-  messages,
-  onSendMessage,
-  onClearChat,
-  onExportChat,
-  isConnected = true,
-  messageCount = 0,
-  isLoading = false,
-}: ChatProps) {
-  return (
-    <ChatSection
-      source={source}
-      messages={messages}
-      onSendMessage={onSendMessage}
-      onClearChat={onClearChat}
-      onExportChat={onExportChat}
-      messageCount={messageCount}
-      isLoading={isLoading}
-      isConnected={isConnected}
-    />
-  );
-}
 
 interface ManagementProps {
   dataSource: DatabaseSource;
@@ -68,7 +31,6 @@ function CreateDataSourceDialog({ open, onClose, onCreateSource }: CreateDataSou
 
 // Export all components together
 export const MainContent = {
-  Chat,
   Management,
   NoSourceSelected,
   NoConversationSelected,

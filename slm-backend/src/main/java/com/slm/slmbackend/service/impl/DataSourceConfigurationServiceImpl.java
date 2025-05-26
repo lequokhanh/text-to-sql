@@ -126,7 +126,10 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
         log.debug("Getting all data sources available for user: {}", user.getUsername());
 
         List<DataSourceConfiguration> configurations = dataSourceConfigurationRepository
-                .findAllDataSourceAvailableForUser(user);
+                .findAllDataSourceAvailableForUser(user).stream()
+                .filter(configuration -> !configuration.getOwners().stream()
+                        .anyMatch(owner -> owner.getId().equals(user.getId())))
+                .toList();
         return MapperUtil.mapList(configurations, DataSourceConfigurationViewDTO.class);
     }
 
@@ -181,8 +184,7 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
         List<TableDTO> tableDTOs = new ArrayList<>();
         if (configuration.getTableDefinitions() != null) {
             for (TableDefinition tableDef : configuration.getTableDefinitions()) {
-                //if user is a member, check if the table is in any of the groups, if tables in group is empty that mean all tables are allowed, if not empty, check if the table is in the group then skip
-                if (isMember && !configuration.getGroups().stream()
+                if (!isOwner && isMember && !configuration.getGroups().stream()
                         .anyMatch(group -> group.getTableMappings() != null && group.getTableMappings().stream()
                             .anyMatch(mapping -> mapping.getSchema().getId().equals(tableDef.getId())))) {
                     continue;
@@ -816,12 +818,21 @@ public class DataSourceConfigurationServiceImpl implements DataSourceConfigurati
 
     @Override
     public void removeOwnerFromDataSource(UserAccount authenticatedUser, Integer id, Integer ownerId) {
+        if (authenticatedUser.getId().equals(ownerId)) {
+            throw new AppException(ResponseEnum.CANNOT_REMOVE_OWNER_FROM_DATA_SOURCE,
+                    String.format("Cannot remove yourself as owner from data source %d", id));
+        }
         DataSourceConfiguration configuration = validateAndGetDataSource(authenticatedUser, id);
         UserAccount owner = configuration.getOwners().stream()
                 .filter(o -> o.getId().equals(ownerId))
                 .findFirst()
                 .orElseThrow(() -> new AppException(ResponseEnum.USER_NOT_FOUND,
                         String.format("User with ID %d not found", ownerId)));
+        if (configuration.getOwners().size() == 1) {
+            throw new AppException(ResponseEnum.DATA_SOURCE_MUST_HAVE_AT_LEAST_ONE_OWNER,
+                    String.format("Data source %d must have at least one owner", id));
+        }
+        
         configuration.getOwners().remove(owner);
         dataSourceConfigurationRepository.save(configuration);
     }

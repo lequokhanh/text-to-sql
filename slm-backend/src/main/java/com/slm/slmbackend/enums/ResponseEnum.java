@@ -27,7 +27,9 @@ public enum ResponseEnum {
     CHAT_SESSION_NOT_FOUND(9, "Chat session not found"),
     CHAT_SESSION_NOT_BELONG_TO_USER(10, "Chat session does not belong to user"),
     INVALID_REQUEST(11, "Invalid request"),
-    REQUEST_TIMEOUT(12, "Request timeout"),;
+    REQUEST_TIMEOUT(12, "Request timeout"),
+    CANNOT_REMOVE_OWNER_FROM_DATA_SOURCE(13, "Cannot remove yourself as owner from data source"),
+    DATA_SOURCE_MUST_HAVE_AT_LEAST_ONE_OWNER(14, "Data source must have at least one owner");
 
     private final int code;
     private final String message;

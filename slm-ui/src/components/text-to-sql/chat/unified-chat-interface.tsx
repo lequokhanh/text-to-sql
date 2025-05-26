@@ -547,7 +547,7 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
         // Create an error message
         const errorBotMessage: IChatMessage = {
           id: `msg-${Date.now() + 1}`,
-          body: `Error: ${sessionErr instanceof Error ? sessionErr.message : 'Failed to create chat session'}`,
+          body: `## Error\n\n${sessionErr ?? 'Failed to create chat session'}`,
           contentType: 'text',
           createdAt: new Date(),
           senderId: 'bot',
@@ -584,7 +584,7 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
       // Create a bot error message instead of showing an alert
       const errorBotMessage: IChatMessage = {
         id: `msg-${Date.now() + 1}`,
-        body: `Error: ${errorMsg}`,
+        body: `## Error\n\n${errorMsg}`,
         contentType: 'text',
         createdAt: new Date(),
         senderId: 'bot',
