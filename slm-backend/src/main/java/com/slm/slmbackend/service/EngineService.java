@@ -20,4 +20,13 @@ public class EngineService {
                 .retrieve()
                 .bodyToMono(String.class);
     }
+
+    public String sendSynchronousRequest(String path, Object requestBody) {
+        return webClient.post()
+                .uri(path)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+    }
 } 
