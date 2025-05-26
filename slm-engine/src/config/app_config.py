@@ -30,7 +30,7 @@ class AppConfig:
         
         # Default values for settings
         self.PROMPT_ROUTING = int(os.getenv("PROMPT_ROUTING", 1))
-        self.ENRICH_SCHEMA = os.getenv("ENRICH_SCHEMA", "True").lower() in ["true", "1", "yes", "y"]
+        self.ENRICH_SCHEMA = True
         self.PRIVACY_MODE = os.getenv("PRIVACY_MODE", "False").lower() in ["true", "1", "yes", "y"]
         
         # Langfuse configuration
