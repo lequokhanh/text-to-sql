@@ -7,6 +7,9 @@ import networkx as nx
 import community as community_louvain
 from sqlglot import parse_one, exp, transpile
 import sqlglot
+import sqlglot.expressions as exp
+from typing import Tuple, Optional, Union
+
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -702,12 +705,29 @@ def extract_sql_query(response_text):
             
         return sql
 
-def is_valid_sql_query(sql_query: str) -> tuple[bool, Exception | None]:
+def is_valid_sql_query(sql_query: str) -> Tuple[bool, Optional[Exception]]:
     try:
-        sqlglot.transpile(sql_query)
-        return True, None
+        # 1) Transpile will parse & re-generate; it raises on any syntax error
+        transpiled_stmts = sqlglot.transpile(sql_query)
     except Exception as e:
         return False, e
+
+    # 2) Must be exactly one statement
+    if len(transpiled_stmts) != 1:
+        return False, ValueError("Only a single statement is allowed.")
+
+    try:
+        # 3) Parse that one statement into an AST
+        root = sqlglot.parse_one(sql_query)
+    except Exception as e:
+        # This is unlikely if transpile passed, but just in case
+        return False, e
+
+    # 4) Enforce a SELECT root
+    if not isinstance(root, exp.Select):
+        return False, ValueError("Only SELECT queries are allowed (no DDL or INSERT/UPDATE/DELETE).")
+
+    return True, None
 
 def parse_llm_json_response(response: str) -> dict:
     """
