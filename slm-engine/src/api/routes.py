@@ -61,8 +61,11 @@ def initialize_routes(api, api_models, workflows):
                 connection_payload = data.get("connection_payload")
                 logger.info(f"Processing query: {query}")
                 session_information = data.get("session_information")
-                schema = connection_payload.get("schema_enrich_info")["enrich_schema"]
-
+                schema_enrich_info = connection_payload.get("schema_enrich_info")
+                
+                schema = []
+                if 'enrich_schema' in schema_enrich_info:
+                    schema = schema_enrich_info['enrich_schema']
                 list_available_tables = [table["tableIdentifier"] for table in schema]
                 logger.info(f"Available tables: {list_available_tables}")
                 
@@ -115,7 +118,8 @@ def initialize_routes(api, api_models, workflows):
                     logger.info(f"Retrieved schema with {len(table_details)} tables")
 
                 # Filter tables that are not in the list of available tables
-                table_details = [table for table in table_details if table["tableIdentifier"] in list_available_tables]
+                if len(list_available_tables) > 0:
+                    table_details = [table for table in table_details if table["tableIdentifier"] in list_available_tables]
                 logger.info(f"Filtered tables: {table_details}")
                 schema_span.update(
                     metadata={

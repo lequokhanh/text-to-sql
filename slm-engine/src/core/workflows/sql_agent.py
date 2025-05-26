@@ -213,11 +213,29 @@ class SQLAgentWorkflow(Workflow):
         """Validate SQL query."""
         start_time = log_step_start("VALIDATE", sql=ev.sql_query)
         retry_count = ev.retry_count
-        table_details = await context.get("table_details")
         
-        # Extract tables from the SQL query
+        # Get connection payload and determine dialect
+        connection_payload = await context.get("connection_payload")
+        dialect = connection_payload.get("dbType", "").lower()
+        available_dialects = ['mysql', 'postgres', 'sqlite']
+        for d_enums in available_dialects:
+            if d_enums in dialect:
+                dialect = d_enums
+                break
+        log_success("VALIDATE", f"Dialect: {dialect}")
+
+        # First check if the SQL query is syntactically valid
+        is_valid_sql, error = is_valid_sql_query(ev.sql_query, dialect)
+        if not is_valid_sql:
+            log_error("VALIDATE", f"Invalid SQL query: {error}")
+            retry_count += 1
+            await context.set("retry_count", retry_count)
+            return SQLReflectionEvent(sql_query=ev.sql_query, error=error, retry_count=retry_count)
+
+        # Then validate tables if SQL is valid
+        table_details = await context.get("table_details")
         log_step_start("VALIDATE", message="Extracting tables from SQL query")
-        table_sql = extract_tables_from_sql(ev.sql_query)
+        table_sql = extract_tables_from_sql(ev.sql_query, dialect)
         log_step_start("VALIDATE", tables_in_sql=json.dumps(table_sql))
         
         # Get all valid table identifiers
@@ -232,21 +250,11 @@ class SQLAgentWorkflow(Workflow):
                 table_validation = False
                 break
 
-        # Check if the SQL query is syntactically valid
-        is_valid_sql, error = is_valid_sql_query(ev.sql_query)
-        
         if not table_validation:
             log_error("VALIDATE", "SQL references tables not in provided schema")
             return StopEvent(result="Cannot find any relevant tables in the database. Please try again with a different question.")
 
-        if not is_valid_sql:
-            log_error("VALIDATE", f"Invalid SQL query: {error}")
-            retry_count += 1
-            await context.set("retry_count", retry_count)
-            return SQLReflectionEvent(sql_query=ev.sql_query, error=error, retry_count=retry_count)
-
         await context.set("retry_count", retry_count)
-
         log_success("VALIDATE", "SQL query validated successfully")
         
         log_step_end("VALIDATE", start_time)

@@ -58,7 +58,7 @@ def extract_table_list(response: ChatResponse) -> list:
 
 
 
-def extract_tables_from_sql(sql_query: str) -> list[str]:
+def extract_tables_from_sql(sql_query: str, dialect: str) -> list[str]:
     """
     Extract all table names from a SQL query, excluding tables defined in CTEs.
     
@@ -68,118 +68,8 @@ def extract_tables_from_sql(sql_query: str) -> list[str]:
     Returns:
         List[str]: List of table names referenced in the query (excluding CTE tables)
     """
-    # # Normalize whitespace and line breaks
-    # sql_query = " ".join(sql_query.split())
-    
-    # # Step 1: Identify and extract all CTE names to exclude them later
-    # cte_pattern = r"WITH\s+(?:RECURSIVE\s+)?([^(].*?)\s+AS\s*\("
-    # cte_tables = []
-    
-    # # Find CTEs at the start of the query
-    # cte_match = re.search(cte_pattern, sql_query, re.IGNORECASE)
-    # if cte_match:
-    #     cte_part = cte_match.group(1)
-    #     # Handle multiple CTEs separated by commas
-    #     cte_sections = cte_part.split(',')
-    #     for section in cte_sections:
-    #         # Extract the CTE name
-    #         cte_name_match = re.search(r"^\s*(\w+)(?:\s*\(.*?\))?\s*$", section.strip())
-    #         if cte_name_match:
-    #             cte_tables.append(cte_name_match.group(1).lower())
-    
-    # # Also handle the case of multiple CTEs defined using comma and the AS keyword
-    # cte_segments_pattern = r"WITH(?:\s+RECURSIVE)?\s+.*?(?:,\s*(\w+)\s+AS\s*\()"
-    # for cte_segment in re.finditer(cte_segments_pattern, sql_query, re.IGNORECASE):
-    #     if cte_segment.group(1):
-    #         cte_tables.append(cte_segment.group(1).lower())
-    
-    # # Step 2: Extract tables from FROM and JOIN clauses
-    # # Pattern for FROM clause - look for table names after FROM keyword
-    # from_pattern = r"FROM\s+([^\s,();]*)(?:\s+AS\s+\w+)?(?:\s*,\s*([^\s,();]*)(?:\s+AS\s+\w+)?)*"
-    
-    # # Pattern for JOIN clauses
-    # join_pattern = r"JOIN\s+([^\s,();]*)(?:\s+AS\s+\w+)?"
-    
-    # # Find all tables in FROM clauses
-    # table_names = []
-    # for match in re.finditer(from_pattern, sql_query, re.IGNORECASE):
-    #     # The first group contains the first table
-    #     if match.group(1) and match.group(1).strip():
-    #         table_name = re.sub(r'^\(|\)$', '', match.group(1).strip())
-    #         if "." in table_name:
-    #             # Extract just the table name if schema.table format is used
-    #             table_name = table_name.split('.')[-1]
-    #         table_names.append(table_name.lower())
-        
-    #     # Check if we have multiple tables in the FROM clause
-    #     rest_of_from = match.group(0)[len("FROM ") + len(match.group(1)):].strip()
-    #     if rest_of_from.startswith(','):
-    #         # Split by comma to get additional tables
-    #         additional_tables = re.findall(r',\s*([^\s,();]*)', rest_of_from)
-    #         for table in additional_tables:
-    #             if table and table.strip():
-    #                 table_name = re.sub(r'^\(|\)$', '', table.strip())
-    #                 if "." in table_name:
-    #                     table_name = table_name.split('.')[-1]
-    #                 table_names.append(table_name.lower())
-    
-    # # Find all tables in JOIN clauses
-    # for match in re.finditer(join_pattern, sql_query, re.IGNORECASE):
-    #     if match.group(1) and match.group(1).strip():
-    #         table_name = re.sub(r'^\(|\)$', '', match.group(1).strip())
-    #         if "." in table_name:
-    #             table_name = table_name.split('.')[-1]
-    #         table_names.append(table_name.lower())
-    
-    # # Step 3: Filter out CTE tables, SQL keywords, and SQL functions
-    # sql_keywords = {'select', 'where', 'group', 'order', 'limit', 'offset', 'having', 'union', 'intersect', 'except'}
-    # sql_functions = {'extract', 'sum', 'count', 'avg', 'min', 'max', 'date', 'year', 'month', 'day'}
-    # filtered_tables = []
-    
-    # # First, identify all column references in EXTRACT functions
-    # extract_column_refs = set()
-    # extract_pattern = r'extract\s*\(\s*\w+\s+from\s+(\w+)'
-    # for match in re.finditer(extract_pattern, sql_query, re.IGNORECASE):
-    #     if match.group(1):
-    #         extract_column_refs.add(match.group(1).lower())
-    
-    # for table in table_names:
-    #     # Skip empty strings
-    #     if not table:
-    #         continue
-            
-    #     # Skip CTEs
-    #     if table.lower() in cte_tables:
-    #         continue
-            
-    #     # Skip if it's just a SQL keyword
-    #     if table.lower() in sql_keywords:
-    #         continue
-            
-    #     # Skip if it's a SQL function
-    #     if table.lower() in sql_functions:
-    #         continue
-            
-    #     # Skip if it's a subquery (likely starts with SELECT)
-    #     if table.lower().startswith('select'):
-    #         continue
-            
-    #     # Skip if it's a column reference in an EXTRACT function
-    #     if table.lower() in extract_column_refs:
-    #         continue
-            
-    #     filtered_tables.append(table)
-    
-    # # Remove duplicates while preserving order
-    # unique_tables = []
-    # for table in filtered_tables:
-    #     if table not in unique_tables:
-    #         unique_tables.append(table)
-    
-    # return unique_tables
-
     # Parse the SQL
-    parsed = sqlglot.parse_one(sql_query)
+    parsed = sqlglot.parse_one(sql_query, read=dialect)
     
     # Get all CTE names
     cte_names = set()
@@ -705,10 +595,43 @@ def extract_sql_query(response_text):
             
         return sql
 
-def is_valid_sql_query(sql_query: str) -> Tuple[bool, Optional[Exception]]:
+def is_valid_sql_query(sql_query: str, dialect: str = "postgres") -> Tuple[bool, Optional[Exception]]:
+
+    DIALECTS = [
+        "Athena",
+        "BigQuery",
+        "ClickHouse",
+        "Databricks",
+        "Doris",
+        "Drill",
+        "Druid",
+        "DuckDB",
+        "Dune",
+        "Hive",
+        "Materialize",
+        "MySQL",
+        "Oracle",
+        "Postgres",
+        "Presto",
+        "PRQL",
+        "Redshift",
+        "RisingWave",
+        "Snowflake",
+        "Spark",
+        "Spark2",
+        "SQLite",
+        "StarRocks",
+        "Tableau",
+        "Teradata",
+        "Trino",
+        "TSQL",
+    ]
+    dialect = dialect.lower()
+    if dialect not in [d.lower() for d in DIALECTS]:
+        raise ValueError(f"Invalid dialect: {dialect}. Must be one of: {', '.join([d.lower() for d in DIALECTS])}")
     try:
         # 1) Transpile will parse & re-generate; it raises on any syntax error
-        transpiled_stmts = sqlglot.transpile(sql_query)
+        transpiled_stmts = sqlglot.transpile(sql_query, read=dialect)
     except Exception as e:
         return False, e
 
@@ -718,7 +641,7 @@ def is_valid_sql_query(sql_query: str) -> Tuple[bool, Optional[Exception]]:
 
     try:
         # 3) Parse that one statement into an AST
-        root = sqlglot.parse_one(sql_query)
+        root = sqlglot.parse_one(sql_query, read=dialect)
     except Exception as e:
         # This is unlikely if transpile passed, but just in case
         return False, e
@@ -878,7 +801,7 @@ def enrich_schema_with_info(table_details: list, connection_payload: dict):
             }
             
             # Add database description to response data if available
-            if "database_description" in schema_enrich_info['enrich_schema']:
+            if "database_description" in schema_enrich_info:
                 database_description = schema_enrich_info['database_description']
                 logger.info(f"Database description: {database_description}")
             
