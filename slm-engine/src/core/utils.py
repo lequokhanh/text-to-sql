@@ -845,14 +845,15 @@ def enrich_schema_with_info(table_details: list, connection_payload: dict):
     )
     
     if should_enrich:
+        logger.info(f"Enrich schema is enabled: {should_enrich}")
         # Next, check if enriched_schema exists
-        if "enriched_schema" in schema_enrich_info and schema_enrich_info["enriched_schema"] is not None:
+        if "enrich_schema" in schema_enrich_info and schema_enrich_info["enrich_schema"] is not None:
             logger.info(f"Retrieved schema with {len(table_details)} tables and enrichment information")
             
             # Create mapping from tableIdentifier to enriched table for faster lookup
             enriched_tables_map = {
                 table["tableIdentifier"]: table 
-                for table in schema_enrich_info["enriched_schema"]
+                for table in schema_enrich_info["enrich_schema"]
             }
             
             # Add database description to response data if available
@@ -890,7 +891,7 @@ def enrich_schema_with_info(table_details: list, connection_payload: dict):
                             enriched_column = enriched_columns_map[column_id]
                             column["columnDescription"] = enriched_column.get("columnDescription", "")
         else:
-            logger.info("Schema enrichment is enabled but 'enriched_schema' is not present or is None")
+            logger.info("Schema enrichment is enabled but 'enrich_schema' is not present or is None")
     else:
         logger.info("Schema enrichment is disabled or no enrichment info available")
     

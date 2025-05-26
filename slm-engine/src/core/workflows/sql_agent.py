@@ -55,7 +55,7 @@ class SQLAgentWorkflow(Workflow):
         """Initialize the SQLAgent Workflow."""
         super().__init__(*args, **kwargs)
         self.text2sql_prompt = text2sql_prompt
-        self.num_tables_threshold = 3
+        self.num_tables_threshold = 0
         self.max_sql_retries = 5
         self.llm = llm
         self._timeout = 300.0

@@ -9,6 +9,7 @@ from exceptions.app_exception import AppException
 from response.app_response import ResponseWrapper
 from middleware.async_handler import async_route
 from services.observability import observability_service
+from enums.response_enum import ResponseEnum
 
 logger = logging.getLogger(__name__)
 
@@ -98,8 +99,11 @@ def initialize_routes(api, api_models, workflows):
                 for table in table_details:
                     table["sample_data"] = []
                 
+                logger.info(f"Enrich schema is enabled: {app_config.ENRICH_SCHEMA}")
+                logger.info(f"Retrieved: {connection_payload}")
+
                 # Enrich schema with additional information
-                if not app_config.ENRICH_SCHEMA:
+                if app_config.ENRICH_SCHEMA == False:
                     logger.info("Enrich schema is disabled, skipping enrichment")
                     table_details, database_description = table_details, None
                 else:
@@ -139,8 +143,12 @@ def initialize_routes(api, api_models, workflows):
                     )
                 
                 logger.info("Workflow completed successfully")
-                
-                return ResponseWrapper.success(response)
+                # Log response wrapper content
+                logger.info(f"Response wrapper content: {response}")
+                if "SELECT" in response.upper():
+                    return ResponseWrapper.success(response)
+                else:
+                    return ResponseWrapper.error_with_code(ResponseEnum.NOT_RELEVANT_QUERY.code, response)
 
             except Exception as e:
                 logger.error(f"Error processing query: {str(e)}", exc_info=True)
