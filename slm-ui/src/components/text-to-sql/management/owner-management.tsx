@@ -26,6 +26,7 @@ import {
 import axios, { endpoints } from 'src/utils/axios';
 
 import Iconify from 'src/components/iconify';
+import { useSnackbar } from 'src/components/snackbar';
 
 // Types
 interface Owner {
@@ -62,6 +63,7 @@ interface OwnerDialogProps {
 
 // Owner dialog component
 const OwnerDialog = ({ open, onClose, onSave, sourceId }: OwnerDialogProps) => {
+  const { enqueueSnackbar } = useSnackbar();
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,11 +96,14 @@ const OwnerDialog = ({ open, onClose, onSave, sourceId }: OwnerDialogProps) => {
       setError('');
       
       await validateUser(username);
-      onSave(username);
+      await onSave(username);
       setUsername('');
       onClose();
+      enqueueSnackbar('Owner added successfully', { variant: 'success' });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err ?? 'An error occurred';
+      setError(errorMessage);
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -146,6 +151,7 @@ const OwnerDialog = ({ open, onClose, onSave, sourceId }: OwnerDialogProps) => {
 };
 
 export default function OwnerManagement({ sourceId, onOwnersChange }: OwnerManagementProps) {
+  const { enqueueSnackbar } = useSnackbar();
   const [owners, setOwners] = useState<Owner[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -156,8 +162,9 @@ export default function OwnerManagement({ sourceId, onOwnersChange }: OwnerManag
       setOwners(response.data);
     } catch (error) {
       console.error('Error loading owners:', error);
+      enqueueSnackbar(error, { variant: 'error' });
     }
-  }, [sourceId]);
+  }, [sourceId, enqueueSnackbar]);
 
   // Load owners on mount
   useEffect(() => {
@@ -172,6 +179,7 @@ export default function OwnerManagement({ sourceId, onOwnersChange }: OwnerManag
       onOwnersChange();
     } catch (error) {
       console.error('Error adding owner:', error);
+      throw error;
     }
   };
 
@@ -181,8 +189,10 @@ export default function OwnerManagement({ sourceId, onOwnersChange }: OwnerManag
       await axios.delete(endpoints.dataSource.owners.delete(sourceId, ownerId.toString()));
       await loadOwners();
       onOwnersChange();
+      enqueueSnackbar('Owner removed successfully', { variant: 'success' });
     } catch (error) {
       console.error('Error removing owner:', error);
+      enqueueSnackbar(error, { variant: 'error' });
     }
   };
 

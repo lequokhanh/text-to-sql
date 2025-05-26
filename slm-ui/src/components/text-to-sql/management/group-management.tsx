@@ -31,6 +31,7 @@ import { useDebounce } from 'src/hooks/use-debounce';
 import axios, { endpoints } from 'src/utils/axios';
 
 import Iconify from 'src/components/iconify';
+import { useSnackbar } from 'src/components/snackbar';
 
 // Types
 interface BasicGroup {
@@ -100,6 +101,7 @@ const GroupDialog = ({
   tables = [],
   nameInputRef,
 }: GroupDialogProps) => {
+  const { enqueueSnackbar } = useSnackbar();
   const [newGroup, setNewGroup] = useState<Partial<Group>>({
     name: '',
     tableIds: []
@@ -163,7 +165,9 @@ const GroupDialog = ({
     try {
       // Check if user is current user
       if (username.toLowerCase() === currentUser.toLowerCase()) {
-        setInputError('Cannot add current user');
+        const error = 'Cannot add current user';
+        setInputError(error);
+        enqueueSnackbar(error, { variant: 'error' });
         return false;
       }
 
@@ -172,14 +176,18 @@ const GroupDialog = ({
         memberChanges.added.some(member => member.username.toLowerCase() === username.toLowerCase());
 
       if (isExistingMember) {
-        setInputError('User is already in group');
+        const error = 'User is already in group';
+        setInputError(error);
+        enqueueSnackbar(error, { variant: 'error' });
         return false;
       }
 
       // Check if user exists in system
       const response = await axios.get(`/api/v1/users/check-username/${username}`);
       if (!response.data) {
-        setInputError('User not found');
+        const error = 'User not found';
+        setInputError(error);
+        enqueueSnackbar(error, { variant: 'error' });
         return false;
       }
 
@@ -196,15 +204,18 @@ const GroupDialog = ({
         removed: prev.removed.filter(m => m.username.toLowerCase() !== username.toLowerCase())
       }));
 
+      enqueueSnackbar('User added successfully', { variant: 'success' });
       return true;
     } catch (error) {
       console.error('Error validating username:', error);
-      setInputError('Error checking username');
+      const errorMessage = error ?? 'Error checking username';
+      setInputError(errorMessage);
+      enqueueSnackbar(errorMessage, { variant: 'error' });
       return false;
     } finally {
       setIsProcessing(false);
     }
-  }, [currentUser, newGroup.members, memberChanges]);
+  }, [currentUser, newGroup.members, memberChanges, enqueueSnackbar]);
 
   const handleRemoveMember = (member: Member) => {
     const isNewlyAdded = memberChanges.added.some(m => m.id === member.id);
@@ -232,18 +243,24 @@ const GroupDialog = ({
 
   const handleSave = () => {
     if (validateForm()) {
-      // If editing, include member changes
-      if (selectedGroup) {
-        onSave({
-          ...newGroup,
-          memberChanges: {
-            added: memberChanges.added.map(m => m.username),
-            removed: memberChanges.removed.map(m => m.username)
-          }
-        });
-      } else {
-        // If creating, just send basic info
-        onSave(newGroup);
+      try {
+        // If editing, include member changes
+        if (selectedGroup) {
+          onSave({
+            ...newGroup,
+            memberChanges: {
+              added: memberChanges.added.map(m => m.username),
+              removed: memberChanges.removed.map(m => m.username)
+            }
+          });
+        } else {
+          // If creating, just send basic info
+          onSave(newGroup);
+        }
+        enqueueSnackbar(selectedGroup ? 'Group updated successfully' : 'Group created successfully', { variant: 'success' });
+      } catch (error) {
+        console.error('Error saving group:', error);
+        enqueueSnackbar(error, { variant: 'error' });
       }
     }
   };
@@ -396,6 +413,7 @@ const GroupDialog = ({
 };
 
 export default function GroupManagement({ sourceId, tables = [], onGroupsChange }: GroupManagementProps) {
+  const { enqueueSnackbar } = useSnackbar();
   const [groups, setGroups] = useState<BasicGroup[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
@@ -414,19 +432,20 @@ export default function GroupManagement({ sourceId, tables = [], onGroupsChange 
       setGroups(response.data.map((group: Group) => ({ id: group.id, name: group.name })));
     } catch (error) {
       console.error('Error loading groups:', error);
+      enqueueSnackbar(error, { variant: 'error' });
     }
-  }, [sourceId]);
+  }, [sourceId, enqueueSnackbar]);
 
   // Load group details
   const loadGroupDetails = async (groupId: number) => {
     setIsLoading(true);
     try {
       const response = await axios.get(endpoints.dataSource.groups.details(groupId.toString()));
-      console.log(response);
       setSelectedGroup(response.data);
       setOpenDialog(true);
     } catch (error) {
       console.error('Error loading group details:', error);
+      enqueueSnackbar(error, { variant: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -438,11 +457,13 @@ export default function GroupManagement({ sourceId, tables = [], onGroupsChange 
       const isNew = !group.id;
       const { memberChanges, ...groupData } = group;
 
-      const response = isNew
-        ? await axios.post(endpoints.dataSource.groups.base(sourceId), groupData)
-        : await axios.put(endpoints.dataSource.groups.update(sourceId, group.id!.toString()), {
+      if (isNew) {  
+        await axios.post(endpoints.dataSource.groups.base(sourceId), groupData);
+      } else {
+        await axios.put(endpoints.dataSource.groups.update(sourceId, group.id!.toString()), {
             ...groupData
           });
+        }
 
       // Handle member changes only if there are actual changes
       if (memberChanges?.removed && memberChanges.removed.length > 0) {
@@ -458,13 +479,12 @@ export default function GroupManagement({ sourceId, tables = [], onGroupsChange 
         });
       }
 
-      console.log(response);
-
       await loadGroups();
       onGroupsChange();
       setOpenDialog(false);
     } catch (error) {
       console.error('Error saving group:', error);
+      throw error;
     }
   };
 
@@ -474,8 +494,10 @@ export default function GroupManagement({ sourceId, tables = [], onGroupsChange 
       await axios.delete(endpoints.dataSource.groups.details(groupId.toString()));
       await loadGroups();
       onGroupsChange();
+      enqueueSnackbar('Group deleted successfully', { variant: 'success' });
     } catch (error) {
       console.error('Error deleting group:', error);
+      enqueueSnackbar(error, { variant: 'error' });
     }
   };
 
