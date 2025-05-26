@@ -112,11 +112,14 @@ class SQLAgentWorkflow(Workflow):
             pydantic_model=TranslatedQuery
         )
 
-        log_success("RETRIEVE", f"Translated query: {translated_query.translated_query}")   
+        query = translated_query.translated_query
+        await context.set("user_query", query)
+
+        log_success("RETRIEVE", f"Translated query: {query}")   
 
         TABLE_RETRIEVAL_PROMPT = TABLE_RETRIEVAL_SKELETON.format(
             database_description=database_description,
-            query=translated_query.translated_query,
+            query=query,
             schema=schema
         )
         
@@ -144,7 +147,7 @@ class SQLAgentWorkflow(Workflow):
         await context.set("relevant_tables", relevant_tables)
         
         log_step_end("RETRIEVE", start_time)
-        return TextToSQLEvent(relevant_tables=relevant_tables, query=ev.query)
+        return TextToSQLEvent(relevant_tables=relevant_tables, query=query)
 
     @step
     async def Generate_sql(self, context: Context, ev: TextToSQLEvent) -> SQLValidatorEvent | StopEvent:
