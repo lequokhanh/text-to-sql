@@ -132,8 +132,8 @@ public class ChatServiceImpl implements ChatService {
                                     String errorMessage = !isSuccess && responseNode.has("message") ? responseNode.get("message").asText() : "Unknown error from service";
 
                                     if (!isSuccess) {
-                                        botMessage.setMessage(errorMessage);
-                                        responseDTO.setSql(errorMessage);
+                                        future.completeExceptionally(
+                                                new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, errorMessage));
                                         return;
                                     }
 
@@ -162,7 +162,6 @@ public class ChatServiceImpl implements ChatService {
                                                             String embedErrorMessage = !embedSuccess && embedResponseNode.has("message") ? embedResponseNode.get("message").asText() : "Unknown error from service";
 
                                                             if (!embedSuccess) {
-                                                                botMessage.setMessage(botMessage.getMessage() + " (Error: " + embedErrorMessage + ")");
                                                                 future.completeExceptionally(
                                                                         new AppException(ResponseEnum.INTERNAL_SERVER_ERROR, embedErrorMessage));
                                                                 return;
@@ -171,7 +170,6 @@ public class ChatServiceImpl implements ChatService {
                                                             responseDTO.setData(embedData);
                                                             botMessage.setResponseData(embedData);
 
-                                                            // Save messages and complete the future
                                                             saveMessagesAndCompleteResponse(userMessage, botMessage, responseDTO, future);
                                                         } catch (Exception e) {
                                                             log.error("Error processing embed service response: {}", e.getMessage());

@@ -88,8 +88,8 @@ services:
         depends_on:
             mysql:
                 condition: service_healthy
-            # engine:
-            #     condition: service_healthy
+            engine:
+                condition: service_healthy
             embed:
                 condition: service_healthy
         logging:
