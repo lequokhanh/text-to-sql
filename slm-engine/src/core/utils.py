@@ -846,6 +846,7 @@ def enrich_schema_with_info(table_details: list, connection_payload: dict):
     
     if should_enrich:
         logger.info(f"Enrich schema is enabled: {should_enrich}")
+
         # Next, check if enriched_schema exists
         if "enrich_schema" in schema_enrich_info and schema_enrich_info["enrich_schema"] is not None:
             logger.info(f"Retrieved schema with {len(table_details)} tables and enrichment information")
@@ -857,8 +858,9 @@ def enrich_schema_with_info(table_details: list, connection_payload: dict):
             }
             
             # Add database description to response data if available
-            if "database_description" in schema_enrich_info:
-                database_description = schema_enrich_info["database_description"]
+            if "database_description" in schema_enrich_info['enrich_schema']:
+                database_description = schema_enrich_info['enrich_schema']['database_description']
+                logger.info(f"Database description: {database_description}")
             
             for table in table_details:
                 table_id = table["tableIdentifier"]
@@ -869,6 +871,7 @@ def enrich_schema_with_info(table_details: list, connection_payload: dict):
                     
                     # Update table description
                     table["tableDescription"] = enriched_table.get("tableDescription", "")
+                    logger.info(f"Table [{table_id}] description: {table['tableDescription']}")
                     
                     # Create mapping from columnIdentifier to enriched column
                     enriched_columns_map = {
@@ -890,6 +893,7 @@ def enrich_schema_with_info(table_details: list, connection_payload: dict):
                         if is_empty_description and column_id in enriched_columns_map:
                             enriched_column = enriched_columns_map[column_id]
                             column["columnDescription"] = enriched_column.get("columnDescription", "")
+                            logger.info(f"\t- Column [{column_id}] description: {column['columnDescription']}")
         else:
             logger.info("Schema enrichment is enabled but 'enrich_schema' is not present or is None")
     else:

@@ -61,6 +61,7 @@ def initialize_routes(api, api_models, workflows):
                 connection_payload = data.get("connection_payload")
                 logger.info(f"Processing query: {query}")
                 session_information = data.get("session_information")
+                schema = connection_payload.get("schema_enrich_info")
                 
                 # Create a Langfuse trace for this query
                 trace = observability_service.langfuse.trace(
@@ -109,6 +110,8 @@ def initialize_routes(api, api_models, workflows):
                 else:
                     table_details, database_description = enrich_schema_with_info(table_details, connection_payload)
                     logger.info(f"Retrieved schema with {len(table_details)} tables")
+
+                table_details = table_details
                 
                 schema_span.update(
                     metadata={
