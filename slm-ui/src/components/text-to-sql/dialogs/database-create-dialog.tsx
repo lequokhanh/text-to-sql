@@ -32,7 +32,7 @@ import axiosInstance, { endpoints } from 'src/utils/axios';
 
 import Iconify from 'src/components/iconify';
 
-import { DatabaseSource, TableDefinition, DatabaseConnectionConfig } from 'src/types/database';
+import { DatabaseSource, TableDefinition, ColumnDefinition, RelationDefinition, DatabaseConnectionConfig } from 'src/types/database';
 
 import { TableDefinitionView } from './table-definition-view';
 
@@ -317,7 +317,7 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
   };
 
   const handleCreate = () => {
-    if (!schemaData) return;
+    if (!schemaData) throw new Error('Schema data not found');
 
     // Show a short loading state before closing
     setLoading(true);
@@ -378,6 +378,72 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
   const getColor = (index: any) => {
     if (currentStep === index) return 'primary.main';
     return 'text.primary';
+  };
+
+  // Add local state for relations
+  const handleRelationAdd = (relation: RelationDefinition) => {
+    if (!schemaData) throw new Error('Schema data not found');
+
+    const updatedSchema = JSON.parse(JSON.stringify(schemaData.tableDefinitions));
+    const sourceTable = updatedSchema.find((t: TableDefinition) => t.tableIdentifier === relation.sourceTableIdentifier);
+    const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === relation.sourceColumnIdentifier);
+
+    if (sourceColumn) {
+      sourceColumn.relations = sourceColumn.relations || [];
+      sourceColumn.relations.push({
+        id: Date.now().toString(),
+        tableIdentifier: relation.targetTableIdentifier,
+        toColumn: relation.targetColumnIdentifier,
+        type: relation.relationType
+      });
+    }
+
+    setSchemaData({
+      ...schemaData,
+      tableDefinitions: updatedSchema
+    });
+  };
+
+  const handleRelationUpdate = (relation: RelationDefinition) => {
+    if (!schemaData) throw new Error('Schema data not found');
+
+    const updatedSchema = JSON.parse(JSON.stringify(schemaData.tableDefinitions));
+    const sourceTable = updatedSchema.find((t: TableDefinition) => t.tableIdentifier === relation.sourceTableIdentifier);
+    const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === relation.sourceColumnIdentifier);
+
+    if (sourceColumn?.relations) {
+      sourceColumn.relations = sourceColumn.relations.map((r: RelationDefinition) =>
+        r.id === relation.id ? { ...r, type: relation.relationType } : r
+      );
+    }
+
+    setSchemaData({
+      ...schemaData,
+      tableDefinitions: updatedSchema
+    });
+  };
+
+  const handleRelationDelete = (relation: RelationDefinition) => {
+    if (!schemaData) throw new Error('Schema data not found');
+
+    const updatedSchema = JSON.parse(JSON.stringify(schemaData.tableDefinitions));
+    const sourceTable = updatedSchema.find((t: TableDefinition) => t.tableIdentifier === relation.sourceTableIdentifier);
+    const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === relation.sourceColumnIdentifier);
+    if (!sourceColumn?.relations) throw new Error('Source column relations not found');
+    if (relation.id) {
+      if (!sourceColumn.relations.find((r: RelationDefinition) => r.id === relation.id)) throw new Error('Relation not found');
+      sourceColumn.relations = sourceColumn.relations.filter((r: RelationDefinition) => r.id !== relation.id);
+    } else {
+      if (!sourceColumn.relations.find((r: any) => r.tableIdentifier === relation.targetTableIdentifier
+        && r.toColumn === relation.targetColumnIdentifier)) throw new Error('Relation not found');
+      sourceColumn.relations = sourceColumn.relations.filter((r: any) => r.tableIdentifier !== relation.targetTableIdentifier
+        && r.toColumn !== relation.targetColumnIdentifier);
+    }
+
+    setSchemaData({
+      ...schemaData,
+      tableDefinitions: updatedSchema
+    });
   };
 
   return (
@@ -842,29 +908,31 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
                     minHeight: 400,
                   }}
                 >
-                  <TableDefinitionView 
+                  <TableDefinitionView
                     tables={schemaData.tableDefinitions}
+                    databaseDescription={schemaData.databaseDescription}
+                    onTablesUpdate={(updatedTables) => {
+                      setSchemaData({
+                        ...schemaData,
+                        tableDefinitions: updatedTables
+                      });
+                    }}
+                    onDatabaseDescriptionUpdate={(description) => {
+                      setSchemaData({
+                        ...schemaData,
+                        databaseDescription: description
+                      });
+                    }}
                     connectionPayload={{
                       url: `${schemaData.host}:${schemaData.port}/${schemaData.databaseName}`,
                       username: schemaData.username,
                       password: schemaData.password,
                       dbType: schemaData.databaseType.toLowerCase() as 'mysql' | 'postgresql',
                     }}
-                    databaseDescription={schemaData.databaseDescription}
-                    onDatabaseDescriptionUpdate={(description) => {
-                      setSchemaData({
-                        ...schemaData,
-                        databaseDescription: description,
-                      });
-                    }}
-                    onAutoFill={(updatedTables: TableDefinition[], databaseDescription: string) => {
-                      setSchemaData({
-                        ...schemaData,
-                        tableDefinitions: updatedTables,
-                        databaseDescription,
-                      });
-                    }}
-                     />
+                    onRelationAdd={handleRelationAdd}
+                    onRelationUpdate={handleRelationUpdate}
+                    onRelationDelete={handleRelationDelete}
+                  />
                 </Box>
               </Box>
             </Fade>
@@ -1044,7 +1112,7 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
                         <Typography variant="subtitle2">Tables:</Typography>
                       </Stack>
                       <Chip
-                        label={`${schemaData.tableDefinitions?.length || 0} tables`}
+                        label={`${schemaData.tableDefinitions.length} tables`}
                         color="primary"
                         size="small"
                         sx={{ height: 24 }}
@@ -1067,13 +1135,13 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
                           <Iconify icon="eva:file-text-outline" width={20} sx={{ color: 'text.secondary' }} />
                           <Typography variant="subtitle2">Database Description:</Typography>
                         </Stack>
-                        <Typography 
-                          variant="body2" 
+                        <Typography
+                          variant="body2"
                           color="text.secondary"
-                          sx={{ 
+                          sx={{
                             pl: 3.5,
                             fontStyle: 'italic',
-                            lineHeight: 1.6 
+                            lineHeight: 1.6
                           }}
                         >
                           {schemaData.databaseDescription}

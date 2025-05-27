@@ -32,15 +32,7 @@ function Container({ children }: Props) {
 
   const check = useCallback(() => {
     if (!authenticated) {
-      const searchParams = new URLSearchParams({
-        returnTo: window.location.pathname,
-      }).toString();
-
-      const loginPath = paths.auth.login;
-
-      const href = `${loginPath}?${searchParams}`;
-
-      router.replace(href);
+      router.replace(paths.auth.login);
     } else {
       setChecked(true);
     }

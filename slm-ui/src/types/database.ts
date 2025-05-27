@@ -115,18 +115,18 @@ export interface CreateTableDTO {
 // Database type enum
 export type DatabaseType = 'POSTGRESQL' | 'MYSQL';
 
-export type DatabaseSource = {
+export interface DatabaseSource {
   id: string;
-  databaseType: DatabaseType;
+  name: string;
   host: string;
   port: string;
   databaseName: string;
   username: string;
   password: string;
-  name: string;
-  databaseDescription?: string;
+  databaseType: 'POSTGRESQL' | 'MYSQL';
   tableDefinitions: TableDefinition[];
-};
+  databaseDescription?: string;
+}
 
 export type DatabaseConnectionConfig = {
   url: string;
@@ -137,3 +137,12 @@ export type DatabaseConnectionConfig = {
   port?: string;
   databaseName?: string;
 };
+
+export interface RelationDefinition {
+  id?: string;
+  sourceTableIdentifier: string;
+  sourceColumnIdentifier: string;
+  targetTableIdentifier: string;
+  targetColumnIdentifier: string;
+  relationType: RelationType;
+}

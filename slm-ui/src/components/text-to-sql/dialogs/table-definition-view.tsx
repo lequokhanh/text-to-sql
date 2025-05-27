@@ -38,7 +38,8 @@ import {
   TableDefinition,
   UpdateColumnDTO,
   ColumnDefinition,
-  CreateRelationDTO
+  CreateRelationDTO,
+  RelationDefinition
 } from 'src/types/database';
 
 import { SchemaVisualization } from './schema-visualization';
@@ -1021,6 +1022,8 @@ export interface ConnectionPayload {
   dbType: 'mysql' | 'postgresql';
 }
 
+
+
 // Main component interface
 interface TableDefinitionViewProps {
   tables: TableDefinition[];
@@ -1029,6 +1032,9 @@ interface TableDefinitionViewProps {
   onTablesUpdate?: (updatedTables: TableDefinition[]) => void;
   onDatabaseDescriptionUpdate?: (description: string) => void;
   connectionPayload?: ConnectionPayload;
+  onRelationAdd?: (relation: RelationDefinition) => void;
+  onRelationUpdate?: (relation: RelationDefinition) => void;
+  onRelationDelete?: (relation: RelationDefinition) => void;
 }
 
 // Add search highlight component
@@ -1256,6 +1262,9 @@ export function TableDefinitionView({
   onAutoFill,
   onTablesUpdate,
   onDatabaseDescriptionUpdate,
+  onRelationAdd,
+  onRelationUpdate,
+  onRelationDelete,
   connectionPayload 
 }: TableDefinitionViewProps): JSX.Element {
   const theme = useTheme();
@@ -1733,6 +1742,7 @@ export function TableDefinitionView({
 
       if (!sourceTableId || !sourceColumnId || !targetTableId || !targetColumnId) {
         showToast('Please fill all relation fields', 'error');
+        handleRelationDialogClose();
         return;
       }
 
@@ -1742,12 +1752,8 @@ export function TableDefinitionView({
       const targetTable = editableTables.find(t => t.tableIdentifier === targetTableId);
       const targetColumn = targetTable?.columns.find(c => c.columnIdentifier === targetColumnId);
 
-      if (!sourceTable?.id || !sourceColumn?.id) {
+      if (!sourceTable?.tableIdentifier || !sourceColumn?.columnIdentifier || !targetTable?.tableIdentifier || !targetColumn?.columnIdentifier) {
         throw new Error('Source table or column ID not found');
-      }
-
-      if (!targetTable?.id || !targetColumn?.id) {
-        throw new Error('Target table or column ID not found');
       }
 
       const relationToAdd: CreateRelationDTO = {
@@ -1756,96 +1762,52 @@ export function TableDefinitionView({
         type: relationType,
       };
 
-      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
-
       // Check if relation already exists
       if (sourceColumn?.relations?.some((r: ColumnRelation) =>
         r.tableIdentifier === relationToAdd.tableIdentifier &&
         r.toColumn === relationToAdd.toColumn
       )) {
         showToast('This relation already exists', 'error');
+        handleRelationDialogClose();
         return;
       }
 
-      // Add relation
-      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
-        if (table.tableIdentifier === sourceTableId) {
-          return {
-            ...table,
-            columns: table.columns.map((column: ColumnDefinition) => {
-              if (column.columnIdentifier === sourceColumnId) {
-                return {
-                  ...column,
-                  relations: [...(column.relations || []), relationToAdd]
-                };
-              }
-              return column;
-            })
-          };
-        }
-        return table;
-      });
-
-      // Call API to update the relation if we're in management mode
-      const sourceId = window.location.pathname.split('/')[2];
-      const isManagementPage = window.location.pathname.includes('/manage');
-
-      if (isManagementPage && sourceId) {
-        try {
-          await axiosInstance.post(
-            endpoints.dataSource.tables.columns.relations.base(
-              sourceId.toString(),
-              sourceTable.id.toString(),
-              sourceColumn.id.toString()
-            ),
-            relationToAdd
-          );
-        } catch (error: any) {
-          console.error('Error adding relation:', error);
-          showToast('Failed to add relation on server', 'error');
-          return;
-        }
-      }
-
-      setState(prev => ({
-        ...prev,
-        editableTables: updatedTables,
-        filteredTables: updatedTables,
-        relationDialog: { ...prev.relationDialog, open: false }
-      }));
-
-      if (onTablesUpdate) {
-        onTablesUpdate(updatedTables);
+      // Call onRelationAdd if provided
+      if (onRelationAdd) {
+        onRelationAdd({
+          sourceTableIdentifier: sourceTable.tableIdentifier,
+          sourceColumnIdentifier: sourceColumn.columnIdentifier,
+          targetTableIdentifier: targetTable.tableIdentifier,
+          targetColumnIdentifier: targetColumn.columnIdentifier,
+          relationType
+        });
       }
 
       showToast('Relation added successfully!', 'success');
+      handleRelationDialogClose();
     } catch (error: any) {
       console.error('Error adding relation:', error);
       showToast('Failed to add relation', 'error');
+      handleRelationDialogClose();
     }
-  }, [relationDialog, editableTables, onTablesUpdate, showToast]);
+  }, [relationDialog, editableTables, showToast, onRelationAdd, handleRelationDialogClose]);
 
   const deleteRelation = useCallback(async (
-    tableId: string,
-    columnId: string,
+    tableIdentifier: string,
+    columnIdentifier: string,
     targetTableId: string,
     targetColumnId: string
   ): Promise<void> => {
     try {
-      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
 
       // Find all necessary IDs before updating state
-      const sourceTable = editableTables.find(t => t.tableIdentifier === tableId);
-      const sourceColumn = sourceTable?.columns.find(c => c.columnIdentifier === columnId);
+      const sourceTable = editableTables.find(t => t.tableIdentifier === tableIdentifier);
+      const sourceColumn = sourceTable?.columns.find(c => c.columnIdentifier === columnIdentifier);
       const targetTableObj = editableTables.find(t => t.tableIdentifier === targetTableId);
       const targetColumnObj = targetTableObj?.columns.find(c => c.columnIdentifier === targetColumnId);
 
-      if (!sourceTable?.id || !sourceColumn?.id) {
+      if (!sourceTable?.tableIdentifier || !sourceColumn?.columnIdentifier || !targetTableObj?.tableIdentifier || !targetColumnObj?.columnIdentifier) {
         throw new Error('Source table or column ID not found');
-      }
-
-      if (!targetTableObj?.id || !targetColumnObj?.id) {
-        throw new Error('Target table or column ID not found');
       }
 
       // Find the relation - handle both standard relations and outgoing relations
@@ -1869,71 +1831,16 @@ export function TableDefinitionView({
         }
       }
 
-      if (!relationId) {
-        throw new Error('Relation ID not found');
-      }
-
-      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
-        if (table.tableIdentifier === tableId) {
-          return {
-            ...table,
-            columns: table.columns.map((column: ColumnDefinition) => {
-              if (column.columnIdentifier === columnId) {
-                // Remove from both standard relations and outgoing relations
-                const updatedColumn = { ...column };
-
-                // Update standard relations
-                if (updatedColumn.relations) {
-                  updatedColumn.relations = updatedColumn.relations.filter(
-                    (r: ColumnRelation) => r.id !== relationId
-                  );
-                }
-
-                // Update outgoing relations if they exist
-                if ((updatedColumn as any).outgoingRelations) {
-                  (updatedColumn as any).outgoingRelations = (updatedColumn as any).outgoingRelations.filter(
-                    (r: OutgoingRelation) => r.id !== relationId
-                  );
-                }
-
-                return updatedColumn;
-              }
-              return column;
-            })
-          };
-        }
-        return table;
-      });
-
-      // Call API to delete the relation if we're in management mode and we have a relation ID
-      const sourceId = window.location.pathname.split('/')[2];
-      const isManagementPage = window.location.pathname.includes('/manage');
-
-      if (isManagementPage && sourceId && relationId) {
-        try {
-          await axiosInstance.delete(
-            endpoints.dataSource.tables.columns.relations.delete(
-              sourceId.toString(),
-              sourceTable.id.toString(),
-              sourceColumn.id.toString(),
-              relationId.toString()
-            )
-          );
-        } catch (error: any) {
-          console.error('Error deleting relation:', error);
-          showToast('Failed to delete relation on server', 'error');
-          return;
-        }
-      }
-
-      setState(prev => ({
-        ...prev,
-        editableTables: updatedTables,
-        filteredTables: updatedTables
-      }));
-
-      if (onTablesUpdate) {
-        onTablesUpdate(updatedTables);
+      // Call onRelationDelete if provided
+      if (onRelationDelete) {
+        onRelationDelete({
+          id: relationId?.toString(),
+          sourceTableIdentifier: sourceTable.tableIdentifier,
+          sourceColumnIdentifier: sourceColumn.columnIdentifier,
+          targetTableIdentifier: targetTableObj.tableIdentifier,
+          targetColumnIdentifier: targetColumnObj.columnIdentifier,
+          relationType: standardRelation?.type || 'OTO'
+        });
       }
 
       showToast('Relation deleted successfully!', 'success');
@@ -1941,7 +1848,7 @@ export function TableDefinitionView({
       console.error('Error deleting relation:', error);
       showToast('Failed to delete relation', 'error');
     }
-  }, [editableTables, onTablesUpdate, showToast]);
+  }, [editableTables, showToast, onRelationDelete]);
 
   // Get current editing column
   const getEditingColumn = useCallback(() => {
@@ -1954,84 +1861,43 @@ export function TableDefinitionView({
   }, [editingTableId, editingColumnId, editableTables]);
 
   const updateRelation = useCallback(async (
-    tableId: string,
-    columnId: string,
+    tableIdentifier: string,
+    columnIdentifier: string,
     relationId: number,
     newType: RelationType
   ): Promise<void> => {
     try {
       // Find the source table and column IDs
-      const sourceTable = editableTables.find(t => t.tableIdentifier === tableId);
-      const sourceColumn = sourceTable?.columns.find(c => c.columnIdentifier === columnId);
+      const sourceTable = editableTables.find(t => t.tableIdentifier === tableIdentifier);
+      const sourceColumn = sourceTable?.columns.find(c => c.columnIdentifier === columnIdentifier);
 
-      if (!sourceTable?.id || !sourceColumn?.id) {
+      if (!sourceTable?.tableIdentifier || !sourceColumn?.columnIdentifier) {
         throw new Error('Source table or column ID not found');
       }
 
-      const sourceId = window.location.pathname.split('/')[2];
-      const isManagementPage = window.location.pathname.includes('/manage');
-
-      // Update relation type in the backend if in management mode
-      if (isManagementPage && sourceId) {
-        try {
-          await axiosInstance.put(
-            endpoints.dataSource.tables.columns.relations.update(
-              sourceId.toString(),
-              sourceTable.id.toString(),
-              sourceColumn.id.toString(),
-              relationId.toString()
-            ),
-            { type: newType }
-          );
-        } catch (error: any) {
-          console.error('Error updating relation:', error);
-          showToast('Failed to update relation on server', 'error');
-          return;
-        }
+      // Find target table and column from the relation
+      const relation = sourceColumn.relations?.find(r => r.id === relationId);
+      if (!relation) {
+        throw new Error('Relation not found');
       }
 
-      // Update relation type in the frontend state
-      const tablesDeepCopy = JSON.parse(JSON.stringify(editableTables));
-      const updatedTables = tablesDeepCopy.map((table: TableDefinition) => {
-        if (table.tableIdentifier === tableId) {
-          return {
-            ...table,
-            columns: table.columns.map((column: ColumnDefinition) => {
-              if (column.columnIdentifier === columnId) {
-                // Update both standard relations and outgoing relations
-                const updatedColumn = { ...column };
+      const targetTable = editableTables.find(t => t.tableIdentifier === relation.tableIdentifier);
+      const targetColumn = targetTable?.columns.find(c => c.columnIdentifier === relation.toColumn);
 
-                // Update standard relations if they exist
-                if (updatedColumn.relations) {
-                  updatedColumn.relations = updatedColumn.relations.map(r =>
-                    r.id === relationId ? { ...r, type: newType } : r
-                  );
-                }
+      if (!targetTable?.tableIdentifier || !targetColumn?.columnIdentifier) {
+        throw new Error('Target table or column ID not found');
+      }
 
-                // Update outgoing relations if they exist
-                if ((updatedColumn as any).outgoingRelations) {
-                  (updatedColumn as any).outgoingRelations = (updatedColumn as any).outgoingRelations.map(
-                    (r: OutgoingRelation) => r.id === relationId ? { ...r, type: newType } : r
-                  );
-                }
-
-                return updatedColumn;
-              }
-              return column;
-            })
-          };
-        }
-        return table;
-      });
-
-      setState(prev => ({
-        ...prev,
-        editableTables: updatedTables,
-        filteredTables: updatedTables
-      }));
-
-      if (onTablesUpdate) {
-        onTablesUpdate(updatedTables);
+      // Call onRelationUpdate if provided
+      if (onRelationUpdate) {
+        onRelationUpdate({
+          id: relationId.toString(),
+          sourceTableIdentifier: sourceTable.tableIdentifier,
+          sourceColumnIdentifier: sourceColumn.columnIdentifier,
+          targetTableIdentifier: targetTable.tableIdentifier,
+          targetColumnIdentifier: targetColumn.columnIdentifier,
+          relationType: newType
+        });
       }
 
       showToast('Relation updated successfully!', 'success');
@@ -2039,7 +1905,7 @@ export function TableDefinitionView({
       console.error('Error updating relation:', error);
       showToast('Failed to update relation', 'error');
     }
-  }, [editableTables, onTablesUpdate, showToast]);
+  }, [editableTables, showToast, onRelationUpdate]);
 
   // Render column row
   const renderColumnRow = useCallback((table: TableDefinition, column: ColumnDefinition, index: number) => {

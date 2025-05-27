@@ -2,10 +2,10 @@ import { useMemo, useEffect, useReducer, useCallback } from 'react';
 
 import axios, { endpoints } from 'src/utils/axios';
 
+import { paths } from '../../routes/paths';
 import { AuthContext } from './auth-context';
 import { useRouter } from '../../routes/hooks';
 import { setSession, isValidToken } from './utils';
-import { PATH_AFTER_LOGIN } from '../../config-global';
 import { AuthUserType, ActionMapType, AuthStateType } from '../types';
 
 // ----------------------------------------------------------------------
@@ -149,7 +149,7 @@ export function AuthProvider({ children }: Props) {
         },
       });
 
-      router.push(PATH_AFTER_LOGIN);
+      router.push('/');
     },
     [router]
   );
@@ -162,7 +162,8 @@ export function AuthProvider({ children }: Props) {
     };
 
     await axios.post(endpoints.auth.register, data);
-  }, []);
+    router.push(paths.auth.login);
+  }, [router]);
 
   // LOGOUT
   const logout = useCallback(async () => {

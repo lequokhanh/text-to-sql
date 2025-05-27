@@ -23,7 +23,7 @@ import GroupManagement from 'src/components/text-to-sql/management/group-managem
 import OwnerManagement from 'src/components/text-to-sql/management/owner-management';
 import { TableDefinitionView } from 'src/components/text-to-sql/dialogs/table-definition-view';
 
-import { DatabaseSource } from 'src/types/database';
+import { DatabaseSource, TableDefinition, ColumnDefinition, RelationDefinition } from 'src/types/database';
 
 // Custom TabPanel component
 interface TabPanelProps {
@@ -146,6 +146,89 @@ export default function DatasourceManagementView() {
     } catch (deleteError) {
       console.error('Error deleting datasource:', deleteError);
     }
+  };
+
+  // Add relation handlers
+  const handleRelationAdd = async (relation: RelationDefinition) => {
+    try {
+      if (!sourceId) return;
+
+      const sourceTable = dataSource?.tableDefinitions.find((t: TableDefinition) => t.tableIdentifier === relation.sourceTableIdentifier);
+      const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === relation.sourceColumnIdentifier);
+
+      if (!sourceTable || !sourceColumn) throw new Error('Source table or column not found');
+
+      await axiosInstance.post(
+        endpoints.dataSource.tables.columns.relations.base(
+          sourceId,
+          sourceTable.id.toString(),
+          sourceColumn.id.toString()
+        ),
+        {
+          tableIdentifier: relation.targetTableIdentifier,
+          toColumn: relation.targetColumnIdentifier,
+          type: relation.relationType
+        }
+      );
+
+      // Refresh data source to get updated relations
+      const response = await axiosInstance.get(`${endpoints.dataSource.base}/${sourceId}`);
+      setDataSource(response.data);
+    } catch (err) {
+      console.error('Error adding relation:', err);
+    }
+  };
+
+  const handleRelationUpdate = async (relation: RelationDefinition) => {
+    try {
+      if (!sourceId || !relation.id) return;
+
+      const sourceTable = dataSource?.tableDefinitions.find((t: TableDefinition) => t.tableIdentifier === relation.sourceTableIdentifier);
+      const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === relation.sourceColumnIdentifier);
+      const targetTable = dataSource?.tableDefinitions.find((t: TableDefinition) => t.tableIdentifier === relation.targetTableIdentifier);
+      const targetColumn = targetTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === relation.targetColumnIdentifier);
+      
+      if (!sourceTable || !sourceColumn || !targetTable || !targetColumn) throw new Error('Source table or column not found');
+
+      await axiosInstance.put(
+        endpoints.dataSource.tables.columns.relations.update(
+          sourceId,
+          sourceTable.id.toString(),
+          sourceColumn.id.toString(),
+          relation.id
+        ),
+        { type: relation.relationType }
+      );
+
+      // Refresh data source to get updated relations
+      const response = await axiosInstance.get(`${endpoints.dataSource.base}/${sourceId}`);
+      setDataSource(response.data);
+    } catch (err) {
+      console.error('Error updating relation:', err);
+      // Handle error (show notification, etc.)
+    }
+  };
+
+  const handleRelationDelete = async (relation: RelationDefinition) => {
+      if (!sourceId || !relation.id) throw new Error('Source ID or relation ID not found');
+
+      const sourceTable = dataSource?.tableDefinitions.find((t: TableDefinition) => t.tableIdentifier === relation.sourceTableIdentifier);
+      const sourceColumn = sourceTable?.columns.find((c: ColumnDefinition) => c.columnIdentifier === relation.sourceColumnIdentifier);
+
+      if (!sourceTable || !sourceColumn) throw new Error('Source table or column not found');
+
+      await axiosInstance.delete(
+        endpoints.dataSource.tables.columns.relations.delete(
+          sourceId,
+          sourceTable.id.toString(),
+          sourceColumn.id.toString(),
+          relation.id
+        )
+      );
+
+      // Refresh data source to get updated relations
+      const response = await axiosInstance.get(`${endpoints.dataSource.base}/${sourceId}`);
+      setDataSource(response.data);
   };
 
   if (loading) {
@@ -300,18 +383,6 @@ export default function DatasourceManagementView() {
             <TableDefinitionView
               tables={dataSource.tableDefinitions}
               databaseDescription={dataSource.databaseDescription}
-              connectionPayload={{
-                url: `${dataSource.host}:${dataSource.port}/${dataSource.databaseName}`,
-                username: dataSource.username,
-                password: dataSource.password,
-                dbType: dataSource.databaseType.toLowerCase() as 'mysql' | 'postgresql',
-              }}
-              onTablesUpdate={(updatedTables) => {
-                setDataSource({
-                  ...dataSource,
-                  tableDefinitions: updatedTables,
-                });
-              }}
               onDatabaseDescriptionUpdate={(description) => {
                 handleDataSourceUpdate({
                   ...dataSource,
@@ -320,6 +391,15 @@ export default function DatasourceManagementView() {
               }}
               onAutoFill={(updatedTables, databaseDescription) => {
                 handleAutoFill(updatedTables, databaseDescription);
+              }}
+              onRelationAdd={handleRelationAdd}
+              onRelationUpdate={handleRelationUpdate}
+              onRelationDelete={handleRelationDelete}
+              connectionPayload={{
+                url: `${dataSource.host}:${dataSource.port}/${dataSource.databaseName}`,
+                username: dataSource.username,
+                password: dataSource.password,
+                dbType: dataSource.databaseType.toLowerCase() as 'mysql' | 'postgresql'
               }}
             />
           </TabPanel>

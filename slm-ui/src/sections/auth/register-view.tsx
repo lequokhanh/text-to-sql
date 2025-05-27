@@ -13,12 +13,10 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
-import { useRouter, useSearchParams } from 'src/routes/hooks';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { useAuthContext } from 'src/auth/hooks';
-import { PATH_AFTER_LOGIN } from 'src/config-global';
 
 import Iconify from 'src/components/iconify';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
@@ -28,13 +26,7 @@ import FormProvider, { RHFTextField } from 'src/components/hook-form';
 export default function RegisterView() {
   const { register } = useAuthContext();
 
-  const router = useRouter();
-
   const [errorMsg, setErrorMsg] = useState('');
-
-  const searchParams = useSearchParams();
-
-  const returnTo = searchParams.get('returnTo');
 
   const password = useBoolean();
 
@@ -62,8 +54,7 @@ export default function RegisterView() {
   const onSubmit = handleSubmit(async (data) => {
     try {
       await register?.(data.username, data.password);
-
-      router.push(returnTo || PATH_AFTER_LOGIN);
+      // The register function will handle the redirect
     } catch (error) {
       console.error(error);
       reset();
