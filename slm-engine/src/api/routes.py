@@ -637,7 +637,7 @@ def initialize_routes(api, api_models, workflows):
         def get(self):
             """Health check endpoint"""
             logger.debug("Health check request received")
-            return jsonify({"status": "ok"})
+            return jsonify({"status": "ok"})   
 
     @api.route('/suggest-questions')
     class SuggestQuestions(Resource):

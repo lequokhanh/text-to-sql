@@ -1,3 +1,4 @@
+from ast import Tuple
 import os
 import logging
 from typing import Dict, Any, Optional, Union
@@ -6,6 +7,7 @@ from llama_index.llms.ollama import Ollama
 from llama_index.llms.google_genai import GoogleGenAI
 from llama_index.core.llms import LLM
 from pydantic import BaseModel
+from typing import Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +42,10 @@ class BaseLLMConfig(ABC):
         """Get the current LLM instance."""
         return self.llm
 
+    def get_health_check(self) -> Tuple[bool, str]:
+        """Get the health check result."""
+        return self._health_check()
+
 class OllamaConfig(BaseLLMConfig):
     """Ollama-specific LLM configuration."""
     
@@ -71,7 +77,18 @@ class OllamaConfig(BaseLLMConfig):
             keep_alive=30*60,
             # additional_kwargs=self.settings["additional_kwargs"]
         )
+        
         logger.info("Ollama LLM client initialized successfully")
+    
+    def _health_check(self) -> Tuple[bool, str]:
+        """Check if the LLM is healthy."""
+        try:
+            response = self.llm.complete("Say 'Hi'")
+            logger.info(f"Test response: {response}")
+            return True, response
+        except Exception as e:
+            logger.error(f"Failed to connect to Ollama: {e}")
+            return False, str(e)
 
     def update_settings(
         self,
@@ -128,6 +145,16 @@ class GoogleGenAIConfig(BaseLLMConfig):
         )
         logger.info("Google Gemini LLM client initialized successfully")
 
+    def _health_check(self) -> Tuple[bool, str]:
+        """Check if the LLM is healthy."""
+        try:
+            response = self.llm.complete("Say 'Hi'")
+            logger.info(f"Test response: {response}")
+            return True, response
+        except Exception as e:
+            logger.error(f"Failed to connect to Google Gemini: {e}")
+            return False, str(e)
+        
     def update_settings(
         self,
         model: Optional[str] = None,

@@ -4,6 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from core.llm import llm_config, LLMFactory
 from core.templates import text2sql_prompt_routing
+from typing import Tuple
 
 # Configure logging with a more detailed format
 logging.basicConfig(
@@ -96,4 +97,18 @@ def initialize_workflows():
     )
     logger.info("Question Suggestion Workflow initialized successfully")
     
-    return workflow, schema_workflow, baseline_workflow, question_workflow 
+    return workflow, schema_workflow, baseline_workflow, question_workflow
+
+def preload_llm() -> Tuple[bool, str]:
+    try:
+        logger.info("Pre-loading LLM...")
+        is_healthy, response = llm_config.get_health_check()
+        if is_healthy:
+            logger.info("LLM pre-loaded successfully")
+            return True, response
+        else:
+            logger.error(f"Failed to pre-load LLM: {response}")
+            return False, response
+    except Exception as e:
+        logger.error(f"Error pre-loading LLM: {str(e)}")
+        return False, str(e)

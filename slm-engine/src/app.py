@@ -7,7 +7,7 @@ from flask_cors import CORS
 from flask_restx import Api, Resource, fields, Namespace
 
 # Import application components
-from config.app_config import app_config, initialize_workflows
+from config.app_config import app_config, initialize_workflows, llm_config, preload_llm
 from api.models import create_api_models
 from api.routes import initialize_routes
 from exceptions.global_exception_handler import register_error_handlers
@@ -45,6 +45,11 @@ def create_app():
     # Initialize routes
     initialize_routes(api, api_models, workflows)
     logger.info("API routes initialized")
+
+    # Pre-load LLM
+    is_healthy, response = preload_llm()
+    if not is_healthy:
+        logger.error(f"Failed to pre-load LLM: {response}")
     
     return app
 
