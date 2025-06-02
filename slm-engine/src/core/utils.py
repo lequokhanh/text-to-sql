@@ -645,9 +645,9 @@ def is_valid_sql_query(sql_query: str, dialect: str = "postgres") -> Tuple[bool,
     except Exception as e:
         # This is unlikely if transpile passed, but just in case
         return False, e
-
+    allowed_roots = (exp.Select, exp.Union, exp.Intersect, exp.Except)
     # 4) Enforce a SELECT root
-    if not isinstance(root, exp.Select):
+    if not isinstance(root, allowed_roots):
         return False, ValueError("Only SELECT queries are allowed (no DDL or INSERT/UPDATE/DELETE).")
 
     return True, None

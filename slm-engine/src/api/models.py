@@ -36,6 +36,7 @@ def create_api_models(api):
         'api_key': fields.String(required=False, description='Google API key'),
         'temperature': fields.Float(required=False, description='Model temperature'),
         'max_tokens': fields.Integer(required=False, description='Maximum tokens'),
+        'thinking_budget': fields.Integer(required=False, description='Thinking budget for Google Gemini'),
         'prompt_routing': fields.Integer(required=False, description='Prompt routing setting (0 or 1)'),
         'enrich_schema': fields.Boolean(required=False, description='Schema enrichment setting')
     })

@@ -124,6 +124,7 @@ class GoogleGenAIConfig(BaseLLMConfig):
             "api_key": os.getenv("GOOGLE_API_KEY", ""),
             "temperature": float(os.getenv("GOOGLE_TEMPERATURE", "0.5")),
             "max_tokens": int(os.getenv("GOOGLE_MAX_TOKENS", "8192")),
+            "thinking_budget": int(os.getenv("GOOGLE_THINKING_BUDGET", "1024")),
             "prompt_routing": 0,
             "enrich_schema": False
         }
@@ -134,6 +135,7 @@ class GoogleGenAIConfig(BaseLLMConfig):
         logger.info(f"Model: {self.settings['model']}")
         logger.info(f"Temperature: {self.settings['temperature']}")
         logger.info(f"Max tokens: {self.settings['max_tokens']}")
+        logger.info(f"Thinking budget: {self.settings['thinking_budget']}")
         logger.info(f"Prompt routing: {self.settings['prompt_routing']}")
         logger.info(f"Enrich schema: {self.settings['enrich_schema']}")
         
@@ -142,6 +144,11 @@ class GoogleGenAIConfig(BaseLLMConfig):
             api_key=self.settings["api_key"],
             temperature=self.settings["temperature"],
             max_tokens=self.settings["max_tokens"]
+            # generation_config={
+            #     "thinking_config": {
+            #         "thinking_budget": self.settings["thinking_budget"]
+            #     }
+            # }
         )
         logger.info("Google Gemini LLM client initialized successfully")
 
@@ -161,6 +168,7 @@ class GoogleGenAIConfig(BaseLLMConfig):
         api_key: Optional[str] = None,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        thinking_budget: Optional[int] = None,
         prompt_routing: Optional[int] = None,
         enrich_schema: Optional[bool] = None
     ) -> None:
@@ -173,6 +181,8 @@ class GoogleGenAIConfig(BaseLLMConfig):
             self.settings["temperature"] = float(temperature)
         if max_tokens is not None:
             self.settings["max_tokens"] = int(max_tokens)
+        if thinking_budget is not None:
+            self.settings["thinking_budget"] = int(thinking_budget)
         if prompt_routing is not None:
             self.settings["prompt_routing"] = int(prompt_routing)
         if enrich_schema is not None:
