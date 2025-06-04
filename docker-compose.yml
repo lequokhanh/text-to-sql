@@ -97,6 +97,16 @@ services:
             options:
                 max-size: "10m"
                 max-file: "3"
+    
+    nginx:
+        image: nginx:latest
+        ports:
+            - "8080:80"
+        restart: always
+        networks:
+            - slm
+        volumes:
+            - ./devops/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
 
     ui:
         ports:
@@ -104,10 +114,6 @@ services:
         build:
             context: ./slm-ui
         restart: always
-        environment:
-            - BACKEND_HOST_API=backend
-            - EMBED_HOST_API=embed
-            - ENGINE_HOST_API=engine
         networks:
             - slm
         depends_on:
