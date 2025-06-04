@@ -23,10 +23,26 @@ server:
 security:
   jwt:
     secret-key: qwertyuiopasdfghjklzxcvbnmqwertyuiopaASDFGHJKLZXCVBNM123456
-    expiration-time: 432000000  # Example: 5 days in milliseconds
+    expiration-time: 432000000  
 
 embed-service:
   base-url: ${EMBED_HOST_API:http://localhost:8181}
 
 engine-service:
   base-url: ${ENGINE_HOST_API:http://localhost:8383}
+
+app:
+  rate-limit:
+    enabled: true                    
+    requests-per-minute: 100          
+    bucket-expiry-minutes: 60        
+    cleanup-interval-minutes: 10     
+    include-headers: true            
+    user-based-limiting: true       
+    excluded-patterns:               
+      - "/health-check"
+      - "/actuator/**"
+      - "/favicon.ico"
+      - "/swagger-ui/**"
+      - "/v3/api-docs/**"
+      - "/api/v1/users/me"

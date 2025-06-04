@@ -150,17 +150,6 @@ const ConnectionIndicator = styled(Box)(({ theme }) => ({
   right: 0,
   boxShadow: `0 0 0 3px ${theme.palette.background.paper},
               0 0 12px ${theme.palette.success.main}`,
-  '&:after': {
-    content: '""',
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    borderRadius: '50%',
-    background: theme.palette.success.light,
-    opacity: 0.6,
-    animation: `${pulse} 2s ease-in-out infinite`,
-    animationDelay: '0.5s',
-  },
 }));
 
 const DatabaseIcon = styled(Box)(({ theme }) => ({

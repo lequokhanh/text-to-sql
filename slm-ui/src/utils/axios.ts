@@ -1,5 +1,6 @@
 // src/utils/axios.ts
 import axios, { AxiosRequestConfig } from 'axios';
+import { enqueueSnackbar } from 'notistack';
 
 import { BACKEND_HOST_API } from 'src/config-global';
 
@@ -12,11 +13,22 @@ axiosInstance.interceptors.response.use(
     }
     return res.data;
   },
-  (error) =>
-    Promise.reject(
+  (error) => {
+    // Handle 429 Too Many Requests error
+    if (error.response && error.response.status === 429) {
+      enqueueSnackbar('Too many requests. Please try again later.', {
+        variant: 'error',
+        anchorOrigin: {
+          vertical: 'top',
+          horizontal: 'right',
+        },
+      });
+    }
+    return Promise.reject(
       (error.response && error.response.data && error.response.data.message) ||
         'Something went wrong'
-    )
+    );
+  }
 );
 
 export default axiosInstance;
