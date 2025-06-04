@@ -444,8 +444,20 @@ def llm_chat(llm: Ollama | GoogleGenAI, fmt_messages: PromptTemplate):
             raise e
         
 def llm_chat_with_pydantic(llm: Ollama | GoogleGenAI, prompt: PromptTemplate, pydantic_model: BaseModel):
+    llm_kwargs = {
+        "generation_config": {
+            "thinking_config": {
+                "thinking_budget": 0
+            }
+        }
+    }
+
     try:
-        chat_response = llm.structured_predict(pydantic_model, prompt)
+        chat_response = llm.structured_predict(
+            output_cls=pydantic_model,
+            prompt=prompt,
+            llm_kwargs=llm_kwargs
+        )
         return chat_response
     except Exception as e:
         error_str = str(e)

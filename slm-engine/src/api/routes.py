@@ -107,7 +107,8 @@ def initialize_routes(api, api_models, workflows):
                     table["sample_data"] = []
                 
                 logger.info(f"Enrich schema is enabled: {app_config.ENRICH_SCHEMA}")
-                logger.info(f"Retrieved: {connection_payload}")
+                # List all keys in connection_payload
+                logger.info(f"Connection payload keys: {connection_payload.keys()}")
 
                 # Enrich schema with additional information
                 if app_config.ENRICH_SCHEMA == False:
@@ -120,7 +121,7 @@ def initialize_routes(api, api_models, workflows):
                 # Filter tables that are not in the list of available tables
                 if len(list_available_tables) > 0:
                     table_details = [table for table in table_details if table["tableIdentifier"] in list_available_tables]
-                logger.info(f"Filtered tables: {table_details}")
+                logger.info(f"Filtered tables: {[table['tableIdentifier'] for table in table_details]}")
                 schema_span.update(
                     metadata={
                         "table_count": len(table_details),
@@ -159,7 +160,7 @@ def initialize_routes(api, api_models, workflows):
                 if "SELECT" in response.upper():
                     return ResponseWrapper.success(response)
                 else:
-                    return ResponseWrapper.error_with_code(ResponseEnum.NOT_RELEVANT_QUERY.code, response)
+                    return ResponseWrapper.error_with_code(ResponseEnum.WORKFLOW_FAILED.code, response)
 
             except Exception as e:
                 logger.error(f"Error processing query: {str(e)}", exc_info=True)
@@ -578,6 +579,7 @@ def initialize_routes(api, api_models, workflows):
                         "api_key": data.get("api_key"),
                         "temperature": data.get("temperature"),
                         "max_tokens": data.get("max_tokens"),
+                        "thinking_budget": data.get("thinking_budget"),
                         "prompt_routing": prompt_routing,
                         "enrich_schema": enrich_schema
                     }
@@ -637,7 +639,7 @@ def initialize_routes(api, api_models, workflows):
         def get(self):
             """Health check endpoint"""
             logger.debug("Health check request received")
-            return jsonify({"status": "ok"})
+            return jsonify({"status": "ok"})   
 
     @api.route('/suggest-questions')
     class SuggestQuestions(Resource):
