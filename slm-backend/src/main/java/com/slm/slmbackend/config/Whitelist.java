@@ -16,6 +16,7 @@ public class Whitelist {
         WHITELIST.put("/health-check", "GET");
         WHITELIST.put("/api/proxy/embed/**", "ANY");
         WHITELIST.put("/api/proxy/engine/schema-enrichment-lite", "POST");
+        WHITELIST.put("/api/v1/diagnostics/**", "GET"); // Rate limiting diagnostics
     }
 
     public static Map<String, String> get() {

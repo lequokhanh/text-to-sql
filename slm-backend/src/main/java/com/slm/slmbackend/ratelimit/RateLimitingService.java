@@ -4,6 +4,7 @@ import com.slm.slmbackend.config.RateLimitConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PreDestroy;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -17,16 +18,40 @@ public class RateLimitingService {
     private final RateLimitConfig config;
     
     private final ConcurrentHashMap<String, TokenBucketWrapper> buckets = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "rate-limit-cleanup");
+        t.setDaemon(true);
+        return t;
+    });
     
     public RateLimitingService(RateLimitConfig config) {
         this.config = config;
+        
+        // Schedule cleanup task
         cleanupExecutor.scheduleAtFixedRate(
             this::cleanupExpiredBuckets,
             config.getCleanupIntervalMinutes(),
             config.getCleanupIntervalMinutes(),
             TimeUnit.MINUTES
         );
+        
+        log.info("Rate limiting service initialized with {} requests per minute", config.getRequestsPerMinute());
+    }
+    
+    @PreDestroy
+    public void shutdown() {
+        log.info("Shutting down rate limiting service...");
+        cleanupExecutor.shutdown();
+        try {
+            if (!cleanupExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                cleanupExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            cleanupExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        buckets.clear();
+        log.info("Rate limiting service shutdown completed");
     }
     
     public boolean isRequestAllowed(String identifier) {
@@ -60,6 +85,37 @@ public class RateLimitingService {
             bucket.getAvailableTokens(),
             bucket.getRefillRate()
         );
+    }
+    
+    /**
+     * Get diagnostic information about the rate limiting service
+     */
+    public RateLimitDiagnostics getDiagnostics() {
+        return new RateLimitDiagnostics(
+            config.isEnabled(),
+            config.getRequestsPerMinute(),
+            config.getRefillRate(),
+            buckets.size(),
+            config.isUserBasedLimiting()
+        );
+    }
+    
+    /**
+     * Get all active buckets (for debugging purposes)
+     */
+    public java.util.Map<String, RateLimitInfo> getAllActiveBuckets() {
+        return buckets.entrySet().stream()
+            .collect(java.util.stream.Collectors.toMap(
+                java.util.Map.Entry::getKey,
+                entry -> {
+                    TokenBucket bucket = entry.getValue().getTokenBucket();
+                    return new RateLimitInfo(
+                        bucket.getCapacity(),
+                        bucket.getAvailableTokens(),
+                        bucket.getRefillRate()
+                    );
+                }
+            ));
     }
     
     private void cleanupExpiredBuckets() {
@@ -96,6 +152,29 @@ public class RateLimitingService {
         public void updateLastAccess() {
             this.lastAccess = Instant.now();
         }
+    }
+    
+    public static class RateLimitDiagnostics {
+        private final boolean enabled;
+        private final long requestsPerMinute;
+        private final double refillRate;
+        private final int activeBuckets;
+        private final boolean userBasedLimiting;
+        
+        public RateLimitDiagnostics(boolean enabled, long requestsPerMinute, double refillRate, 
+                                  int activeBuckets, boolean userBasedLimiting) {
+            this.enabled = enabled;
+            this.requestsPerMinute = requestsPerMinute;
+            this.refillRate = refillRate;
+            this.activeBuckets = activeBuckets;
+            this.userBasedLimiting = userBasedLimiting;
+        }
+        
+        public boolean isEnabled() { return enabled; }
+        public long getRequestsPerMinute() { return requestsPerMinute; }
+        public double getRefillRate() { return refillRate; }
+        public int getActiveBuckets() { return activeBuckets; }
+        public boolean isUserBasedLimiting() { return userBasedLimiting; }
     }
     
     public static class RateLimitInfo {

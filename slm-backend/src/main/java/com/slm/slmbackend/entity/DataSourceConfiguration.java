@@ -21,6 +21,7 @@ public class DataSourceConfiguration {
 
     @Enumerated(EnumType.STRING)
     private DatabaseType databaseType;
+    @Column(unique = true)
     private String name;
 
     private String host;

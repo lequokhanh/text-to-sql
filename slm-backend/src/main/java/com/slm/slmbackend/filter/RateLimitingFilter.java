@@ -87,9 +87,16 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     
     private String getClientIdentifier(@NonNull HttpServletRequest request) {
         if (rateLimitConfig.isUserBasedLimiting()) {
+            // First try to get user from SecurityContext (for already authenticated requests)
             String userIdentifier = getUserIdentifierFromContext(request);
             if (userIdentifier != null) {
                 return "user:" + userIdentifier;
+            }
+            
+            // If not authenticated yet, try to extract username from JWT token
+            String jwtUserIdentifier = getUserIdentifierFromJwt(request);
+            if (jwtUserIdentifier != null) {
+                return "user:" + jwtUserIdentifier;
             }
         }
         
@@ -108,6 +115,33 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             log.debug("Could not get user from security context: {}", e.getMessage());
+        }
+        return null;
+    }
+    
+    private String getUserIdentifierFromJwt(@NonNull HttpServletRequest request) {
+        try {
+            String bearerToken = request.getHeader("Authorization");
+            if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+                String token = bearerToken.substring(7);
+                // Extract username from JWT without validating (just for rate limiting purposes)
+                // We'll use a simple JWT parsing approach
+                String[] parts = token.split("\\.");
+                if (parts.length == 3) {
+                    // Decode the payload (second part)
+                    String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
+                    // Simple JSON parsing to extract "sub" claim (username)
+                    if (payload.contains("\"sub\"")) {
+                        int subStart = payload.indexOf("\"sub\":\"") + 7;
+                        int subEnd = payload.indexOf("\"", subStart);
+                        if (subStart > 6 && subEnd > subStart) {
+                            return payload.substring(subStart, subEnd);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Could not extract user from JWT token: {}", e.getMessage());
         }
         return null;
     }

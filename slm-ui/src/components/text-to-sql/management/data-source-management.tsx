@@ -1,7 +1,8 @@
 // File: src/sections/database-management/components/management/DataSourceManagement.tsx
 
+import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import React, { useRef, useState , KeyboardEvent } from 'react';
+import React, { useRef, useState, useEffect, KeyboardEvent } from 'react';
 
 import {
   Box,
@@ -123,11 +124,14 @@ export default function DataSourceManagement({
   onUpdate,
   onDelete,
 }: DataSourceManagementProps) {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [hasValidConnection, setHasValidConnection] = useState(false);
   const [lastTestedValues, setLastTestedValues] = useState<DatabaseSource | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [countdown, setCountdown] = useState(3);
   
   // Add refs for form fields
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -137,6 +141,18 @@ export default function DataSourceManagement({
   const usernameInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
 
+  // Handle countdown and auto-redirect after successful deletion
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (deleteSuccess && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+    } else if (deleteSuccess && countdown === 0) {
+      navigate('/');
+    }
+    return () => clearTimeout(timer);
+  }, [deleteSuccess, countdown, navigate]);
 
   // Track form values for change detection
   const {
@@ -264,6 +280,8 @@ export default function DataSourceManagement({
       await axiosInstance.delete(`${endpoints.dataSource.base}/${dataSource.id}`);
       onDelete(dataSource.id);
       setDeleteDialogOpen(false);
+      setDeleteSuccess(true);
+      setCountdown(3); // Reset countdown
     } catch (error) {
       console.error('Error deleting datasource:', error);
       setTestResult({
@@ -271,6 +289,10 @@ export default function DataSourceManagement({
         message: error instanceof Error ? error.message : 'Failed to delete datasource',
       });
     }
+  };
+
+  const handleGoHomeNow = () => {
+    navigate('/');
   };
 
   return (
@@ -360,6 +382,41 @@ export default function DataSourceManagement({
                 }}
               >
                 {testResult.message}
+              </Alert>
+            )}
+
+            {deleteSuccess && (
+              <Alert
+                severity="success"
+                sx={{
+                  borderRadius: 1.5,
+                  boxShadow: (theme) => theme.customShadows.z8,
+                }}
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={handleGoHomeNow}
+                    startIcon={<Iconify icon="eva:home-fill" />}
+                    sx={{
+                      borderRadius: 1,
+                      bgcolor: (theme) => alpha(theme.palette.common.white, 0.2),
+                      '&:hover': {
+                        bgcolor: (theme) => alpha(theme.palette.common.white, 0.3),
+                      },
+                    }}
+                  >
+                    Go Home Now
+                  </Button>
+                }
+              >
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Iconify icon="eva:checkmark-circle-2-fill" width={20} height={20} />
+                  <Typography variant="body2">
+                    Data source &quot;{dataSource.name}&quot; deleted successfully! 
+                    Redirecting to home in {countdown} second{countdown !== 1 ? 's' : ''}...
+                  </Typography>
+                </Stack>
               </Alert>
             )}
 

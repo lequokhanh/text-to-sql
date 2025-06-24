@@ -1,6 +1,6 @@
 // src/utils/axios.ts
-import axios, { AxiosRequestConfig } from 'axios';
 import { enqueueSnackbar } from 'notistack';
+import axios, { AxiosRequestConfig } from 'axios';
 
 import { BACKEND_HOST_API } from 'src/config-global';
 
