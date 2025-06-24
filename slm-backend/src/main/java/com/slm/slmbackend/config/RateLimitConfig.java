@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Data
 public class RateLimitConfig {
     
-    private long requestsPerMinute = 30L;
+    private long requestsPerMinute = 1000L;
     
     private boolean enabled = true;
     

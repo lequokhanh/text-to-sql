@@ -34,7 +34,7 @@ engine-service:
 app:
   rate-limit:
     enabled: true                    
-    requests-per-minute: 100          
+    requests-per-minute: 1000          
     bucket-expiry-minutes: 60        
     cleanup-interval-minutes: 10     
     include-headers: true            

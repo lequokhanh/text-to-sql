@@ -2,7 +2,7 @@ services:
     mysql:
         image: mysql:8.0
         ports:
-            - "3306:3306"
+            # - "3306:3306"
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: root123
@@ -25,7 +25,7 @@ services:
 
     embed:
         ports:
-            - "8181:8080"
+            # - "8181:8080"`
         build:
             context: ./slm-embed
         restart: always
@@ -44,7 +44,7 @@ services:
 
     engine:
         ports:
-            - "8383:5000"
+            # - "8383:5000"
         build:
             context: ./slm-engine
         restart: always
@@ -68,7 +68,7 @@ services:
 
     backend:
         ports:
-            - "8282:8080"
+            # - "8282:8080"
         build:
             context: ./slm-backend
         restart: always
