@@ -911,6 +911,13 @@ export default function DatabaseCreateDialog({ open, onClose, onCreateSource }: 
                   <TableDefinitionView
                     tables={schemaData.tableDefinitions}
                     databaseDescription={schemaData.databaseDescription}
+                    onAutoFill={(updatedTables, databaseDescription) => {
+                      setSchemaData({
+                        ...schemaData,
+                        tableDefinitions: updatedTables,
+                        databaseDescription
+                      });
+                    }}
                     onTablesUpdate={(updatedTables) => {
                       setSchemaData({
                         ...schemaData,

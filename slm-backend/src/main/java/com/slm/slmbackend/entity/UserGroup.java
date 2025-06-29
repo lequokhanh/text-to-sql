@@ -22,7 +22,7 @@ public class UserGroup {
     @JoinColumn(name = "data_source_id", nullable = false)
     private DataSourceConfiguration dataSourceConfiguration;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "group_id")
     private List<GroupTableMapping> tableMappings;
 

@@ -5,7 +5,9 @@ import {
   Box,
   Paper,
   Stack,
+  Button,
   useTheme,
+  Skeleton,
   InputBase,
   IconButton,
   Typography,
@@ -64,6 +66,27 @@ const StyledInput = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+const SuggestionChip = styled(Button)(({ theme }) => ({
+  borderRadius: 20,
+  padding: theme.spacing(1, 3),
+  textTransform: 'none',
+  fontWeight: 500,
+  fontSize: '0.875rem',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  color: theme.palette.primary.main,
+  backgroundColor: alpha(theme.palette.primary.main, 0.04),
+  transition: theme.transitions.create(['all'], {
+    duration: theme.transitions.duration.short,
+  }),
+  marginBottom: theme.spacing(1),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.08),
+    borderColor: alpha(theme.palette.primary.main, 0.3),
+    transform: 'translateY(-2px)',
+    boxShadow: `0 4px 12px 0 ${alpha(theme.palette.primary.main, 0.15)}`,
+  },
+}));
+
 const SendButton = styled(IconButton)(({ theme }) => ({
   width: 36,
   height: 36,
@@ -89,6 +112,10 @@ interface EnhancedChatInputProps {
     sessionId: string;
     messageCount: number;
   } | null;
+  suggestions?: string[];
+  newChat?: boolean;
+  onRefreshSuggestions?: () => void;
+  isSuggestionsLoading?: boolean;
 }
 
 export default function ChatMessageInput({
@@ -97,6 +124,10 @@ export default function ChatMessageInput({
   placeholder = 'Ask a question to start a new chat...',
   disableSend = false,
   sessionInfo = null,
+  suggestions = [],
+  newChat = false,
+  onRefreshSuggestions,
+  isSuggestionsLoading = false,
 }: EnhancedChatInputProps) {
   const theme = useTheme();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -128,6 +159,80 @@ export default function ChatMessageInput({
 
   return (
     <Box>
+      {/* Suggestions */}
+      {!newChat && !disabled && !disableSend && (suggestions.length > 0 || onRefreshSuggestions) && (
+        <Box sx={{ mb: 1, display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+          {onRefreshSuggestions && (
+            <IconButton
+              size="small"
+              onClick={onRefreshSuggestions}
+              disabled={isSuggestionsLoading}
+              sx={{
+                color: 'text.secondary',
+                mt: 0.5, // Small margin to align with suggestion chips
+                '&:hover': {
+                  color: 'primary.main',
+                  backgroundColor: (t) => alpha(t.palette.primary.main, 0.08),
+                },
+              }}
+            >
+              <Iconify 
+                icon="eva:refresh-fill" 
+                width={16} 
+                height={16}
+                sx={{
+                  ...(isSuggestionsLoading && {
+                    animation: 'spin 1s linear infinite',
+                    '@keyframes spin': {
+                      '0%': {
+                        transform: 'rotate(0deg)',
+                      },
+                      '100%': {
+                        transform: 'rotate(360deg)',
+                      },
+                    },
+                  }),
+                }}
+              />
+            </IconButton>
+          )}
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 1,
+              flex: 1,
+            }}
+          >
+            {isSuggestionsLoading ? (
+              // Show skeleton chips while loading
+              Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  variant="rounded"
+                  width={80 + Math.random() * 60} // Random widths between 80-140px
+                  height={32}
+                  sx={{
+                    borderRadius: '20px',
+                    bgcolor: (t) => alpha(t.palette.primary.main, 0.04),
+                  }}
+                />
+              ))
+            ) : (
+              suggestions.map((suggestion) => (
+                <SuggestionChip 
+                  key={suggestion} 
+                  onClick={() => onSend(suggestion)}
+                >
+                  <Typography variant="caption">
+                    {suggestion}
+                  </Typography>
+                </SuggestionChip>
+              ))
+            )}
+          </Box>
+        </Box>
+      )}
       {/* Input Area */}
       <StyledPaper
         elevation={0}
@@ -180,6 +285,7 @@ export default function ChatMessageInput({
               {message.length}
             </Typography>
           )}
+
 
           <SendButton
             onClick={handleSend}

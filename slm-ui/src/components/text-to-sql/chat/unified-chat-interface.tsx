@@ -246,22 +246,25 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
 
-  useEffect(() => {
-    if (selectedSource) {
-      const fetchSuggestions = async () => {
-        setIsSuggestionsLoading(true);
-        try {
-          const response = await axiosInstance.get(endpoints.chat.suggestions(selectedSource.id));
-          setSuggestions(response.data);
-        } catch (err) {
-          console.error('Error fetching suggestions:', err);
-        } finally {
-          setIsSuggestionsLoading(false);
-        }
-      };
-      fetchSuggestions();
+  const fetchSuggestions = useCallback(async () => {
+    if (!selectedSource) return;
+    
+    setIsSuggestionsLoading(true);
+    try {
+      const response = await axiosInstance.get(endpoints.chat.suggestions(selectedSource.id));
+      setSuggestions(response.data);
+    } catch (err) {
+      console.error('Error fetching suggestions:', err);
+    } finally {
+      setIsSuggestionsLoading(false);
     }
   }, [selectedSource]);
+
+  useEffect(() => {
+    if (selectedSource) {
+      fetchSuggestions();
+    }
+  }, [selectedSource, fetchSuggestions]);
 
   const scrollToBottom = useCallback(() => {
     // Direct method: force scroll to the maximum possible value
@@ -725,9 +728,47 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
               </Typography>
               
               {/* Quick Suggestions */}
-              <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
-                Try these examples:
-              </Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                mb: 2 
+              }}>
+                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+                  Try these examples:
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={fetchSuggestions}
+                  disabled={isSuggestionsLoading}
+                  sx={{
+                    color: 'text.secondary',
+                    '&:hover': {
+                      color: 'primary.main',
+                      backgroundColor: (t) => alpha(t.palette.primary.main, 0.08),
+                    },
+                  }}
+                >
+                  <Iconify 
+                    icon="eva:refresh-fill" 
+                    width={18} 
+                    height={18}
+                    sx={{
+                      ...(isSuggestionsLoading && {
+                        animation: 'spin 1s linear infinite',
+                        '@keyframes spin': {
+                          '0%': {
+                            transform: 'rotate(0deg)',
+                          },
+                          '100%': {
+                            transform: 'rotate(360deg)',
+                          },
+                        },
+                      }),
+                    }}
+                  />
+                </IconButton>
+              </Box>
               <Stack direction="row" flexWrap="wrap" gap={1} justifyContent="center">
                 {isSuggestionsLoading ? (
                   // Show 3 skeleton suggestions while loading
@@ -890,6 +931,10 @@ export function UnifiedChatInterface({ selectedSource, onSourceRequired }: Unifi
                     sessionId: (activeSession || tempSession)?.id || '',
                     messageCount: Math.floor(((activeSession || tempSession)?.messages?.length || 0) / 2),
                   } : null}
+                  newChat={!activeSession && !tempSession}
+                  suggestions={suggestions}
+                  onRefreshSuggestions={fetchSuggestions}
+                  isSuggestionsLoading={isSuggestionsLoading}
                 />
               </Box>
             </InputArea>
