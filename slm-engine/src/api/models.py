@@ -41,6 +41,7 @@ def create_api_models(api):
         'enrich_schema': fields.Boolean(required=False, description='Schema enrichment setting')
     })
     
+    
     return {
         'connection_payload_model': connection_payload_model,
         'query_request_model': query_request_model,

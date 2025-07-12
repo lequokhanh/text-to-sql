@@ -9,6 +9,9 @@ from sqlglot import parse_one, exp, transpile
 import sqlglot
 import sqlglot.expressions as exp
 from typing import Tuple, Optional, Union
+from transformers import AutoTokenizer
+from functools import lru_cache
+from response.log_manager import log_prompt
 
 
 # Configure logging
@@ -843,3 +846,61 @@ def enrich_schema_with_info(table_details: list, connection_payload: dict):
         logger.info("Schema enrichment is disabled or no enrichment info available")
     
     return table_details, database_description
+
+
+
+
+@lru_cache
+def _load_tokenizer(model_id: str):
+    """
+    Load and cache the correct tokenizer for each model.
+    Qwen needs trust_remote_code=True, Phi-4 thì không.
+    """
+    kwargs = {"trust_remote_code": True} if model_id.startswith("Qwen/") else {}
+    return AutoTokenizer.from_pretrained(model_id, **kwargs)
+
+def count_tokens(prompt: str, model_id: str) -> int:
+    tok = _load_tokenizer(model_id)
+    return len(tok(prompt, add_special_tokens=False).input_ids)
+
+def prompt_export(table_details: list, database_description: str) -> list: 
+    """
+    Export the schema to a prompt format.
+    """
+    from core.templates import (
+        SCHEMA_ENRICHMENT_SKELETON,
+        TEXT_TO_SQL_SKELETON,
+        TABLE_RETRIEVAL_SKELETON
+    )
+    list_prompt_skeleton = [
+        SCHEMA_ENRICHMENT_SKELETON,
+        TEXT_TO_SQL_SKELETON,
+        TABLE_RETRIEVAL_SKELETON
+    ] 
+
+    schema = schema_parser(table_details, "DDL", include_sample_data=True)
+    list_prompt = []
+    for prompt_skeleton in list_prompt_skeleton:
+        if prompt_skeleton == SCHEMA_ENRICHMENT_SKELETON:
+            prompt_type = "schema_enrichment"
+        elif prompt_skeleton == TEXT_TO_SQL_SKELETON:
+            prompt_type = "text_to_sql"
+        elif prompt_skeleton == TABLE_RETRIEVAL_SKELETON:
+            prompt_type = "table_retrieval"
+
+        prompt = prompt_skeleton.format(
+            database_description=database_description,
+            schema=schema,
+            table_schemas=schema,
+            dialect="postgres",
+            user_question="What is the total number of users?",
+            query="What is the total number of users?"
+        )
+        log_prompt(prompt, "Prompt Export")
+        list_prompt.append({
+            "prompt_type": prompt_type,
+            "prompt": prompt,
+            "token_count": count_tokens(prompt, "Qwen/Qwen2.5-Coder-14B")
+        })
+
+    return list_prompt

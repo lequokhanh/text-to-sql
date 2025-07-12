@@ -4,7 +4,7 @@ from flask import request, jsonify
 from flask_restx import Resource
 from config.app_config import llm_config
 from core.services import get_schema, get_sample_data_improved, validate_connection_payload
-from core.utils import enrich_schema_with_info
+from core.utils import enrich_schema_with_info, prompt_export
 from exceptions.app_exception import AppException
 from response.app_response import ResponseWrapper
 from middleware.async_handler import async_route
@@ -40,7 +40,7 @@ def initialize_routes(api, api_models, workflows):
         def get(self):
             """Check if the service is running"""
             return "SLM Engine is running!"
-
+    
     @api.route('/query')
     class Query(Resource):
         @api.expect(query_request_model)
@@ -106,12 +106,12 @@ def initialize_routes(api, api_models, workflows):
                 for table in table_details:
                     table["sample_data"] = []
                 
-                logger.info(f"Enrich schema is enabled: {app_config.ENRICH_SCHEMA}")
+                logger.info(f"Enrich schema is enabled: {llm_config.get_settings()['enrich_schema']}")
                 # List all keys in connection_payload
                 logger.info(f"Connection payload keys: {connection_payload.keys()}")
 
                 # Enrich schema with additional information
-                if app_config.ENRICH_SCHEMA == False:
+                if not llm_config.get_settings()["enrich_schema"]:
                     logger.info("Enrich schema is disabled, skipping enrichment")
                     table_details, database_description = table_details, None
                 else:
@@ -494,6 +494,74 @@ def initialize_routes(api, api_models, workflows):
                         status="failed",
                         metadata={"error": str(e)}
                     )
+                raise AppException(str(e), 500)
+    
+    @api.route('/prompt-counter')
+    class PromptCount(Resource):
+        @api.doc('prompt_count',
+            responses={
+                200: 'Success'
+            }
+        )
+        @api.expect(schema_enrich_request_model)
+        @async_route
+        async def post(self):
+            """Process a natural language query and return SQL results"""
+            logger.info("Received request to /prompt-counter endpoint")
+            try:
+                data = request.json
+                connection_payload = data.get("connection_payload")
+                session_information = data.get("session_information")
+                schema_enrich_info = connection_payload.get("schema_enrich_info")
+                
+                schema = []
+                if 'enrich_schema' in schema_enrich_info:
+                    schema = schema_enrich_info['enrich_schema']
+                list_available_tables = [table["tableIdentifier"] for table in schema]
+                logger.info(f"Available tables: {list_available_tables}")
+                
+
+                if not connection_payload:
+                    logger.warning("Missing required parameters in request")
+                    return jsonify({"error": "Missing 'query' or 'connection_payload'"}), 400
+                
+                is_valid, error_message = validate_connection_payload(connection_payload)
+                if not is_valid:
+                    logger.warning(f"Invalid connection payload: {error_message}")
+                    return jsonify({"error": error_message}), 400
+
+                
+                logger.info("Retrieving schema from database")
+                table_details = get_schema(connection_payload)
+                for table in table_details:
+                    table["sample_data"] = []
+                
+                logger.info(f"Enrich schema is enabled: {llm_config.get_settings()['enrich_schema']}")
+                # List all keys in connection_payload
+                logger.info(f"Connection payload keys: {connection_payload.keys()}")
+
+                # Enrich schema with additional information
+                if not llm_config.get_settings()["enrich_schema"]:
+                    logger.info("Enrich schema is disabled, skipping enrichment")
+                    table_details, database_description = table_details, None
+                else:
+                    table_details, database_description = enrich_schema_with_info(table_details, connection_payload)
+                    logger.info(f"Retrieved schema with {len(table_details)} tables")
+
+                # Filter tables that are not in the list of available tables
+                if len(list_available_tables) > 0:
+                    table_details = [table for table in table_details if table["tableIdentifier"] in list_available_tables]
+                logger.info(f"Filtered tables: {[table['tableIdentifier'] for table in table_details]}")
+
+                list_prompt = prompt_export(table_details, database_description)
+                for prompt in list_prompt:
+                    logger.info(f"Prompt: {prompt['prompt']}")
+                    logger.info(f"Token count: {prompt['token_count']}")
+         
+                return ResponseWrapper.success(list_prompt)
+
+            except Exception as e:
+                logger.error(f"Error processing query: {str(e)}", exc_info=True)
                 raise AppException(str(e), 500)
 
     @api.route('/settings')
