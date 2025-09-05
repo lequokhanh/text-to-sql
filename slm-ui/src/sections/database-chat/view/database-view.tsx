@@ -177,11 +177,16 @@ export default function DatabaseView() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSourceSelect = (source: DatabaseSource) => {
-    // For shared sources, we only use the data we already have (id, name, databaseType)
-    // No need to fetch additional details since we don't have access
-    setSelectedSource(source);
-    setShowNoSourceAlert(false);
+  const handleSourceSelect = (source: DatabaseSource | null) => {
+    if (source) {
+      // For shared sources, we only use the data we already have (id, name, databaseType)
+      // No need to fetch additional details since we don't have access
+      setSelectedSource(source);
+      setShowNoSourceAlert(false);
+    } else {
+      setSelectedSource(null);
+      setShowNoSourceAlert(true);
+    }
   };
 
   const handleManageSource = (sourceId: string) => {
@@ -317,19 +322,10 @@ export default function DatabaseView() {
           
           <Stack direction="row" alignItems="center" spacing={2} sx={{ ml: 'auto' }}>            
             <DataSourceDropdown
-              ownedSources={ownedSources}
-              sharedSources={sharedSources}
+              dataSources={[...ownedSources, ...sharedSources]}
               selectedSource={selectedSource}
-              onSourceSelect={handleSourceSelect}
+              onSelectSource={handleSourceSelect}
               onCreateSource={() => setIsCreateDialogOpen(true)}
-              onManageSource={handleManageSource}
-              style={{
-                borderRadius: 12,
-                minWidth: 200,
-                boxShadow: `0 4px 12px 0 ${alpha(theme.palette.common.black, 0.1)}`,
-                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                backdropFilter: 'blur(20px)',
-              }}
             />
           </Stack>
         </Stack>
