@@ -1,6 +1,5 @@
 // File: src/sections/database-chat/view/database-view.tsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
@@ -140,7 +139,6 @@ const normalizeRelations = (column: ColumnDefinition, tablesToSearch: TableDefin
 };
 
 export default function DatabaseView() {
-  const navigate = useNavigate();
   const theme = useTheme();
   
   // States
@@ -187,10 +185,6 @@ export default function DatabaseView() {
       setSelectedSource(null);
       setShowNoSourceAlert(true);
     }
-  };
-
-  const handleManageSource = (sourceId: string) => {
-    navigate(`/datasource/${sourceId}/manage`);
   };
 
   const handleCreateDataSource = async (source: DatabaseSource) => {
